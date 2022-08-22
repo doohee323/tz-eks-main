@@ -1,0 +1,38 @@
+apiVersion: consul.hashicorp.com/v1alpha1
+kind: ServiceIntentions
+metadata:
+  name: demo-to-demo2
+spec:
+  destination:
+    name: consul-agent-demo2
+  sources:
+    - name: consul-agent-demo
+      action: allow
+
+---
+
+apiVersion: consul.hashicorp.com/v1alpha1
+kind: ServiceRouter
+metadata:
+  name: consul-agent-demo-service2
+spec:
+  routes:
+    - match:
+        http:
+          pathPrefix: "/coffees"
+      destination:
+        service: "consul-agent-demo2"
+
+---
+
+apiVersion: consul.hashicorp.com/v1alpha1
+kind: ServiceRouter
+metadata:
+  name: consul-agent-demo-service
+spec:
+  routes:
+    - match:
+        http:
+          pathPrefix: "/coffees"
+      destination:
+        service: "consul-agent-demo"

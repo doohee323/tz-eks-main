@@ -6,7 +6,7 @@
 ## https://huzz.tistory.com/70
 ## https://medium.com/@HoussemDellai/rbac-with-kubernetes-in-minikube-4deed658ea7b
 
-cd /vagrant/tz-local/resource/makeuser
+cd /vagrant/tz-local/resource/makeuser/k8s
 
 USER_ID='doohee'
 GROUP_ID='devops'

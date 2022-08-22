@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+
+# bash /init.sh
+cd /vagrant/tz-local/docker
+
+echo "vault_token: ${vault_token}"
+
+#set -x
+shopt -s expand_aliases
+
+rm -Rf /vagrant/info
+
+export AWS_PROFILE=default
+function propProject {
+	grep "${1}" "/vagrant/resources/project" | head -n 1 | cut -d '=' -f2 | sed 's/ //g'
+}
+export eks_project=$(propProject 'project')
+export aws_account_id=$(propProject 'aws_account_id')
+PROJECT_BASE='/vagrant/terraform-aws-eks/workspace/base'
+
+function propConfig {
+  grep "${1}" "/vagrant/resources/config" | head -n 1 | cut -d '=' -f2 | sed 's/ //g'
+}
+aws_region=$(propConfig 'region')
+export AWS_DEFAULT_REGION="${aws_region}"
+
+echo "eks_project: ${eks_project}"
+echo "aws_region: ${aws_region}"
+echo "aws_account_id: ${aws_account_id}"
+
+echo "
+export AWS_DEFAULT_REGION=${aws_region}
+export VAULT_ADDR=https://vault.default.${eks_project}.${eks_domain}
+alias k='kubectl'
+alias KUBECONFIG='~/.kube/config'
+alias base='cd /vagrant/terraform-aws-eks/workspace/base'
+alias scripts='cd /vagrant/scripts'
+alias tapply='terraform apply -auto-approve'
+alias ll='ls -al'
+export PATH=\"/home/vagrant/.krew/bin:$PATH\"
+" >> /home/vagrant/.bashrc
+chown -Rf vagrant:vagrant /home/vagrant/.bashrc
+cp -Rf /home/vagrant/.bashrc /root/.bashrc
+
+echo "###############"
+if [[ "${INSTALL_INIT}" == 'true' || ! -f "/home/vagrant/.aws/config" ]]; then
+  VERSION=$(curl --silent "https://api.github.com/repos/argoproj/argo-cd/releases/latest" | grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/')
+  sudo curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/download/$VERSION/argocd-linux-amd64
+  sudo chmod +x /usr/local/bin/argocd
+
+  (
+  set -x; cd "$(mktemp -d)" &&
+  OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
+  ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')" &&
+  KREW="krew-${OS}_${ARCH}" &&
+  curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/${KREW}.tar.gz" &&
+  tar zxvf "${KREW}.tar.gz" &&
+  ./"${KREW}" install krew
+  )
+fi
+
+#wget https://github.com/lensapp/lens/releases/download/v4.1.5/Lens-4.1.5.amd64.deb
+#sudo dpkg -i Lens-4.1.5.amd64.deb
+
+export KUBECONFIG=`ls kubeconfig_${eks_project}*`
+cp -Rf $KUBECONFIG /vagrant/config_${eks_project}
+sudo mkdir -p /root/.kube
+sudo cp -Rf $KUBECONFIG /root/.kube/config
+sudo chmod -Rf 600 /root/.kube/config
+mkdir -p /home/vagrant/.kube
+cp -Rf $KUBECONFIG /home/vagrant/.kube/config
+sudo chmod -Rf 600 /home/vagrant/.kube/config
+export KUBECONFIG=/home/vagrant/.kube/config
+sudo chown -Rf vagrant:vagrant /home/vagrant
+
+echo "      env:" >> ${PROJECT_BASE}/kubeconfig_${eks_project}
+echo "        - name: AWS_PROFILE" >> ${PROJECT_BASE}/kubeconfig_${eks_project}
+echo '          value: '"${eks_project}"'' >> ${PROJECT_BASE}/kubeconfig_${eks_project}
+
+export s3_bucket_id=`terraform output | grep s3-bucket | awk '{print $3}'`
+echo $s3_bucket_id > s3_bucket_id
+
+#export s3_bucket_id=`terraform output | grep s3-bucket | awk '{print $3}'`
+#echo $s3_bucket_id > s3_bucket_id
+#master_ip=`terraform output | grep -A 2 "public_ip" | head -n 1 | awk '{print $3}'`
+#export master_ip=`echo $master_ip | sed -e 's/\"//g;s/ //;s/,//'`
+
+# bash /vagrant/scripts/eks_addtion.sh
+
+#bastion_ip=$(terraform output | grep "bastion" | awk '{print $3}')
+#echo "
+#Host ${bastion_ip}
+#  StrictHostKeyChecking   no
+#  LogLevel                ERROR
+#  UserKnownHostsFile      /dev/null
+#  IdentitiesOnly yes
+#  IdentityFile /home/vagrant/.ssh/${eks_project}
+#" >> /home/vagrant/.ssh/config
+#sudo chown -Rf vagrant:vagrant /home/vagrant/.ssh/config
+
+#secondary_az1_ip=$(terraform output | grep "secondary-az1" | awk '{print $3}')
+
+echo "
+##[ Summary ]##########################################################
+  - in VM
+    export KUBECONFIG='/vagrant/config_${eks_project}'
+
+  - outside of VM
+    export KUBECONFIG='config_${eks_project}'
+
+  - kubectl get nodes
+  - S3 bucket: ${s3_bucket_id}
+
+  - ${eks_project} bastion:
+    ssh ubuntu@${bastion_ip}
+    chmod 600 /home/ubuntu/resources/${eks_project}
+#  - secondary-az1: ssh -i /home/ubuntu/resources/${eks_project} ubuntu@${secondary_az1_ip}
+
+#######################################################################
+" >> /vagrant/info
+cat /vagrant/info
+
+sudo /usr/sbin/sshd -D
+
+exit 0
+
+#helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+#helm repo update
+#helm install prometheus-operator prometheus-community/kube-prometheus-stack

@@ -28,16 +28,15 @@ echo $HOSTZONE_ID
 shopt -s expand_aliases
 alias k="kubectl -n ${NS} --kubeconfig ~/.kube/config"
 
-cd /vagrant/tz-local/resource/nginx_ingress
-
 #kubectl delete ns ${NS}
 kubectl create ns ${NS}
-helm repo add stable https://charts.helm.sh/stable
+helm repo add nginx-stable https://helm.nginx.com/stable
 helm repo update
 #helm search repo nginx-ingress
 helm uninstall nginx-ingress -n ${NS}
 sleep 30
-helm upgrade --reuse-values --install nginx-ingress stable/nginx-ingress -n ${NS}
+helm upgrade --debug --install --reuse-values nginx-ingress nginx-stable/nginx-ingress \
+  -f values.yaml -n ${NS}
 sleep 30
 DEVOPS_ELB=$(kubectl get svc | grep nginx-ingress-controller | head -n 1 | awk '{print $4}')
 if [[ "${DEVOPS_ELB}" == "" ]]; then
@@ -93,4 +92,3 @@ k delete -f nginx-ingress.yaml_bak
 #  --version v0.14
 #
 #k get pods --namespace cert-manager
-

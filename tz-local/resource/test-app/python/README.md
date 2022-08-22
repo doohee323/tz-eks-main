@@ -58,9 +58,9 @@ curl http://10.97.78.220:8080
 ```
 
 k apply -f jenkins-ingress.yaml
-curl http://crawler.eks-tgd.tzcorp.com
+curl http://crawler.eks-devops.tzcorp.com
 
-curl -d "watch_ids=ioNng23DkIM" -X POST http://crawler.eks-tgd.tzcorp.com/crawl
+curl -d "watch_ids=ioNng23DkIM" -X POST http://crawler.eks-devops.tzcorp.com/crawl
 curl -d "watch_ids=ioNng23DkIM" -X POST http://ab7dde4e472214d688fd8a9c844f0bd1-1145051925.us-west-1.elb.amazonaws.com:8000/crawl
 curl -X GET http://ab7dde4e472214d688fd8a9c844f0bd1-1145051925.us-west-1.elb.amazonaws.com:8000/crawl?watch_ids=ioNng23DkIM
 

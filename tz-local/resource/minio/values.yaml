@@ -1,0 +1,53 @@
+#replicas: 1
+
+rootUser: 'admin'
+rootPassword: 'Dlwpdldps!323'
+
+minioAPIPort: "32000"
+minioConsolePort: "32001"
+
+persistence:
+  enabled: false
+
+resources:
+  requests:
+    memory: 1Gi
+
+service:
+  type: NodePort
+  port: "32000"
+
+consoleService:
+  type: NodePort
+  port: "32001"
+
+securityContext:
+  enabled: true
+  fsGroup: 1001
+  runAsUser: 1001
+
+defaultBucket:
+  enabled: false
+  ## If enabled, must be a string with length > 0
+  name: bucket
+  ## Can be one of none|download|upload|public
+  policy: none
+  ## Purge if bucket exists already
+  purge: false
+
+### Additional Annotations for the Kubernetes Batch (make-bucket-job)
+#makeBucketJob:
+#  podAnnotations:
+#  annotations:
+#  securityContext:
+#    enabled: false
+#    runAsUser: 1000
+#    runAsGroup: 1000
+#    fsGroup: 1000
+#  resources:
+#    requests:
+#      memory: 2Mi
+
+nodeSelector:
+  team: devops
+  environment: sec

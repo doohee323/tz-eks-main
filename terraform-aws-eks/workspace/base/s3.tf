@@ -37,3 +37,10 @@ resource "aws_s3_bucket" "devops-es-backup" {
   }
 }
 
+resource "aws_s3_bucket" "devops-thanos" {
+  bucket = "devops-thanos-${local.cluster_name}"
+  acl    = "public-read-write"
+  tags = {
+    Name = "devops-thanos"
+  }
+}

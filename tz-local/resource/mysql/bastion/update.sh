@@ -47,6 +47,7 @@ apt-get update -y
 apt-get install -y curl wget awscli jq unzip netcat apt-transport-https gnupg2
 
 curl -o aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.18.9/2020-11-02/bin/linux/amd64/aws-iam-authenticator
+#curl -o aws-iam-authenticator https://s3.us-west-2.amazonaws.com/amazon-eks/1.21.2/2021-07-05/bin/linux/amd64/aws-iam-authenticator
 chmod +x aws-iam-authenticator
 mv aws-iam-authenticator /usr/local/bin
 
@@ -119,3 +120,20 @@ exit 0
 
 NS=devops-dev
 kubectl --kubeconfig ~/.kube/kubeconfig_eks-main -n ${NS} port-forward svc/mysql 3306
+
+pushd `pwd`
+cd /vagrant/terraform-aws-eks/workspace/base
+bastion_ip=$(terraform output | grep eks-main-bastion | awk '{print $3}' | tr "/" "\n" | tail -n 1)
+popd
+echo bastion_ip: ${bastion_ip}
+
+#KEY_FILE='/Volumes/workspace/tz/tz-eks-main/terraform-aws-eks/workspace/base/eks-main'
+KEY_FILE='/vagrant/terraform-aws-eks/workspace/base/eks-main'
+echo ssh -i ${KEY_FILE} ubuntu@${bastion_ip}
+
+ssh -i ${KEY_FILE} \
+-NL 22:topzone2-prod.cluster-c01spz81v11d.ap-northeast-2.rds.amazonaws.com:3306 \
+ubuntu@52.79.56.74
+
+redis-cli -h clustercfg.topzone-prod.etokrl.apn2.cache.amazonaws.com -p 6379
+clustercfg.topzone-prod.etokrl.apn2.cache.amazonaws.com

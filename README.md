@@ -52,8 +52,8 @@ TZ's main eks cluster with terraform
 ## jenkins)
 ``` 
     curl http://jenkins.eks-main.tzcorp.com
-    if project name is eks-tgd rather than eks-main,
-        curl http://jenkins.eks-tgd.tzcorp.com
+    if project name is eks-devops rather than eks-main,
+        curl http://jenkins.eks-devops.tzcorp.com
 
     
 ```

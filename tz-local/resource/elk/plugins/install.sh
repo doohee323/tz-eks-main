@@ -14,8 +14,8 @@ function prop {
 eks_project=$(prop 'project' 'project')
 eks_domain=$(prop 'project' 'domain')
 admin_password=$(prop 'project' 'admin_password')
-NS=es
+NS=elk
 export STACK_VERSION=7.13.2
 
-kubectl -n es exec -it statefulset/elasticsearch-master -- elasticsearch-plugin install repository-s3
+kubectl -n elk exec -it statefulset/elasticsearch-master -- elasticsearch-plugin install repository-s3
 

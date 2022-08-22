@@ -139,7 +139,7 @@ PUT /_cluster/settings
             "account": {
                 "elastic": {
                     "profile": "gmail",
-                    "email_defaults.from": "devops@tz.gg",
+                    "email_defaults.from": "devops@tz.com",
                     "smtp": {
                         "auth": true,
                         "starttls": {
@@ -148,7 +148,7 @@ PUT /_cluster/settings
                         },
                         "host": "smtp.gmail.com",
                         "port": "587",
-                        "user": "devops@tz.gg"
+                        "user": "devops@tz.com"
                     }
                 }
             }

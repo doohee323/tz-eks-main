@@ -5,7 +5,7 @@ logstashConfig:
   logstash.yml: |
     http.host: 0.0.0.0
     xpack.monitoring.enabled: true
-    xpack.monitoring.elasticsearch.hosts: ["https://elasticsearch-master.es.svc.cluster.local:9200"]
+    xpack.monitoring.elasticsearch.hosts: ["https://elasticsearch-master.elk.svc.cluster.local:9200"]
     xpack.monitoring.elasticsearch.username: '${ELASTIC_USERNAME}'
     xpack.monitoring.elasticsearch.password: '${ELASTIC_PASSWORD}'
 
@@ -21,13 +21,13 @@ logstashPipeline:
   uptime.conf: |
     input { exec { command => "uptime" interval => 30 } }
     output { elasticsearch {
-      hosts => ["elasticsearch-master.es.svc.cluster.local:9200"]
+      hosts => ["elasticsearch-master.elk.svc.cluster.local:9200"]
       user => '${ELASTIC_USERNAME}'
       password => '${ELASTIC_PASSWORD}'
       index => "uptime-%{+YYYY.MM.dd}"
       }
     }
-#    hosts => ["elasticsearch-master.es.svc.cluster.local:9200"]
+#    hosts => ["elasticsearch-master.elk.svc.cluster.local:9200"]
 
   logstash.conf: |
     input {
@@ -36,13 +36,13 @@ logstashPipeline:
       }
     }
     output { elasticsearch {
-      hosts => ["elasticsearch-master.es.svc.cluster.local:9200"]
+      hosts => ["elasticsearch-master.elk.svc.cluster.local:9200"]
       user => '${ELASTIC_USERNAME}'
       password => '${ELASTIC_PASSWORD}'
       index => "logstash-%{+YYYY.MM.dd}"
       }
     }
-#    output { elasticsearch { hosts => ["elasticsearch-master.es.svc.cluster.local"] index => "logstash" } }
+#    output { elasticsearch { hosts => ["elasticsearch-master.elk.svc.cluster.local"] index => "logstash" } }
 
 # Allows you to add any pattern files in your custom pattern dir
 logstashPatternDir: "/usr/share/logstash/patterns/"

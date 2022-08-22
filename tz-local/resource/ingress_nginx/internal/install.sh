@@ -59,7 +59,7 @@ helm upgrade --debug --install --reuse-values ingress-nginx-internal ingress-ngi
 #          ports:
 
 kubectl apply -f rbac.yaml -n ${NS}
-kubectl auth can-i update configmaps --as=system:serviceaccount:devops:ingress-nginx-internal -n devops
+kubectl auth can-i update configmaps --as=system:serviceaccount:devops:ingress-nginx-internal -n ${NS}
 kubectl rollout restart deploy/ingress-nginx-internal-controller -n ${NS}
 sleep 20
 
@@ -78,12 +78,12 @@ aws route53 change-resource-record-sets --hosted-zone-id ${HOSTZONE_ID} \
 aws route53 change-resource-record-sets --hosted-zone-id ${HOSTZONE_ID} \
  --change-batch '{ "Comment": "'"${eks_project}"' utils", "Changes": [{"Action": "CREATE", "ResourceRecordSet": { "Name": "*.'"${NS}-internal"'.'"${eks_project}"'.'"${eks_domain}"'", "Type": "CNAME", "TTL": 120, "ResourceRecords": [{"Value": "'"${DEVOPS_ELB}"'"}]}}]}'
 
-#k delete deployment nginx
-#k create deployment nginx --image=nginx
-#k delete svc/nginx
-##k port-forward deployment/nginx 80
-##k expose deployment/nginx --port 80 --type LoadBalancer
-#k expose deployment/nginx --port 80
+k delete deployment nginx
+k create deployment nginx --image=nginx
+k delete svc/nginx
+#k port-forward deployment/nginx 80
+#k expose deployment/nginx --port 80 --type LoadBalancer
+k expose deployment/nginx --port 80
 
 cp -Rf nginx-ingress.yaml nginx-ingress.yaml_bak
 sed -i "s|NS|${NS}|g" nginx-ingress.yaml_bak
@@ -98,8 +98,8 @@ sleep 30
 curl -v http://test.${NS}-internal.${eks_project}.${eks_domain}
 k delete -f nginx-ingress.yaml_bak
 
-k delete -f letsencrypt-prod.yaml
-k apply -f letsencrypt-prod.yaml
+k delete -f letsencrypt-staging.yaml
+k apply -f letsencrypt-staging.yaml
 
 cp -Rf nginx-ingress-https.yaml nginx-ingress-https.yaml_bak
 sed -i "s/NS/${NS}/g" nginx-ingress-https.yaml_bak
@@ -122,11 +122,10 @@ kubectl get secrets --all-namespaces | grep nginx-test-internal-tls
 kubectl get certificates --all-namespaces | grep nginx-test-internal-tls
 
 PROJECTS=($(kubectl get namespaces | awk '{print $1}' | tr '\n' ' '))
-#PROJECTS=(argocd monitoring devops devops-dev)
+#PROJECTS=(devops-dev devops-prod)
 for item in "${PROJECTS[@]}"; do
   if [[ "${item}" != "NAME" ]]; then
-    echo "====================="
-    echo ${item}
+    echo "===================== ${item}"
 #    echo bash /vagrant/tz-local/resource/ingress_nginx/internal/update.sh ${item} ${eks_project} ${eks_domain}
     bash /vagrant/tz-local/resource/ingress_nginx/internal/update.sh ${item} ${eks_project} ${eks_domain}
   fi
@@ -147,6 +146,7 @@ kubectl cert-manager renew ingress-vault-tls -n vault
 exit 0
 
 PROJECTS=($(kubectl get namespaces | awk '{print $1}' | tr '\n' ' '))
+#PROJECTS=(devops-dev devops-prod)
 for item in "${PROJECTS[@]}"; do
   if [[ "${item}" != "NAME" ]]; then
     echo "====================="
@@ -169,5 +169,3 @@ kubectl get certificates --all-namespaces
 
 kubectl delete certificates ingress-consul-tls -n consul
 kubectl delete certificaterequest ingress-consul-tls-4229033796 -n consul
-
-

@@ -9,7 +9,7 @@ metadata:
     meta.helm.sh/release-namespace: kube-system
   labels:
     app.kubernetes.io/instance: cluster-autoscaler
-  name: cluster-autoscaler-aws-cluster-autoscaler-chart
+  name: cluster-autoscaler-aws-cluster-autoscaler
   namespace: kube-system
 spec:
   replicas: 1
@@ -44,7 +44,7 @@ spec:
         env:
         - name: AWS_REGION
           value: aws_region
-        image: us.gcr.io/k8s-artifacts-prod/autoscaling/cluster-autoscaler:v1.18.3
+        image: us.gcr.io/k8s-artifacts-prod/autoscaling/cluster-autoscaler:v1.21.1
         imagePullPolicy: IfNotPresent
         name: aws-cluster-autoscaler-chart
       serviceAccount: cluster-autoscaler-aws-cluster-autoscaler-chart

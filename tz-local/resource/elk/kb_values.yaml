@@ -18,13 +18,13 @@ extraEnvs:
 
 kibanaConfig:
   kibana.yml: |
-    elasticsearch.hosts: "https://elasticsearch-master.es.svc.cluster.local:9200"
+    elasticsearch.hosts: "https://elasticsearch-master.elk.svc.cluster.local:9200"
     elasticsearch.ssl.verificationMode: "none"
     elasticsearch.username: ${ELASTIC_USERNAME}
     elasticsearch.password: ${ELASTIC_PASSWORD}
     xpack.security.session.idleTimeout: 30m
     xpack.security.audit.enabled: true
-    enterpriseSearch.host: "https://elasticsearch-master.es.svc.cluster.local:3002"
+    enterpriseSearch.host: "https://elasticsearch-master.elk.svc.cluster.local:3002"
 
     xpack.encryptedSavedObjects.encryptionKey: aa577b2137923c4d5e7c94db27319f39
     xpack.reporting.encryptionKey: dc54b2346d58f62ac8f7df50bfe16979
@@ -128,9 +128,10 @@ service:
 #    - host: kibana.elk.eks_project.tzcorp.com
 #      paths:
 #      - path: /
-#        backend:
-#          serviceName: kibana-kibana
-#          servicePort: 5601
+#        defaultBackend:
+#          service:
+#            name: kibana-kibana
+#            port: 5601
 
 readinessProbe:
   failureThreshold: 3

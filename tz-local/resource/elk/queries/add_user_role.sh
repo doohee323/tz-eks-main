@@ -59,7 +59,7 @@ curl -XPUT -H "Content-Type: application/json" -u "elastic:${admin_password}" 'h
 }'
 
 curl -XPUT -H "Content-Type: application/json" -u "elastic:${admin_password}" 'https://es.tzcorp.com/_xpack/security/user/logstash_system/_password' -d '{
-  "password" : "Dlwpdldps!323"
+  "password" : "xxxx!323"
 }'
 
 curl -XPUT -H "Content-Type: application/json" -u "elastic:${admin_password}" 'https://es.tzcorp.com/_xpack/security/user/logstash_internal/_password' -d '{

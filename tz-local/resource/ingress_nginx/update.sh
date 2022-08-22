@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #https://box0830.tistory.com/311
-#bash /vagrant/tz-local/resource/ingress_nginx/update.sh extension-dev eks-main-t tztest.com
+#bash /vagrant/tz-local/resource/ingress_nginx/update.sh extension-dev eks-main tzcorp.com
 
 cd /vagrant/tz-local/resource/ingress_nginx
 
@@ -40,7 +40,7 @@ fi
 echo "DEVOPS_ELB: $DEVOPS_ELB"
 # Creates route 53 records based on DEVOPS_ELB
 CUR_ELB=$(aws route53 list-resource-record-sets --hosted-zone-id ${HOSTZONE_ID} --query "ResourceRecordSets[?Name == '\\052.${NS}.${eks_project}.${eks_domain}.']" | grep 'Value' | awk '{print $2}' | sed 's/"//g')
-echo "CUR_ELB: $CUR_ELB"
+echo "${NS}.${eks_project}.${eks_domain} CUR_ELB: $CUR_ELB"
 aws route53 change-resource-record-sets --hosted-zone-id ${HOSTZONE_ID} \
  --change-batch '{ "Comment": "'"${eks_project}"' utils", "Changes": [{"Action": "DELETE", "ResourceRecordSet": {"Name": "*.'"${NS}"'.'"${eks_project}"'.'"${eks_domain}"'", "Type": "CNAME", "TTL": 120, "ResourceRecords": [{"Value": "'"${CUR_ELB}"'"}]}}]}'
 aws route53 change-resource-record-sets --hosted-zone-id ${HOSTZONE_ID} \
@@ -64,8 +64,8 @@ k delete -f nginx-ingress.yaml_bak -n ${NS}
 k delete ingress $(k get ingress nginx-test-tls -n ${NS}) -n ${NS}
 k delete svc nginx -n ${NS}
 k apply -f nginx-ingress.yaml_bak -n ${NS}
+sleep 10
 curl -v http://test.${NS}.${eks_project}.${eks_domain}
-#sleep 30
 echo curl http://test.${NS}.${eks_project}.${eks_domain}
 k delete -f nginx-ingress.yaml_bak
 
@@ -79,10 +79,9 @@ k delete -f nginx-ingress-https.yaml_bak -n ${NS}
 k delete ingress nginx-test-tls -n ${NS}
 k apply -f nginx-ingress-https.yaml_bak -n ${NS}
 kubectl get csr -o name | xargs kubectl certificate approve
-k apply -f nginx-ingress-https.yaml_bak -n ${NS}
+sleep 10
 curl -v http://test.${NS}.${eks_project}.${eks_domain}
 curl -v https://test.${NS}.${eks_project}.${eks_domain}
-#sleep 10
 echo curl http://test.${NS}.${eks_project}.${eks_domain}
 echo curl https://test.${NS}.${eks_project}.${eks_domain}
 

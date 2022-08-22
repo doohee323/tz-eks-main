@@ -88,20 +88,10 @@ kubectl -n ${NS} describe prometheusrule sample-app-down
 #sum(rate(kube_pod_container_status_restarts_total{job="kube-state-metrics"}[15m])) by (namespace, pod)
 #count(kube_pod_status_phase{namespace="devops-dev", pod=~"tz-sample-app.*", phase="Failed"}) by (namespace) > 2
 
-exit 0
-
-kubectl -n ${NS} patch pvc prometheus-grafana -p '{"metadata":{"finalizers":null}}'
-kubectl -n ${NS} patch pv pvc-d4973d7f-c496-4edc-b8b5-ee69e5822490 -p '{"metadata":{"finalizers":null}}'
-kubectl -n ${NS} patch pod prometheus-grafana-6d558f87d9-w4ks2 -p '{"metadata":{"finalizers":null}}'
-
-kubectl -n ${NS} patch prometheus-prometheus-kube-prometheus-prometheus-db-prometheus-prometheus-kube-prometheus-prometheus-0 -p '{"metadata":{"finalizers":null}}'
-kubectl -n ${NS} patch pv pvc-93873cc3-9f07-4bc1-b4a0-559b6a427e83 -p '{"metadata":{"finalizers":null}}'
-kubectl -n ${NS} patch pod prometheus-prometheus-kube-prometheus-prometheus-0 -p '{"metadata":{"finalizers":null}}'
-
-kubectl run -it busybox --image=alpine:3.6 -n ${NS} --overrides='{ "spec": { "nodeSelector": { "team": "devops", "environment": "prod" } } }' -- sh
+kubectl run -it busybox --image=alpine:3.6 -n ${NS} --overrides='{ "spec": { "nodeSelector": { "team": "devops", "environment": "monitoring" } } }' -- sh
 #kubectl -n ${NS} exec -it busybox -- sh
 #nc -zv prometheus-kube-prometheus-alertmanager.monitoring.svc.cluster.local
-kubectl -n ${NS} exec -it busybox -- sh
+#kubectl -n ${NS} exec -it busybox -- sh
 apk update && apk add curl &&
 export IFS=";" &&
 ITEMS="CPUThrottlingHigh;Watchdog"
@@ -123,3 +113,14 @@ for item in $ITEMS; do
         }
   }'
 done
+
+exit 0
+
+kubectl -n ${NS} patch pvc prometheus-grafana -p '{"metadata":{"finalizers":null}}'
+kubectl -n ${NS} patch pv pvc-d4973d7f-c496-4edc-b8b5-ee69e5822490 -p '{"metadata":{"finalizers":null}}'
+kubectl -n ${NS} patch pod prometheus-grafana-6d558f87d9-w4ks2 -p '{"metadata":{"finalizers":null}}'
+
+kubectl -n ${NS} patch prometheus-prometheus-kube-prometheus-prometheus-db-prometheus-prometheus-kube-prometheus-prometheus-0 -p '{"metadata":{"finalizers":null}}'
+kubectl -n ${NS} patch pv pvc-93873cc3-9f07-4bc1-b4a0-559b6a427e83 -p '{"metadata":{"finalizers":null}}'
+kubectl -n ${NS} patch pod prometheus-prometheus-kube-prometheus-prometheus-0 -p '{"metadata":{"finalizers":null}}'
+

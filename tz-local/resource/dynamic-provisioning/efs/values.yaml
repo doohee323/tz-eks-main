@@ -3,7 +3,7 @@ efsProvisioner:
   awsRegion: "AWS_REGION"
   path: /efs-vol-root
 #  provisionerName: kubernetes.io/aws-efs
-  provisionerName: "example.com/aws-efs"
+  provisionerName: "efs-NS/aws-efs"
   storageClass:
     name: efs-NS
     reclaimPolicy: Retain

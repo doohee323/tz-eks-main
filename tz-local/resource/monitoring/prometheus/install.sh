@@ -31,6 +31,9 @@ kubectl -n ${NS} get prometheusrules
 
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
+kubectl delete secret thanos-objstore-secret -n monitoring
+kubectl create secret generic thanos-objstore-secret --from-file=thanos-objstore.yml -n monitoring
+
 #helm install tz-blackbox-exporter prometheus-community/prometheus-blackbox-exporter -n ${NS}
 cp prometheus-values.yaml prometheus-values.yaml_bak
 sed -i "s/eks_project/${eks_project}/g" prometheus-values.yaml_bak
@@ -39,6 +42,8 @@ sed -i "s/admin_password/${admin_password}/g" prometheus-values.yaml_bak
 helm upgrade --debug --reuse-values --install prometheus prometheus-community/kube-prometheus-stack \
     -n ${NS} -f prometheus-values.yaml_bak \
     --version ${STACK_VERSION}
+
+kubectl label ns monitoring name=devops-thanos
 
 #alertmanager=$(kubectl -n ${NS} get secrets alertmanager-prometheus-kube-prometheus-alertmanager-generated -o yaml | grep alertmanager.yaml | awk '{print $2}')
 #echo $alertmanager | base64 -d > alertmanager.values.yaml

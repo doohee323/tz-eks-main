@@ -4,7 +4,7 @@
 shopt -s expand_aliases
 alias k='kubectl --kubeconfig ~/.kube/config'
 
-cd /vagrant/tz-local/resource/redis
+cd /vagrant/tz-local/resource/postgresql
 
 NS=devops
 
@@ -17,7 +17,9 @@ helm uninstall postgresql-cluster -n ${NS}
 #READ_DB_USER_DEVELOPMENT=chharam_dev
 
 helm uninstall postgresql-cluster -n ${NS}
-helm upgrade --install --reuse-values postgresql-cluster -f values.yaml bitnami/postgresql -n ${NS}
+helm upgrade --install postgresql-cluster -f values.yaml bitnami/postgresql -n ${NS}
+
+sleep 30
 
 export PSQL_PASSWORD=$(kubectl get secret -n ${NS} postgresql-cluster -o jsonpath="{.data.postgresql-password}" | base64 --decode)
 echo "PSQL_PASSWORD: $PSQL_PASSWORD"
@@ -26,10 +28,14 @@ kubectl run postgresql-cluster-client --rm --tty -i --restart='Never' -n ${NS} \
   --env="PGPASSWORD=$POSTGRES_PASSWORD" \
   --command -- psql --host postgresql-cluster -U postgres -d postgres -p 5432
 
-sleep 240
+#k patch StatefulSet/postgresql-cluster-postgresql -p '{"spec": {"template": {"spec": {"nodeSelector": {"team": "devops", "environment": "prod"}}}}}' -n ${NS}
+
+sleep 200
 
 #kubectl run -it busybox --image=alpine:3.6 -n devops --overrides='{ "spec": { "nodeSelector": { "team": "devops", "environment": "prod" } } }' -- sh
 #nc -zv postgresql-cluster.devops.svc.cluster.local 5432
+
+exit 0
 
 PSQL_HOST=$(kubectl get svc postgresql-cluster -n ${NS} | tail -n 1 | awk '{print $4}')
 echo "PSQL_HOST: ${PSQL_HOST}"
@@ -39,7 +45,6 @@ PSQL_PORT=5432
 psql -h ${PSQL_HOST} -p ${PSQL_PORT} -d postgres -U postgres --password
 #telnet ${PSQL_HOST} ${PSQL_PORT}
 
-exit 0
 
 CREATE DATABASE flanet;
 CREATE USER chharam_dev WITH PASSWORD '1234qwer';

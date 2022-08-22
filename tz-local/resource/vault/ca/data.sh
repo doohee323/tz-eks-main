@@ -23,10 +23,10 @@ vault_token=$(prop 'project' 'vault')
 #export VAULT_TOKEN=${vault_token}
 NS=vault
 
-export VAULT_ADDR="https://vault.default.${eks_project}.${eks_domain}"
+export VAULT_ADDR="http://vault.default.${eks_project}.${eks_domain}"
 echo "VAULT_ADDR: ${VAULT_ADDR}"
 vault login ${vault_token}
-#export VAULT_ADDR=https://vault.default.eks-main-t.tztest.com
+#export VAULT_ADDR=http://vault.default.${eks_project}.${eks_domain}
 #vault login s.1pVzz8zXNCfdjegj0cfrkdDT
 
 

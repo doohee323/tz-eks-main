@@ -1,61 +1,83 @@
 #!/usr/bin/env bash
 
+#bash /vagrant/tz-local/resource/nexus/helm/install.sh
+cd /vagrant/tz-local/resource/nexus/helm
+
 function prop {
 	grep "${2}" "/home/vagrant/.aws/${1}" | head -n 1 | cut -d '=' -f2 | sed 's/ //g'
 }
 eks_domain=$(prop 'project' 'domain')
 eks_project=$(prop 'project' 'project')
+AWS_REGION=$(prop 'config' 'region')
+admin_password=$(prop 'project' 'admin_password')
+NS=devops
 
-#cd /vagrant/tz-local/resource/nexus
 helm repo add oteemocharts https://oteemo.github.io/charts
 helm search repo oteemocharts/sonatype-nexus
 helm repo update
-helm install tz oteemocharts/sonatype-nexus -f /vagrant/tz-local/resource/nexus/helm/values.yaml -n sonatype-nexus
-#helm install tz oteemocharts/sonatype-nexus -f values.yaml -n sonatype-nexus
-#helm delete tz -n sonatype-nexus
+helm delete sonatype-nexus -n ${NS}
+
+admin_password=admin323
+cp values.yaml values.yaml_bak
+sed -i "s/admin_password/${admin_password}/g" values.yaml_bak
+
+CM_ARN=$(aws acm list-certificates --query CertificateSummaryList[].[CertificateArn,DomainName] \
+  --certificate-statuses ISSUED --output text | grep "*.${eks_domain}" | cut -f1 | head -n 1)
+echo "CM_ARN: $CM_ARN"
+sed -i "s|CM_ARN|${CM_ARN}|g" values.yaml_bak
+
+sed -i "s/eks_project/${eks_project}/g" values.yaml_bak
+sed -i "s/eks_domain/${eks_domain}/g" values.yaml_bak
+sed -i "s/AWS_REGION/${AWS_REGION}/g" values.yaml_bak
+
+helm upgrade --debug --install --reuse-values sonatype-nexus -n ${NS} \
+  oteemocharts/sonatype-nexus -f values.yaml_bak  --values="values.yaml_bak"
+
+#k patch deployment/sonatype-nexus -n ${NS} \
+# --type json -p='[{"op": "replace", "path": "/spec/template/spec/containers/1/env/4", "value": {"name": "NEXUS_DOCKER_HOST", "value": "*" } }]'
+#k patch deployment/sonatype-nexus -n ${NS} \
+# --type json -p='[{"op": "replace", "path": "/spec/template/spec/containers/1/env/5", "value": {"name": "NEXUS_HTTP_HOST", "value": "*" } }]'
+
+cp -Rf ingress-nexus.yaml ingress-nexus.yaml_bak
+sed -i "s/eks_project/${eks_project}/g" ingress-nexus.yaml_bak
+sed -i "s/eks_domain/${eks_domain}/g" ingress-nexus.yaml_bak
+sed -i "s/AWS_REGION/${AWS_REGION}/g" ingress-nexus.yaml_bak
+k delete -f ingress-nexus.yaml_bak -n ${NS}
+k apply -f ingress-nexus.yaml_bak -n ${NS}
 
 helm list --all-namespaces -a
-#helm upgrade tz oteemocharts/sonatype-nexus -f /vagrant/tz-local/resource/nexus/helm/values.yaml -n sonatype-nexus --wait
 
-# after delete service and create with fixed service.yaml
-k delete -f /vagrant/tz-local/resource/nexus/helm/service.yaml
-k apply -f /vagrant/tz-local/resource/nexus/helm/service.yaml
-#k delete -f service.yaml
-#k apply -f service.yaml
+#kubectl run -it busybox --image=alpine:3.6 -n ${NS} --overrides='{ "spec": { "nodeSelector": { "team": "devops", "environment": "prod" } } }' -- sh
+#nc -zv sonatype-nexus.devops.svc.cluster.local 8080
 
-#k patch tz-deployment.apps/sonatype-nexus -n sonatype-nexus \
-# --type json -p='[{"op": "replace", "path": "/spec/template/spec/containers/1/env/4", "value": {"name": "NEXUS_DOCKER_HOST" } }]'
-#
-#k patch tz-deployment.apps/sonatype-nexus -n sonatype-nexus \
-# --type json -p='[{"op": "replace", "path": "/spec/template/spec/containers/1/env/4", "value": {"name": "NEXUS_DOCKER_HOST", "value": "docker.'${eks_project}'.'${eks_domain}'" } }]'
-#
-k patch tz-deployment.apps/sonatype-nexus -n sonatype-nexus \
- --type json -p='[{"op": "replace", "path": "/spec/template/spec/containers/1/env/5", "value": {"name": "NEXUS_HTTP_HOST" } }]'
+#kubectl -n ${NS} edit svc/sonatype-nexus
+#spec:
+#  ports:
+#    - name: sonatype-nexus
+#      protocol: TCP
+#      port: 8080
+#      targetPort: 8080
+#      nodePort: 32647
+#    - name: sonatype-docker
+#      protocol: TCP
+#      port: 5003
+#      targetPort: 5003
+#      nodePort: 32648
 
-k patch tz-deployment.apps/sonatype-nexus -n sonatype-nexus \
- --type json -p='[{"op": "replace", "path": "/spec/template/spec/containers/1/env/5", "value": {"name": "NEXUS_HTTP_HOST", "value": "*" } }]'
+DOCKER_ELB=docker.default.${eks_project}.${eks_domain}
 
-k delete service/sonatype-nexus -n sonatype-nexus
-
-k expose tz-deployment.apps/sonatype-nexus -n sonatype-nexus --type="LoadBalancer" --port=8080 --targetPort=8081
-
-k expose tz-deployment.apps/sonatype-nexus -n sonatype-nexus --name=sonatype-nexus-docker --type="LoadBalancer" --port=5003
-
-k patch tz-deployment.apps/sonatype-nexus -n sonatype-nexus \
- --type json -p='[{"op": "replace", "path": "/spec/template/spec/containers/1/env/8", "value": {"name": "UPSTREAM_HTTP_PORT", "value": "8080" } }]'
-
- cho '
+echo "
 ##[ Nexus ]##########################################################
-- url: http://dooheehong323:30661/
+- url: http://nexus.default.${eks_project}.${eks_domain}/
 - admin / admin123
 
-http://192.168.1.10:8081/#admin/repository/blobstores
+http://nexus.default.${eks_project}.${eks_domain}/#admin/repository/blobstores
 
 Create blob store
   docker-hosted
   docker-hub
 
-http://192.168.1.10:8081/#admin/repository/repositories
+http://nexus.default.${eks_project}.${eks_domain}/#admin/repository/repositories
   Repositories > Select Recipe > Create repository: docker (hosted)
   name: docker-hosted
   http: 5003
@@ -69,17 +91,21 @@ Repositories > Select Recipe > Create repository: docker (proxy)
   select Use Docker Hub
   Blob store: docker-hub
 
-http://192.168.1.10:8081/#admin/security/realms
-  add "Docker Bearer Token Realm" Active
+http://nexus.default.${eks_project}.${eks_domain}/#admin/security/realms
+  add Docker Bearer Token Realm Active
 
-docker login dooheehong323_docker.com
+http://nexus.default.${eks_project}.${eks_domain}/#admin/security/sslcertificates
+  load certificate from server
+  docker.default.eks-main.tzcorp.com
+
+docker login -u admin -p admin123 ${DOCKER_ELB}
 docker pull busybox
 RMI=`docker images -a | grep busybox | awk '{print $3}'`
-docker tag $RMI dooheehong323_docker.com/busybox:v20201225
-docker push dooheehong323_docker.com/busybox:v20201225
+docker tag $RMI docker.${eks_project}.${eks_domain}/busybox:v20201225
+docker push docker.${eks_project}.${eks_domain}/busybox:v20201225
 
-http://192.168.1.10:8081/#browse/browse:docker-hosted
+http://nexus.default.${eks_project}.${eks_domain}/#browse/browse:docker-hosted
 
 #######################################################################
-' >> /vagrant/info
+" >> /vagrant/info
 cat /vagrant/info

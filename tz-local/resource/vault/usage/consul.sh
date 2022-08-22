@@ -14,7 +14,7 @@ vault -autocomplete-install
 complete -C /usr/local/bin/vault vault
 vault -h
 
-export VAULT_ADDR=https://vault.default.${eks_project}.${eks_domain}
+export VAULT_ADDR=http://vault.default.${eks_project}.${eks_domain}
 vault login ${vault_token}
 
 export CONSUL_HTTP_ADDR="localhost:8500"

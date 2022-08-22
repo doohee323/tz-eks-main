@@ -43,6 +43,16 @@ resource "aws_eks_node_group" "workers" {
     }
   }
 
+  dynamic "taint" {
+    for_each = lookup(each.value, "taints", [])
+
+    content {
+      key    = taint.value["key"]
+      value  = taint.value["value"]
+      effect = taint.value["effect"]
+    }
+  }
+
   version = lookup(each.value, "version", null)
 
   labels = merge(

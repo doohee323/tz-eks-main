@@ -1,0 +1,134 @@
+global:
+  name: consul
+  domain: consul
+  enabled: true
+  datacenter: tz-dc
+  gossipEncryption:
+    secretName: "consul-gossip-encryption-key"
+    secretKey: "key"
+  tls:
+    enabled: true
+    enableAutoEncrypt: true
+    verify: true
+    serverAdditionalDNSSANs:
+    - 'consul.service.consul'
+    - 'consul-dns.svc.cluster.local'
+    - 'server.tz-dc.consul'
+    - 'consul-server.consul.svc'
+    - 'consul-server-0.consul-server.consul.svc'
+    - 'consul-server.consul.svc.cluster.local'
+    caCert:
+      secretName: "consul-ca-cert"
+      secretKey: "tls.crt"
+    caKey:
+      secretName: "consul-ca-key"
+      secretKey: "tls.key"
+  acls:
+    manageSystemACLs: true
+  metrics:
+    enabled: true
+    enableAgentMetrics: true
+    agentMetricsRetentionTime: '1m'
+  scrape_interval:  5s
+  scrape_timeout: 3s
+
+server:
+  replicas: 1
+  bootstrapExpect: 1
+  securityContext:
+    runAsNonRoot: false
+    runAsUser: 0
+  storageClass: gp2
+  storage: 50Gi
+  disruptionBudget:
+    enabled: true
+    maxUnavailable: 0
+  service:
+    enabled: true
+  resources:
+    requests:
+      memory: "400Mi"
+      cpu: "400m"
+    limits:
+      memory: "3Gi"
+      cpu: "2"
+  nodeSelector: |
+    team: devops
+    environment: consul
+  imagePullSecrets:
+    - name: "tz-registrykey"
+  extraConfig: |
+    {
+      "enable_central_service_config": false,
+      "telemetry": {
+        "prometheus_retention_time": "30s"
+      },
+      "ui_config": {
+        "enabled": true,
+        "metrics_provider": "prometheus",
+        "metrics_proxy": {
+          "base_url": "http://prometheus-server.monitor.svc.cluster.local"
+        }
+      }
+    }
+  persistentVolume:
+    enabled: false
+
+alertmanager:
+  enabled: false
+
+ui:
+  enabled: true
+  service:
+    enabled: true
+    type: 'LoadBalancer'
+
+connectInject:
+  enabled: true
+  default: false
+  logLevel: debug
+  metrics:
+    defaultEnableMerging: false
+#  centralConfig:
+#    enabled: false
+  transparentProxy:
+    defaultEnabled: true
+
+# Enable CRD Controller
+controller:
+  enabled: true
+#  enabled: "-"
+
+prometheus:
+  enabled: false
+
+client:
+  enabled: true
+  exposeGossipPorts: true
+#  resources:
+#    requests:
+#      memory: '8Gi'
+#      cpu: '2'
+#      disk: '15Gi'
+#    limits:
+#      memory: '8Gi'
+#      cpu: '2'
+#      disk: '15Gi'
+  extraConfig: |
+    {"enable_central_service_config": false}
+
+dns:
+  enabled: true
+  type: ClusterIP
+  clusterIP: 172.20.39.237
+
+syncCatalog:
+  enabled: true
+
+#ingressGateways:
+#  enabled: true
+#  gateways:
+#    - name: ingress-gateway
+#      service:
+#        type: LoadBalancer
+#

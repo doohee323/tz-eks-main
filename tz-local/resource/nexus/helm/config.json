@@ -1,0 +1,8 @@
+{
+  "auths": {
+      "http://docker.eks-main.tzcorp.com/v1/": {
+          "auth": "admin",
+          "email": "doohee323@gmail.com"
+      }
+  }
+}

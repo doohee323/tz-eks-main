@@ -1,0 +1,83 @@
+objstoreConfig: |-
+  type: s3
+  config:
+    bucket: devops-thanos-eks-main
+    endpoint: s3.ap-northeast-2.amazonaws.com
+    access_key: AKIAXDB35QWUAYBLDNSP
+    secret_key: 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
+    insecure: true
+
+query:
+  enabled: true
+  dnsDiscovery:
+    sidecarsService: my-release-thanos-query-grpc
+    sidecarsNamespace: monitoring
+  ingress:
+    enabled: true
+    hostname: query.default.eks-main.tzcorp.com
+    ingressClassName: "nginx"
+  nodeSelector:
+    team: devops
+    environment: monitoring
+
+#<image-entrypoint> query --http-address=0.0.0.0:9090 --log.format=json --log.level=debug
+#  --query.lookback-delta=15m --store=thanos-store.my-namespace.svc.cluster.local:10901 --store=prometheus.my-namespace.svc.cluster.local:10901
+#    stores:
+#      - "my-release-thanos-query-grpc.monitoring.svc.cluster.local:10901"
+
+queryFrontend:
+  enabled: true
+  nodeSelector:
+    team: devops
+    environment: monitoring
+
+bucketweb:
+  enabled: true
+  refresh: "10m"
+  ingress:
+    enabled: true
+    hostname: thanos.default.eks-main.tzcorp.com
+    ingressClassName: "nginx"
+  nodeSelector:
+    team: devops
+    environment: monitoring
+
+compactor:
+  enabled: true
+  persistence:
+    size: "10Gi"
+    existingClaim: ""
+  nodeSelector:
+    team: devops
+    environment: monitoring
+
+storegateway:
+  enabled: true
+  persistence:
+    size: "10Gi"
+    existingClaim: ""
+  nodeSelector:
+    team: devops
+    environment: monitoring
+
+receive:
+  enabled: false
+
+ruler:
+  enabled: false
+  alertmanagers:
+    - http://kube-prometheus-alertmanager.monitoring.svc.cluster.local:9093
+  config: |-
+    groups:
+      - name: "metamonitoring"
+        rules:
+          - alert: "PrometheusDown"
+            expr: absent(up{prometheus="monitoring/kube-prometheus"})
+    persistence:
+        enabled: true
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    namespace: "monitoring"
+

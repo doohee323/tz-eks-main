@@ -1,5 +1,7 @@
 #https://github.com/kubernetes-sigs/aws-load-balancer-controller/blob/main/docs/deploy/installation.md
+#https://github.com/GSA/terraform-kubernetes-aws-load-balancer-controller/blob/main/main.tf
 
+#bash /vagrant/tz-local/resource/elb-controller/install.sh
 cd /vagrant/tz-local/resource/elb-controller
 
 function prop {
@@ -9,21 +11,22 @@ AWS_REGION=$(prop 'config' 'region')
 eks_domain=$(prop 'project' 'domain')
 eks_project=$(prop 'project' 'project')
 aws_account_id=$(aws sts get-caller-identity --query Account --output text)
+NS=default
 
-#Create IAM OIDC provider
-eksctl utils associate-iam-oidc-provider \
-    --region ${AWS_REGION} \
-    --cluster ${eks_project} \
-    --approve
+##Create IAM OIDC provider
+#eksctl utils associate-iam-oidc-provider \
+#    --region ${AWS_REGION} \
+#    --cluster ${eks_project} \
+#    --approve
 
-curl -o iam-policy.json https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json
+curl -o iam_policy.json https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json
 
 policy_name=AWSLoadBalancerControllerIAMPolicy-${eks_project}
 policy_arn=$(aws iam list-policies | grep ${policy_name} | grep Arn | head -n 1 | awk '{print $2}' | sed "s/\"//g;s/,//g")
 aws iam delete-policy --policy-arn ${policy_arn}
 aws iam create-policy \
   --policy-name ${policy_name} \
-  --policy-document file://iam-policy.json
+  --policy-document file://iam_policy.json
 
 eksctl delete iamserviceaccount \
   --cluster ${eks_project} \
@@ -41,12 +44,14 @@ eksctl create iamserviceaccount \
 #!!!note "Use Fargate" If you want to run it in Fargate, use Helm that does not depend on cert-manager.
 helm repo add eks https://aws.github.io/eks-charts
 helm repo update
+kubectl delete -k "github.com/aws/eks-charts/stable/aws-load-balancer-controller//crds?ref=master"
 kubectl apply -k "github.com/aws/eks-charts/stable/aws-load-balancer-controller//crds?ref=master"
 helm uninstall aws-load-balancer-controller -n kube-system
-helm upgrade --install --reuse-values aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system \
+helm upgrade --debug --install --reuse-values aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system \
   --set clusterName=${eks_project} \
   --set serviceAccount.create=false \
-  --set serviceAccount.name=aws-load-balancer-controller-${eks_project}
+  --set serviceAccount.name=aws-load-balancer-controller-${eks_project} \
+  --version "1.2.6"
 
 exit 0
 
@@ -77,6 +82,9 @@ sed -i "s|AWS_REGION|${AWS_REGION}|g" test2.yaml_bak
 sed -i "s|CM_ARN|${CM_ARN}|g" test2.yaml_bak
 sed -i "s|aws_account_id|${aws_account_id}|g" test2.yaml_bak
 
+kubectl patch ingress ingress-external-test -n default -p '{"metadata":{"finalizers":[]}}' --type=merge
+kubectl patch ingress ingress-internal-test -n default -p '{"metadata":{"finalizers":[]}}' --type=merge
+
 kubectl delete -f test2.yaml_bak
 kubectl delete -f test.yaml
 
@@ -86,7 +94,7 @@ kubectl apply -f test2.yaml_bak
 sleep 60
 
 kubectl get ingress
-kubectl get svc | grep ingress-external
+kubectl get svc | grep ingress-test
 
 echo "curl http://test1.${eks_domain}"
 curl -v http://test1.${eks_domain}

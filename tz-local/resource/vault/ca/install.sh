@@ -25,10 +25,10 @@ vault_token=$(prop 'project' 'vault')
 #export VAULT_TOKEN=${vault_token}
 NS=vault
 
-export VAULT_ADDR="https://vault.default.${eks_project}.${eks_domain}"
+export VAULT_ADDR="http://vault.default.${eks_project}.${eks_domain}"
 echo "VAULT_ADDR: ${VAULT_ADDR}"
 vault login ${vault_token}
-#export VAULT_ADDR=https://vault.default.${eks_project}.${eks_domain}
+#export VAULT_ADDR=http://vault.default.${eks_project}.${eks_domain}
 #vault login s.1pVzz8zXNCfdjegj0cfrkdDT
 
 vault secrets enable -path=ssh-client-signer ssh
@@ -77,17 +77,15 @@ vault write ssh-client-signer/roles/one_minute -<<"EOH"
 }
 EOH
 
-bash /vagrant/tz-local/resource/vault/ca/data.sh
-
 vault policy write require-ssh-sign sign-policy.tf
-export server_token=$(vault token create -policy=ssh-pubkey-read | grep token | head -n 1 | awk '{print $2}')
+export server_token_one_minute=$(vault token create -policy=ssh-pubkey-read | grep token | head -n 1 | awk '{print $2}')
 vault policy write ssh-pubkey-read policy.tf
-export client_token=$(vault token create -policy=require-ssh-sign | grep token | head -n 1 | awk '{print $2}')
+export client_token_one_minute=$(vault token create -policy=require-ssh-sign | grep token | head -n 1 | awk '{print $2}')
 
-echo "server_token: ${server_token}"
-echo "client_token: ${client_token}"
-#server_token: s.xxxxxxxxx
-#client_token: s.zzzzzzzzz
+echo "server_token_one_minute: ${server_token_one_minute}"
+echo "client_token_one_minute: ${client_token_one_minute}"
+#server_token_one_minute: s.edJUhZJRHKFZ6E1O060x4CS1
+#client_token_one_minute: s.88AG0NO4o0aVKLMEkl7inVe0
 
 ########################################################
 # On ssh server in docker
@@ -111,8 +109,8 @@ docker run -d -it --name ssh-client2 -h ssh-client2 --net ssh alicek106/vault-ss
 #a10f41646680   alicek106/vault-ssh-test:latest   "/bin/bash"   6 minutes ago   Up 6 minutes             ssh-client
 
 docker exec -it ssh-server sh
-export VAULT_ADDR=https://vault.default.${eks_project}.${eks_domain}
-export VAULT_TOKEN=s.xxxxxxxxx   # server_token_one_minute
+export VAULT_ADDR=http://vault.default.${eks_project}.${eks_domain}
+export VAULT_TOKEN=s.zzzzzzzzz   # server_token_one_minute
 /vault read -field=public_key ssh-client-signer/config/ca > /etc/ssh/trusted-user-ca-keys.pem
 echo 'TrustedUserCAKeys /etc/ssh/trusted-user-ca-keys.pem' | tee -a /etc/ssh/sshd_config
 service ssh restart
@@ -121,7 +119,7 @@ service ssh restart
 # On ssh client in docker
 ########################################################
 docker exec -it ssh-client sh
-export VAULT_ADDR=https://vault.default.${eks_project}.${eks_domain}
+export VAULT_ADDR=http://vault.default.${eks_project}.${eks_domain}
 export VAULT_TOKEN=s.zzzzzzzzz    # client_token_one_minute
 ssh-keygen
 # Ask Vault to sign your public key
@@ -129,6 +127,7 @@ ssh-keygen
   public_key=@/root/.ssh/id_rsa.pub
 
 # Save the resulting signed, public key to disk
+mkdir -p /root/.ssh
 /vault write -field=signed_key ssh-client-signer/sign/one_minute \
   public_key=@/root/.ssh/id_rsa.pub > /root/.ssh/id_rsa-cert.pub
 
@@ -140,7 +139,7 @@ ssh ssh-server
 
 ssh -i /vagrant/terraform-aws-ec2/workspace/base/devops-utils ubuntu@52.78.63.52
 sudo su
-export VAULT_ADDR=https://vault.default.${eks_project}.${eks_domain}
+export VAULT_ADDR=http://vault.default.${eks_project}.${eks_domain}
 export VAULT_TOKEN=s.xxxxxxxxx   # server_token_one_minute
 vault read -field=public_key ssh-client-signer/config/ca > /etc/ssh/trusted-user-ca-keys.pem
 echo 'TrustedUserCAKeys /etc/ssh/trusted-user-ca-keys.pem' | tee -a /etc/ssh/sshd_config
@@ -149,12 +148,13 @@ service ssh restart
 ########################################################
 # On ssh client in vagrant
 ########################################################
-export VAULT_ADDR=https://vault.default.${eks_project}.${eks_domain}
-export VAULT_TOKEN=s.zzzzzzzzz    # client_token_my_role
 ssh-keygen
+export VAULT_ADDR=http://vault.default.${eks_project}.${eks_domain}
+export VAULT_TOKEN=s.zzzzzzzzz    # client_token_my_role
 vault write ssh-client-signer/sign/one_minute \
   public_key=@/root/.ssh/id_rsa.pub
 
+mkdir -p /root/.ssh
 vault write -field=signed_key ssh-client-signer/sign/one_minute \
   public_key=@/root/.ssh/id_rsa.pub > /root/.ssh/id_rsa-cert.pub
 
@@ -167,9 +167,9 @@ kubectl -n default run -it ssh-client --image=linuxserver/openssh-server -- sh
 #kubectl -n default exec -it ssh-client -- sh
 apk update && apk add --no-cache vault libcap
 setcap cap_ipc_lock= /usr/sbin/vault
-export VAULT_ADDR=https://vault.default.${eks_project}.${eks_domain}
-export VAULT_TOKEN=s.zzzzzzzzz    # client_token_one_minute
 ssh-keygen
+export VAULT_ADDR=http://vault.default.${eks_project}.${eks_domain}
+export VAULT_TOKEN=s.zzzzzzzzz    # client_token_one_minute
 vault write ssh-client-signer/sign/one_minute \
   public_key=@/root/.ssh/id_rsa.pub
 

@@ -12,7 +12,7 @@ spec:
       labels:
         org: tz
         team: mobile
-        project: demo
+        project: devops
         environment: prod
         app: tz-py-crawler
     spec:

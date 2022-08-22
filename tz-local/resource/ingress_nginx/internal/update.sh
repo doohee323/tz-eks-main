@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #https://box0830.tistory.com/311
-#bash /vagrant/tz-local/resource/ingress_nginx/internal/update.sh extension-dev eks-main-t tztest.com
+#bash /vagrant/tz-local/resource/ingress_nginx/internal/update.sh extension-dev eks-main-w tzcorp.com
 
 cd /vagrant/tz-local/resource/ingress_nginx/internal
 

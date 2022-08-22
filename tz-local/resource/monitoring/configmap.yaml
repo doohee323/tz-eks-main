@@ -18,10 +18,10 @@ data:
     [smtp]
     enabled = true
     host = smtp.gmail.com:587
-    user = devops@tz.gg
+    user = devops@tz.com
     password = admin_password
     skip_verify = true
-    from_address = devops@tz.gg
+    from_address = devops@tz.com
     from_name = Grafana (eks_project)
     ehlo_identity = grafana.default.eks_project.eks_domain
     [server]

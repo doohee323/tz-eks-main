@@ -13,7 +13,7 @@ eks_project=$(prop 'project' 'project')
 eks_domain=$(prop 'project' 'domain')
 vault_token=$(prop 'project' 'vault')
 
-export VAULT_ADDR=https://vault.default.${eks_project}.${eks_domain}
+export VAULT_ADDR=http://vault.default.${eks_project}.${eks_domain}
 echo ${VAULT_ADDR}
 vault login ${vault_token}
 
@@ -51,6 +51,9 @@ for item in "${PROJECTS[@]}"; do
     if [[ -f /vagrant/tz-local/resource/vault/data/${project}.hcl ]]; then
       echo ${item} : ${item/*-dev/}
       echo project: ${project}
+      echo role: auth/kubernetes/role/${project}
+      echo policy: tz-vault-${project}
+      echo svcaccount: ${item}-svcaccount
       vault policy write tz-vault-${project} /vagrant/tz-local/resource/vault/data/${project}.hcl
       vault write auth/kubernetes/role/${project} \
               bound_service_account_names=${item}-svcaccount \
@@ -70,6 +73,12 @@ vault secrets list -detailed
 #vault write auth/userpass/users/adminuser password=adminuser policies=tz-vault-devops-dev,tz-vault-devops-prod,tz-vault-userpass
 #vault write auth/userpass/users/doohee.hong password=doohee.hong policies=tz-vault-devops-dev,tz-vault-devops-prod,tz-vault-userpass
 #vault write auth/userpass/users/doogee.hong password=doogee.hong policies=tz-vault-devops-dev,tz-vault-userpass
+#vault write auth/userpass/users/jeonghee.kang password=jeonghee.kang policies=tz-vault-devops-dev,tz-vault-devops-prod,tz-vault-userpass
+#vault write auth/userpass/users/ec.song password=ec.song policies=read-role,tz-vault-datateam-dev,tz-vault-datateam-prod,tz-vault-userpass
+#vault write auth/userpass/users/sh.han password=sh.han policies=tz-vault-gocre-dev,tz-vault-gocre-prod,tz-vault-userpass
+#vault write auth/userpass/users/spex password=spex policies=tz-vault-gocre-dev,tz-vault-gocre-prod,tz-vault-userpass
+#vault write auth/userpass/users/sm.ku password=sm.ku policies=tz-vault-datateam-dev,tz-vault-datateam-prod,tz-vault-userpass
+#vault write auth/userpass/users/hj.jeon password=hj.jeon policies=tz-vault-datateam-dev,tz-vault-datateam-prod,tz-vault-userpass
 
 #vault policy write tz-vault-datateam-dev /vagrant/tz-local/resource/vault/data/datateam-dev.hcl
 
@@ -93,11 +102,36 @@ exit 0
 
 brew tap hashicorp/tap
 brew install hashicorp/tap/vault
-export VAULT_ADDR=https://vault.default.${eks_project}.${eks_domain}
+export VAULT_ADDR=http://vault.default.${eks_project}.${eks_domain}
 vault login -method=userpass username=jeonghee.kang
 vault write auth/userpass/users/jeonghee.kang password=XXXXX
 vault kv put secret/devops/database type=mysql name=testdb host=localhost port=2222 passwod=1111 ttl='30s'
 vault kv get secret/devops/database
+
+
+
+export new_token=$(vault token create -policy=tz-vault-devops-prod | grep token | head -n 1 | awk '{print $2}')
+export new_token=s.pMoZ0JmzSd2K4espkjVqF4mF
+export VAULT_ADDR=https://vault.default.eks-main.tzcorp.com
+
+vault kv put secret/devops-prod/dbinfo passwod=22222 name=local.tzcorp.com
+vault kv get secret/devops-prod/dbinfo
+vault kv get -field=passwod secret/devops-prod/dbinfo
+
+vault token create -policy=tz-vault-devops-prod -display-name=devops-prod
+vault token create -policy=tz-vault-devops-prod -display-name=devops-prod2
+vault token lookup s.c18WG47cH8APgPHSYyzwbZN1
+vault token create -policy=tz-vault-devops-prod -display-name=devops-prod2 -period=768h
+vault token lookup s.M2wXy9ntL1pjHdkvVipb9nLB
+
+vault list auth/token/accessors
+vault token revoke s.PnKJ81rRniGZRTb8nGBN8MR4
+vault token lookup s.PnKJ81rRniGZRTb8nGBN8MR4
+vault token lookup -accessor oSvjusacB5mFueA89bS7aJ2N
+vault token revoke -accessor 8Pzl4FACUmJMizlHNJi25AWF
+
+s.sZJ2S9Bt92iCLsOCm47MeGcy / oSvjusacB5mFueA89bS7aJ2N
+
 
 
 

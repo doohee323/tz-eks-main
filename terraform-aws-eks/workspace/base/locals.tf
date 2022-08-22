@@ -29,12 +29,32 @@ locals {
       username = "eks-main20210422235638613200000002"
       groups   = ["system:masters"]
     },
+    {
+      rolearn  = "arn:aws:iam::xxxxxxxxxxxxx:role/eks-main-k8sAdmin"
+      username = "doohee.hong"
+      groups   = ["system:masters"]
+    },
+    {
+      rolearn  = "arn:aws:iam::xxxxxxxxxxxxx:role/eks-main-k8sDev"
+      username = "developer"
+      groups   = ["system:basic-user"]
+    },
+    {
+      rolearn  = "arn:aws:iam::xxxxxxxxxxxxx:role/eks-main-k8sDev"
+      username = "doogee.hong"
+      groups   = ["system:basic-user"]
+    }
   ]
 
   map_users = [
     {
       userarn  = "arn:aws:iam::xxxxxxxxxxxxx:user/devops"
       username = "devops"
+      groups   = ["system:masters"]
+    },
+    {
+      userarn  = "arn:aws:iam::xxxxxxxxxxxxx:user/adminuser"
+      username = "adminuser"
       groups   = ["system:masters"]
     },
     {

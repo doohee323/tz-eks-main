@@ -9,7 +9,7 @@ data:
 type: kubernetes.io/tls
 
 ---
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
@@ -22,9 +22,12 @@ spec:
       http:
         paths:
           - backend:
-              serviceName: vault-ui
-              servicePort: ui
+              service:
+                name: vault-ui
+                port:
+                  name: ui
             path: /
+            pathType: Prefix
   tls:
     - hosts:
       - "https-consul.localdev"

@@ -15,7 +15,7 @@ vault -autocomplete-install
 complete -C /usr/local/bin/vault vault
 vault -h
 
-export VAULT_ADDR=https://vault.default.${eks_project}.${eks_domain}
+export VAULT_ADDR=http://vault.default.${eks_project}.${eks_domain}
 vault login ${vault_token}
 
 vault kv list tz/vault
@@ -33,11 +33,11 @@ curl \
     --header "X-Vault-Token: ${vault_token}" \
     --request POST \
     --data @payload.json \
-    https://vault.default.${eks_project}.${eks_domain}/v1/secret/config
+    http://vault.default.${eks_project}.${eks_domain}/v1/secret/config
 
 curl \
     --header "X-Vault-Token: ${vault_token}" \
-    https://vault.default.${eks_project}.${eks_domain}/v1/secret/config
+    http://vault.default.${eks_project}.${eks_domain}/v1/secret/config
 
 echo '{
   "options": {
@@ -52,7 +52,7 @@ curl \
     --header "X-Vault-Token: ${vault_token}" \
     --request POST \
     --data @payload.json \
-    https://vault.default.${eks_project}.${eks_domain}/v1/secret/data/my-secret
+    http://vault.default.${eks_project}.${eks_domain}/v1/secret/data/my-secret
 
 echo '{
   "options": {
@@ -67,16 +67,16 @@ curl \
     --header "X-Vault-Token: ${vault_token}" \
     --request POST \
     --data @payload.json \
-    https://vault.default.${eks_project}.${eks_domain}/v1/secret/data/my-secret
+    http://vault.default.${eks_project}.${eks_domain}/v1/secret/data/my-secret
 
 curl \
     --header "X-Vault-Token: ${vault_token}" \
-    https://vault.default.${eks_project}.${eks_domain}/v1/secret/data/my-secret?version=1
+    http://vault.default.${eks_project}.${eks_domain}/v1/secret/data/my-secret?version=1
 
 curl \
     --header "X-Vault-Token: ${vault_token}" \
     --request DELETE \
-    https://vault.default.${eks_project}.${eks_domain}/v1/secret/data/my-secret
+    http://vault.default.${eks_project}.${eks_domain}/v1/secret/data/my-secret
 
 echo '{
   "versions": [2]
@@ -85,7 +85,7 @@ curl \
     --header "X-Vault-Token: ${vault_token}" \
     --request POST \
     --data @payload.json \
-    https://vault.default.${eks_project}.${eks_domain}/v1/secret/delete/my-secret
+    http://vault.default.${eks_project}.${eks_domain}/v1/secret/delete/my-secret
 
 echo '{
   "versions": [2]
@@ -94,16 +94,16 @@ curl \
     --header "X-Vault-Token: ${vault_token}" \
     --request POST \
     --data @payload.json \
-    https://vault.default.${eks_project}.${eks_domain}/v1/secret/undelete/my-secret
+    http://vault.default.${eks_project}.${eks_domain}/v1/secret/undelete/my-secret
 
 curl \
     --header "X-Vault-Token: ${vault_token}" \
     --request LIST \
-    https://vault.default.${eks_project}.${eks_domain}/v1/secret/metadata/my-secret
+    http://vault.default.${eks_project}.${eks_domain}/v1/secret/metadata/my-secret
 
 curl \
     --header "X-Vault-Token: ${vault_token}" \
-    https://vault.default.${eks_project}.${eks_domain}/v1/secret/metadata/my-secret
+    http://vault.default.${eks_project}.${eks_domain}/v1/secret/metadata/my-secret
 
 exit 0
 

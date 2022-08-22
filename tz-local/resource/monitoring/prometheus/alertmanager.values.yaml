@@ -2,12 +2,12 @@ alertmanager:
   config:
     global:
       resolve_timeout: 5m
-      smtp_from: devops@tz.gg
+      smtp_from: devops@tz.com
       smtp_smarthost: smtp.gmail.com:587
-      smtp_auth_username: devops@tz.gg
+      smtp_auth_username: devops@tz.com
       smtp_auth_password: admin_password
       smtp_require_tls: true
-      slack_api_url: https://hooks.slack.com/services/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
+      slack_api_url: https://hooks.slack.com/services/xxxxxxxxxx/xxxxxxxxxx/xxxxxxxxxx
     route:
       group_by: ['alertname', 'cluster', 'service']
       group_wait: 30s
@@ -47,7 +47,7 @@ alertmanager:
         text: '{{ template "slack.default.text" . }}'
       email_configs:
       - send_resolved: true
-        to: devops@tz.gg
+        to: devops@tz.com
     - name: devops-dev
       slack_configs:
       - send_resolved: true
@@ -73,9 +73,9 @@ alertmanager:
     templates:
     - /etc/alertmanager/config/*.tmpl
   alertmanagerSpec:
-    externalUrl: https://alertmanager.default.eks_project.eks_domain
+    externalUrl: https://alertmanager.default.eks_project.eks_domain/alertmanager
     nodeSelector:
-      environment: prod
+      environment: monitoring
       team: devops
 #    affinity:
 #     nodeAffinity:

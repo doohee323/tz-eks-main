@@ -9,30 +9,58 @@ AWS_REGION=$(prop 'config' 'region')
 eks_project=$(prop 'project' 'project')
 aws_account_id=$(aws sts get-caller-identity --query Account --output text)
 
-VOLUME_ID=$(kubectl describe pv $(kubectl get pv | grep prometheus-grafana | \
+PVC_NAME="prometheus-prometheus-kube-prometheus-prometheus-db-prometheus-prometheus-kube-prometheus-prometheus-0"
+SUBNET="ap-northeast-2c"
+NAMESPACE="monitoring"
+
+VOLUME_ID=$(kubectl describe pv $(kubectl get pv | grep ${PVC_NAME} | \
   awk '{print $1}') | grep VolumeID | awk '{print $2}' | rev | cut -d"/" -f1  | rev)
 echo ${VOLUME_ID}
 
-PV_ID=$(kubectl describe pv $(kubectl get pv | grep prometheus-grafana | \
+PV_ID=$(kubectl describe pv $(kubectl get pv | grep ${PVC_NAME} | \
   awk '{print $1}') | grep 'Name:' | awk '{print $2}')
 echo ${PV_ID}
 
+SIZE=$(kubectl describe pv $(kubectl get pv | grep ${PVC_NAME} | \
+  awk '{print $1}') | grep Capacity | awk '{print $2}' | rev | cut -d"/" -f1  | rev | sed 's/Gi//g')
+echo ${SIZE}
+
 aws ec2 create-snapshot --volume-id ${VOLUME_ID} \
-  --description 'prometheus-grafana backup' \
-  --tag-specifications 'ResourceType=snapshot,Tags=[{Key=team,Value=DevOps},{Key=name,Value=prometheus-grafana}]'
+  --description "${PVC_NAME} backup" \
+  --tag-specifications "ResourceType=snapshot,Tags=[{Key=team,Value=DevOps},{Key=name,Value=${PVC_NAME}}]"
+
+snapshot_id=$(aws ec2 describe-snapshots \
+    --filters Name=tag:name,Values=${PVC_NAME} \
+    --owner-ids self \
+    --query "Snapshots[*].{ID:SnapshotId}" \
+    --output text)
+echo ${snapshot_id}
 
 aws ec2 create-volume \
-    --volume-type io1 \
-    --iops 1000 \
-    --snapshot-id snap-066877671789bd71b \
-    --availability-zone us-east-1a
+    --volume-type gp3 \
+    --size ${SIZE} \
+    --snapshot-id ${snapshot_id} \
+    --availability-zone ${SUBNET} \
+    --tag-specifications "ResourceType=volume,Tags=[{Key=team,Value=DevOps},{Key=name,Value=${PVC_NAME}}]"
 
-#aws ec2 create-volume \
-#    --volume-type gp2 \
-#    --size 1 \
-#    --snapshot-id snap-0c84c7f9eeb983a8e \
-#    --availability-zone ap-northeast-2b
+VOLUME_ID=$(aws ec2 describe-volumes \
+    --filters Name=tag:name,Values=${PVC_NAME} \
+    --query "Volumes[*].{ID:VolumeId}" \
+    --output text)
+echo ${VOLUME_ID}
 
-kubectl patch pvc data-consul-consul-server-0 -n consul \
-  --patch 'spec:\n awsElasticBlockStore:\n  volumeID: aws://ap-northeast-2b/vol-0b6807e8d57e7da65'
+cp -Rf copy/pv.yaml copy/pv.yaml_bak
+sed -i "s/AWS_REGION/${AWS_REGION}/g" copy/pv.yaml_bak
+sed -i "s/VOLUME_ID/${VOLUME_ID}/g" copy/pv.yaml_bak
+sed -i "s/PV_ID/${PV_ID}/g" copy/pv.yaml_bak
+sed -i "s/SIZE/${SIZE}/g" copy/pv.yaml_bak
+
+#
+kubectl patch pvc ${PVC_NAME} -p '{"metadata":{"finalizers":null}}' -n ${NAMESPACE}
+kubectl patch pv ${PV_ID} -p '{"metadata":{"finalizers":null}}'
+kubectl delete pv ${PV_ID}
+
+kubectl apply -f copy/pv.yaml_bak -n ${NAMESPACE}
+
+
 

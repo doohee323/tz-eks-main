@@ -8,12 +8,12 @@ ELASTIC_PASSWORD=$(prop 'project' 'admin_password')
 echo "ELASTIC_ADMIN: elastic"
 echo "ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}"
 export STACK_VERSION=7.13.2
-NS=es
+NS=elk
 DNS_NAME=$1
 if [[ "${DNS_NAME}" == "" ]]; then
   DNS_NAME=elasticsearch-master
 fi
-DNS_NAME2=${DNS_NAME}.es.svc.cluster.local
+DNS_NAME2=${DNS_NAME}.elk.svc.cluster.local
 echo "DNS_NAME: ${DNS_NAME}"
 echo "DNS_NAME2: ${DNS_NAME2}"
 
@@ -41,7 +41,7 @@ docker rm -f elastic-helm-charts-certs || true
 
 exit 0
 
-./bin/elasticsearch-certutil cert --ca elastic-stack-ca.p12 --ip 10.0.0.5,10.0.0.6,10.0.0.7 --dns node1.es.com,node2.es.com,logstash.es.com
+./bin/elasticsearch-certutil cert --ca elastic-stack-ca.p12 --ip 10.0.0.5,10.0.0.6,10.0.0.7 --dns node1.elk.com,node2.elk.com,logstash.elk.com
 
 
 

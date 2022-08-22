@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: product-api-new-v1
+  name: product-api-v1
   labels:
-    app: product-api-new
+    app: product-api
     version: v1
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: product-api-new
+      app: product-api
       version: v1
   template:
     metadata:
       labels:
-        app: product-api-new
+        app: product-api
         version: v1
       annotations:
         prometheus.io/scrape: "true"
@@ -25,7 +25,7 @@ spec:
         consul.hashicorp.com/service-meta-version: v1
         consul.hashicorp.com/service-tags: devops,dev
     spec:
-      serviceAccountName: product-api-new
+      serviceAccountName: product-api
       volumes:
       - name: config
         configMap:
@@ -34,7 +34,7 @@ spec:
           - key: config
             path: conf.json
       containers:
-        - name: product-api-new
+        - name: product-api
           image: hashicorpdemoapp/product-api:v0.0.12
           ports:
             - containerPort: 9090

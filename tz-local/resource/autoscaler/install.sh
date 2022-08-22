@@ -3,6 +3,7 @@
 #https://docs.aws.amazon.com/ko_kr/eks/latest/userguide/cluster-autoscaler.html#ca-deploy
 #https://sgilvitu.io/posts/2020/10/eks-autoscaling/
 
+#bash /vagrant/tz-local/resource/autoscaler/install.sh
 cd /vagrant/tz-local/resource/autoscaler
 
 aws_account_id=$(aws sts get-caller-identity --query Account --output text)
@@ -22,19 +23,23 @@ sed -i "s/eks_project/${eks_project}/g" "${CLUSTER_AUTOSCAILER}_bak"
 helm repo add autoscaler https://kubernetes.github.io/autoscaler
 helm repo update
 helm uninstall cluster-autoscaler --namespace kube-system
-helm upgrade --debug --install --reuse-values cluster-autoscaler -n kube-system autoscaler/cluster-autoscaler-chart --values="${CLUSTER_AUTOSCAILER}_bak"
-#wget https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.3.6/components.yaml
+helm upgrade --debug --install --reuse-values cluster-autoscaler \
+  -n kube-system autoscaler/cluster-autoscaler \
+  --values="${CLUSTER_AUTOSCAILER}_bak" \
+  --version "9.10.7"
+rm -Rf components.yaml
+wget https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.6.1/components.yaml
 kubectl apply -f components.yaml
 
 SERVICE_ACCOUNT=$(kubectl get serviceaccount -n kube-system | grep cluster-autoscaler | awk '{print $1}')
+echo $SERVICE_ACCOUNT
 
-PATCH_FILE='/vagrant/tz-local/resource/autoscaler/patch.yaml'
-cp -Rf ${PATCH_FILE} ${PATCH_FILE}_bak
-sed -i "s/eks_project/${eks_project}/g" ${PATCH_FILE}_bak
-sed -i "s/AWS_REGION/${aws_region}/g" ${PATCH_FILE}_bak
-
-kubectl patch deployment/cluster-autoscaler-aws-cluster-autoscaler-chart -n kube-system --patch "$(cat ${PATCH_FILE}_bak)"
-#kubectl -n kube-system logs -f deployment.apps/cluster-autoscaler-aws-cluster-autoscaler-chart
+#PATCH_FILE='/vagrant/tz-local/resource/autoscaler/patch.yaml'
+#cp -Rf ${PATCH_FILE} ${PATCH_FILE}_bak
+#sed -i "s/eks_project/${eks_project}/g" ${PATCH_FILE}_bak
+#sed -i "s/AWS_REGION/${aws_region}/g" ${PATCH_FILE}_bak
+#kubectl patch deployment/cluster-autoscaler-aws-cluster-autoscaler -n kube-system --patch "$(cat ${PATCH_FILE}_bak)"
+##kubectl -n kube-system logs -f deployment.apps/cluster-autoscaler-aws-cluster-autoscaler
 
 kubectl apply -f auto-approve-csr.yaml
 kubectl get csr -o name | xargs kubectl certificate approve
@@ -68,7 +73,7 @@ kubectl -n devops-dev set resources deployment scaling-test --limits=cpu=100m,me
 #vi scaling-test.yaml
 #      nodeSelector:
 #        team: devops
-#        project: demo
+#        project: devops
 #        environment: dev
 
 #export FIRST_NODE_NAME=$(kubectl get nodes -o json | jq -r '.items[2].metadata.name')
@@ -78,6 +83,11 @@ kubectl -n devops-dev set resources deployment scaling-test --limits=cpu=100m,me
 # kubectl get nodes --selector team=devops,environment=dev
 
 kubectl get csr -o name | xargs kubectl certificate approve
+
+# https://qiita.com/hkame/items/1378f9176a26e39d93c7#private-ip%E3%82%A2%E3%83%89%E3%83%AC%E3%82%B9%E6%9E%AF%E6%B8%87%E3%81%AE%E5%8E%9F%E5%9B%A0
+kubectl set env -n kube-system daemonset/aws-node MINIMUM_IP_TARGET=10 WARM_IP_TARGET=2
+kubectl get daemonset -n kube-system aws-node -o json | jq -r '.spec.template.spec.containers[] |select ( .name == "aws-node" ).env'
+
 exit 0
 
 
@@ -89,5 +99,3 @@ array=( "${list1[@]/$list2}" ) | sort
 kubectl describe certificatesigningrequest.certificates.k8s.io/csr-7jc6l
 kubectl describe certificatesigningrequest.certificates.k8s.io/csr-brkf5
 kubectl describe certificatesigningrequest.certificates.k8s.io/csr-wxg59
-
-

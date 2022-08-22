@@ -36,9 +36,43 @@ output "worker_groups_role" {
   value       = module.eks.worker_iam_role_arn
 }
 
+output "cluster_iam_role_arn" {
+  description = "Outputs EKS cluster role"
+  value       = module.eks.cluster_iam_role_arn
+}
+
 output "cluster_autoscaler_role" {
   description = "Outputs cluster_autoscaler_role"
-  value       = module.iam_assumable_role_admin.this_iam_role_arn
+  value       = module.iam_assumable_role_admin.iam_role_arn
+}
+
+output "vpc_cidr_block" {
+  description = "Outputs vpc_cidr_block"
+  value       = module.vpc.vpc_cidr_block
+}
+
+//output "eks-main-bastion" {
+//  description = "eks-main-bastion public_ip"
+//  value       = aws_instance.eks-main-bastion.public_ip
+//}
+//
+//output "eks-main-bastion-qa" {
+//  description = "eks-main-bastion-qa public_ip"
+//  value       = aws_instance.eks-main-bastion-qa.public_ip
+//}
+
+output "eks-main-private_subnets" {
+  value       = module.vpc.private_subnets[*]
+  description = "eks-main-private_subnets"
+}
+
+output "allowed_management_cidr_blocks" {
+  value       = local.allowed_management_cidr_blocks
+  description = "allowed_management_cidr_blocks"
+}
+
+output "cert_manager_irsa_role_arn" {
+  value = module.cert_manager_irsa.this_iam_role_arn
 }
 
 //output "eks-main-bastion" {

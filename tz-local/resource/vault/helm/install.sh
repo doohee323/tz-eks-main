@@ -19,17 +19,25 @@ eks_domain=$(prop 'project' 'domain')
 AWS_REGION=$(prop 'config' 'region')
 aws_access_key_id=$(prop 'credentials' 'aws_access_key_id')
 aws_secret_access_key=$(prop 'credentials' 'aws_secret_access_key')
-vault_kms_key=$(aws kms list-aliases | grep ${eks_project}-vault-kms-unseal -A 1 | tail -n 1 | awk -F\" '{print $4}')
+vault_kms_key=$(aws kms list-aliases | grep -w "${eks_project}-vault-kms-unseal4" -A 1 | tail -n 1 | awk -F\" '{print $4}')
 vault_token=$(prop 'project' 'vault')
 NS=vault
+
+echo "#######################################################"
+echo "vault_kms_key: ${vault_kms_key}"
+echo "#######################################################"
+if [[ "${vault_kms_key}" == "" ]]; then
+  echo "kms is empty!!!!"
+  exit 1
+fi
 
 helm repo add hashicorp https://helm.releases.hashicorp.com
 helm search repo hashicorp/vault
 
 helm uninstall vault -n vault
 k delete namespace vault
-
 k create namespace vault
+
 kubectl -n vault create secret generic eks-creds \
     --from-literal=AWS_ACCESS_KEY_ID="${aws_access_key_id}" \
     --from-literal=AWS_SECRET_ACCESS_KEY="${aws_secret_access_key}"
@@ -40,8 +48,10 @@ cp -Rf values_cert.yaml values_cert.yaml_bak
 sed -i "s/eks_project/${eks_project}/g" values_cert.yaml_bak
 sed -i "s/AWS_REGION/${AWS_REGION}/g" values_cert.yaml_bak
 sed -i "s/VAULT_KMS_KEY/${vault_kms_key}/g" values_cert.yaml_bak
-helm upgrade --install --reuse-values vault hashicorp/vault -n vault -f values_cert.yaml_bak --version 0.11.0
+helm upgrade --debug --install --reuse-values vault hashicorp/vault -n vault -f values_cert.yaml_bak --version 0.19.0
 #kubectl rollout restart statefulset.apps/vault -n vault
+
+sleep 30
 k get all -n vault
 
 cp -Rf values_config.yaml values_config.yaml_bak
@@ -70,16 +80,19 @@ sleep 30
 #k port-forward vault-0 8200:8200 -n vault &
 k get pods -l app.kubernetes.io/name=vault -n vault
 
+sleep 30
 # vault operator init
 # vault operator init -key-shares=3 -key-threshold=2
 #export VAULT_ADDR='http://127.0.0.1:8200'
-export VAULT_ADDR="https://vault.default.${eks_project}.${eks_domain}"
+export VAULT_ADDR="http://vault.default.${eks_project}.${eks_domain}"
 echo $VAULT_ADDR
 k -n vault exec -ti vault-0 -- vault operator init -key-shares=3 -key-threshold=2 | sed 's/\x1b\[[0-9;]*m//g' > /vagrant/resources/unseal.txt
 sleep 20
-vault_token_new=$(cat /vagrant/resources/unseal.txt | grep "Initial Root Token" | awk '{print $4}')
-vault_token_new=$(echo ${vault_token_new} | rev | cut -c3- | rev)
+vault_token_new=$(cat /vagrant/resources/unseal.txt | grep "Initial Root Token:" | awk '{print $4}')
+vault_token_new=$(echo ${vault_token_new} | rev | cut -c2- | rev)
+echo "#######################################################"
 echo "vault_token_new: ${vault_token_new}"
+echo "#######################################################"
 if [[ "${vault_token_new}" != "" ]]; then
   sed -i "s/${vault_token}/${vault_token_new}/g" /vagrant/resources/project
   sed -i "s/${vault_token}/${vault_token_new}/g" ~/.aws/project
@@ -116,9 +129,8 @@ vault --version
 
 echo "
 ##[ Vault ]##########################################################
-
-export VAULT_ADDR=https://vault.default.${eks_project}.${eks_domain}
-vault login s.qBPblA0U9Bzmhgr8eRnukSqR
+export VAULT_ADDR=http://vault.default.${eks_project}.${eks_domain}
+vault login ${vault_token_new}
 
 vault secrets list -detailed
 
@@ -149,7 +161,7 @@ region=us-west-1
 # macos
 brew tap hashicorp/tap
 brew install hashicorp/tap/vault
-export VAULT_ADDR=https://vault.default.${eks_project}.${eks_domain}
+export VAULT_ADDR=http://vault.default.${eks_project}.${eks_domain}
 vault login s.qBPblA0U9Bzmhgr8eRnukSqR
 vault secrets list -detailed
 
@@ -234,8 +246,3 @@ kubectl create secret generic vault-storage-config \
 k patch deployment/vault-agent-injector -p '{"spec": {"template": {"spec": {"nodeSelector": {"team": "devops"}}}}}' -n vault
 k patch deployment/vault-agent-injector -p '{"spec": {"template": {"spec": {"nodeSelector": {"environment": "consul"}}}}}' -n vault
 k patch deployment/vault-agent-injector -p '{"spec": {"template": {"spec": {"imagePullSecrets": [{"name": "tz-registrykey"}]}}}}' -n vault
-
-
-
-
-

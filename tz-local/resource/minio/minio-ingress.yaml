@@ -1,0 +1,36 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-minio
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+#    nginx.ingress.kubernetes.io/auth-type: basic
+#    nginx.ingress.kubernetes.io/auth-secret: basic-auth-minio
+#    nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - admin'
+spec:
+  rules:
+#  - host: minio.tzcorp.com
+#    http:
+#      paths:
+#      - path: /
+#        backend:
+#          serviceName: prometheus-minio
+#          servicePort: 32001
+  - host: minio.default.eks-main.tzcorp.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: prometheus-minio
+            port:
+              number: 32001
+  tls:
+    - hosts:
+#        - minio.tzcorp.com
+        - minio.default.eks-main.tzcorp.com
+      secretName: ingress-minio-tls

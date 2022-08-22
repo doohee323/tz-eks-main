@@ -1,0 +1,152 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: devops-dev-svcaccount
+  labels:
+    app: devops-demo-dev
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: devops-demo-configmap
+data:
+  GIT_BRANCH: dev
+  DB_HOSTNAME: host.docker.internal
+  DB_R_HOSTNAME: host.docker.internal
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: custom-metrics-script
+data:
+  custom-metrics.sh: |
+    #!/bin/sh
+    apk add netcat-openbsd
+    while true
+    do
+      echo -n "devops.custom_metric.dogstatsd_unix:1|c" | nc -U -u -w1 /var/run/datadog/dsd.socket
+      echo -n "devops.custom_metric.dogstatsd_udp:1|c" | nc -u -w1 $DD_AGENT_HOST 8125
+      sleep 10
+    done
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-demo-dev
+  labels:
+    tags.datadoghq.com/env: "dev"
+    tags.datadoghq.com/service: "devops-demo-dev"
+    tags.datadoghq.com/version: "1.0"
+spec:
+  selector:
+    matchLabels:
+      app: devops-demo-dev
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        tags.datadoghq.com/env: "dev"
+        tags.datadoghq.com/service: "devops-demo-dev"
+        tags.datadoghq.com/version: "1.0"
+        org: tz
+        team: devops
+        project: demo
+        environment: dev
+        app: devops-demo-dev
+    spec:
+      serviceAccountName: devops-dev-svcaccount
+      volumes:
+        - hostPath:
+            path: /var/run/datadog/
+          name: dsdsocket
+        - name: custom-metrics-script
+          configMap:
+            name: custom-metrics-script
+            defaultMode: 0755
+      containers:
+      - name: devops-demo-dev
+        image: xxxxxxxxxxxxx.dkr.ecr.ap-northeast-2.amazonaws.com/devops-demo:datadog-32
+        imagePullPolicy: Always
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+        volumeMounts:
+          - name: dsdsocket
+            mountPath: /var/run/datadog
+            readOnly: true
+          - name: custom-metrics-script
+            mountPath: /script/custom-metrics.sh
+            subPath: custom-metrics.sh
+#        args:
+#          - "sh"
+#          - "-c"
+#          - "/script/custom-metrics.sh"
+        envFrom:
+        - configMapRef:
+            name: devops-demo-configmap
+        env:
+        - name: DD_ENV
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['tags.datadoghq.com/env']
+        - name: DD_SERVICE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['tags.datadoghq.com/service']
+        - name: DD_VERSION
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['tags.datadoghq.com/version']
+        - name: DD_AGENT_HOST
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+      nodeSelector:
+        team: devops
+        environment: dev
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: devops-demo-dev
+spec:
+  type: NodePort
+  selector:
+    app: devops-demo-dev
+  ports:
+    - port: 80
+      name: api-80
+      targetPort: 8080
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: devops-demo-dev
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  rules:
+  - host: dev.default.CLUSTER_NAME.DOMAIN_NAME
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: devops-demo-dev
+            port:
+              number: 8080
+  tls:
+    - hosts:
+        - dev.default.CLUSTER_NAME.DOMAIN_NAME
+      secretName: devops-demo-dev

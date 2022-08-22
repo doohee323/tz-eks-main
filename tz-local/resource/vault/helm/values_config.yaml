@@ -17,7 +17,7 @@ data:
     }
     storage "consul" {
       path = "vault"
-      address = "consul-server.default.eks_project.eks_domain"
+      address = "consul-server.consul.svc.cluster.local:8500"
     }
     seal "awskms" {
       region     = "AWS_REGION"

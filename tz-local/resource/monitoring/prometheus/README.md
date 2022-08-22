@@ -53,7 +53,7 @@ tz-eks-main/tz-local/resource/monitoring/prometheus/alertmanager.values
   receivers:
   - name: 'k8s-admin'
     email_configs:
-    - to: devops@tz.gg
+    - to: devops@tz.com
   - name: 'dev_mail'
     email_configs:
     - to: doohee.hong@tz.kr

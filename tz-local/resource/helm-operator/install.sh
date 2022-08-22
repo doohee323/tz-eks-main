@@ -3,6 +3,7 @@
 #https://coffeewhale.com/kubernetes/gitops/helm/2020/05/13/helm-operator/
 
 #bash /vagrant/tz-local/resource/helm-operator/install.sh
+cd /vagrant/tz-local/resource/helm-operator
 
 #set -x
 shopt -s expand_aliases

@@ -51,6 +51,11 @@ export SECRET_NAME="$(kubectl -n vault get serviceaccount vault-auth  -o go-temp
 export TR_ACCOUNT_TOKEN="$(kubectl -n vault get secret ${SECRET_NAME} -o go-template='{{ .data.token }}' | base64 --decode)"
 export K8S_API_SERVER="$(kubectl -n vault config view --raw -o go-template="{{ range .clusters }}{{ index .cluster \"server\" }}{{ end }}")"
 export K8S_CACERT="$(kubectl -n vault config view --raw -o go-template="{{ range .clusters }}{{ index .cluster \"certificate-authority-data\" }}{{ end }}" | base64 --decode)"
+echo "SECRET_NAME: ${SECRET_NAME}"
+echo "TR_ACCOUNT_TOKEN: ${TR_ACCOUNT_TOKEN}"
+echo "K8S_API_SERVER: ${K8S_API_SERVER}"
+echo "K8S_CACERT: ${K8S_CACERT}"
+
 # Send kube config to vault
 vault write auth/kubernetes/config kubernetes_host="${K8S_API_SERVER}" kubernetes_ca_cert="${K8S_CACERT}" token_reviewer_jwt="${TR_ACCOUNT_TOKEN}"
 
@@ -240,6 +245,19 @@ vault token create -policy=my-policy
 #token                s.VGw3BsjYGtI84oJ0g3LTDTwl
 vault login s.VGw3BsjYGtI84oJ0g3LTDTwl
 
+
+
+exit 0
+
+apt update && apt install curl dnsutils iputils-ping unzip -y
+curl https://releases.hashicorp.com/vault/1.6.2/vault_1.6.2_linux_amd64.zip -o vault_1.6.2_linux_amd64.zip
+unzip vault_1.6.2_linux_amd64.zip
+chmod +x vault
+mv vault /usr/local/bin/
+
+export VAULT_ADDR=http://vault-internal.vault.svc.cluster.local:8200
+export VAULT_ADDR=http://vault.vault.svc.cluster.local:8200
+vault login doohee.hong
 
 
 

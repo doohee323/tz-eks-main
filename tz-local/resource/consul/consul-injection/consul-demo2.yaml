@@ -4,6 +4,8 @@ metadata:
   name: consul-agent-demo2
 spec:
   protocol: "http"
+  transparentProxy:
+    dialedDirectly: true
 
 ---
 apiVersion: v1
@@ -15,15 +17,14 @@ spec:
     app: consul-agent-demo2
   ports:
     - name: http
-      protocol: TCP
-      port: 80
-      targetPort: 80
+      port: 8080
+      targetPort: 8080
 
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: consul-agent-demo2-account
+  name: consul-agent-demo2
   labels:
     app: consul-agent-demo2
 automountServiceAccountToken: true
@@ -47,32 +48,72 @@ spec:
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9102"
-        consul.hashicorp.com/connect-inject: "true"
-        consul.hashicorp.com/envoy-extra-args: '--log-level debug --disable-hot-restart'
-#        consul.hashicorp.com/connect-service-upstreams: "product-api:8080"
-        consul.hashicorp.com/enable-metrics-merging: "false"
+#        consul.hashicorp.com/connect-inject: "true"
+#        consul.hashicorp.com/envoy-extra-args: '--log-level debug --disable-hot-restart'
+#        consul.hashicorp.com/connect-service-upstreams: "postgres:5432"
+#        consul.hashicorp.com/enable-metrics-merging: "false"
         consul.hashicorp.com/service-tags: devops,consul
+        consul.hashicorp.com/transparent-proxy-overwrite-probes: "true"
 
-        sidecar.istio.io/inject: "false"
-        vault.hashicorp.com/agent-inject: "true"
-        vault.hashicorp.com/agent-init-first: "true"
-        vault.hashicorp.com/role: "consul-agent-demo2-role"
-        vault.hashicorp.com/agent-inject-secret-config: "secret/devops-dev/dbinfo"
-        vault.hashicorp.com/agent-inject-secret-foo: 'secret/devops-dev/foo'
-        vault.hashicorp.com/agent-inject-template-config: |
-          {{ with secret "secret/devops-dev/dbinfo" -}}
-             db_id: "{{ .Data.data.name }}"
-             db_password: "{{ .Data.data.passwod }}"
-          {{- end }}
-          {{ with secret "secret/devops-dev/foo" -}}
-             db_id2: "{{ .Data.data.name }}"
-             db_password2: "{{ .Data.data.passwod }}"
-          {{- end }}
+#        sidecar.istio.io/inject: "false"
+#        vault.hashicorp.com/agent-inject: "true"
+#        vault.hashicorp.com/agent-init-first: "true"
+#        vault.hashicorp.com/role: "consul-agent-demo2-role"
+#        vault.hashicorp.com/agent-inject-secret-config: "secret/devops-dev/dbinfo"
+#        vault.hashicorp.com/agent-inject-secret-foo: 'secret/devops-dev/foo'
+#        vault.hashicorp.com/agent-inject-template-config: |
+#          {{ with secret "secret/devops-dev/dbinfo" -}}
+#             db_id: "{{ .Data.data.name }}"
+#             db_password: "{{ .Data.data.passwod }}"
+#          {{- end }}
+#          {{ with secret "secret/devops-dev/foo" -}}
+#             db_id2: "{{ .Data.data.name }}"
+#             db_password2: "{{ .Data.data.passwod }}"
+#          {{- end }}
     spec:
-      serviceAccountName: consul-agent-demo2-account
+      serviceAccountName: consul-agent-demo2
       containers:
       - name: consul-agent-demo2
         image: nginx
+        volumeMounts:
+        - name: default-conf2
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: default.conf
+          readOnly: true
+        - name: log
+          mountPath: /var/log/demo
+      volumes:
+      - name: default-conf2
+        configMap:
+          name: default-conf2
+          items:
+            - key: default.conf
+              path: default.conf
+      - name: log
+        emptyDir: {}
       nodeSelector:
         team: devops
         environment: consul
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: default-conf2
+data:
+  default.conf: |
+    server {
+        listen       8080;
+        server_name  _;
+        access_log  /dev/stdout;
+        error_log  /dev/stdout;
+
+        location / {
+            root   /usr/share/nginx/html;
+            index  index.html index.htm;
+        }
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   /usr/share/nginx/html;
+        }
+      }

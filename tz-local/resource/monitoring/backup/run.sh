@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-#bash /vagrant/tz-local/resource/monitoring/backup.sh
-cd /vagrant/tz-local/resource/monitoring
+#bash /vagrant/tz-local/resource/monitoring/backup/run.sh
+cd /vagrant/tz-local/resource/monitoring/backup
 
 function prop {
 	grep "${2}" "/home/vagrant/.aws/${1}" | head -n 1 | cut -d '=' -f2 | sed 's/ //g'

@@ -4,6 +4,8 @@ metadata:
   name: consul-agent-demo
 spec:
   protocol: "http"
+  transparentProxy:
+    dialedDirectly: true
 
 ---
 apiVersion: v1
@@ -15,15 +17,14 @@ spec:
     app: consul-agent-demo
   ports:
     - name: http
-      protocol: TCP
-      port: 80
-      targetPort: 80
+      port: 8080
+      targetPort: 8080
 
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: consul-agent-demo-account
+  name: consul-agent-demo
   labels:
     app: consul-agent-demo
 automountServiceAccountToken: true
@@ -47,15 +48,56 @@ spec:
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9102"
-        consul.hashicorp.com/connect-inject: "true"
-#        consul.hashicorp.com/connect-service-upstreams: "product-api:8080"
-        consul.hashicorp.com/enable-metrics-merging: "false"
-        consul.hashicorp.com/service-tags: devops,consul
+#        consul.hashicorp.com/connect-inject: "true"
+##        consul.hashicorp.com/envoy-extra-args: '--log-level debug --disable-hot-restart'
+##        consul.hashicorp.com/connect-service-upstreams: "postgres:5432"
+##        consul.hashicorp.com/enable-metrics-merging: "false"
+#        consul.hashicorp.com/service-tags: devops,consul
+#        consul.hashicorp.com/transparent-proxy-overwrite-probes: "true"
     spec:
-      serviceAccountName: consul-agent-demo-account
+      serviceAccountName: consul-agent-demo
       containers:
       - name: consul-agent-demo
         image: nginx
+        volumeMounts:
+        - name: default-conf
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: default.conf
+          readOnly: true
+        - name: log
+          mountPath: /var/log/demo
+      volumes:
+      - name: default-conf
+        configMap:
+          name: default-conf
+          items:
+            - key: default.conf
+              path: default.conf
+      - name: log
+        emptyDir: {}
       nodeSelector:
         team: devops
         environment: consul
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: default-conf
+data:
+  default.conf: |
+    server {
+        listen       8080;
+        server_name  _;
+        access_log  /dev/stdout;
+        error_log  /dev/stdout;
+
+        location / {
+            root   /usr/share/nginx/html;
+            index  index.html index.htm;
+        }
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   /usr/share/nginx/html;
+        }
+      }

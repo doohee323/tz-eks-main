@@ -1,4 +1,4 @@
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
@@ -13,10 +13,12 @@ spec:
     - host: "consul.localdev"
       http:
         paths:
-          - backend:
-              serviceName: consul-ui
-              servicePort: ui
+          - defaultBackend:
+              service:
+                name: consul-ui
+                port: ui
             path: /
+            pathType: Prefix
   tls:
     - hosts:
       - "https-consul.localdev"

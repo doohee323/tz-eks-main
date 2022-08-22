@@ -88,7 +88,7 @@ sed -i "s/SUBNET_ID/${SUBNET_ID}/g" claim.yaml_bak
 sed -i "s/VOLUME_ID/${NEW_VOLUME_ID}/g" claim.yaml_bak
 
 k get deployment mysql -n ${NS} -o json \
-    | jq '.spec.template.spec.volumes[2].persistentVolumeClaim.claimName = "tmp"' \
+    | jq '.spec.template.spec.volumes[0].persistentVolumeClaim.claimName = "tmp"' \
     | kubectl replace -f -
 
 kubectl delete -f claim.yaml_bak -R -n ${NS}

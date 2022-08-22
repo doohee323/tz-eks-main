@@ -1,4 +1,14 @@
 apiVersion: consul.hashicorp.com/v1alpha1
+kind: Mesh
+metadata:
+  name: mesh
+spec:
+  transparentProxy:
+    meshDestinationsOnly: true
+
+---
+
+apiVersion: consul.hashicorp.com/v1alpha1
 kind: ProxyDefaults
 metadata:
   name: global
@@ -35,5 +45,18 @@ metadata:
 spec:
   protocol: 'http'
 
----
-
+#---
+#apiVersion: consul.hashicorp.com/v1alpha1
+#kind: ServiceIntentions
+#metadata:
+#  name: destination-all
+#spec:
+#  destination:
+#    name: '*'
+#  sources:
+#    - name: '*'
+#      action: deny
+#    - name: consul
+#      action: allow
+#    - name: vault
+#      action: allow

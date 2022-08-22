@@ -1,0 +1,28 @@
+prometheus:
+  disableCompaction: true
+  prometheusSpec:
+    thanos:
+#      image: docker.io/bitnami/thanos
+      create: true
+      objectStorageConfig:
+        key: thanos-objstore.yml
+        name: thanos-objstore-secret
+	  version: v0.18.0
+      minTime: -3h
+      ingress:
+        enabled: true
+        annotations:
+          kubernetes.io/ingress.class: nginx
+          nginx.ingress.kubernetes.io/ssl-redirect: "true"
+          nginx.ingress.kubernetes.io/auth-tls-verify-client: "on"
+          nginx.ingress.kubernetes.io/auth-tls-secret: monitoring/thanos-certs
+          nginx.ingress.kubernetes.io/backend-protocol: GRPC
+    thanosService:
+      annotations: {}
+      clusterIP: ""
+      enabled: true
+      labels: {}
+      port: 10901
+      portName: grpc
+      targetPort: grpc
+      type: ClusterIP

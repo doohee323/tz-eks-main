@@ -2,6 +2,7 @@
 
 #https://phoenixnap.com/kb/elasticsearch-helm-chart
 #https://www.elastic.co/guide/en/elasticsearch/reference/7.1/configuring-tls-docker.html
+#https://github.com/elastic/helm-charts/tree/7.15/elasticsearch/examples/multi
 
 #bash /vagrant/tz-local/resource/elk/install.sh
 cd /vagrant/tz-local/resource/elk
@@ -14,7 +15,9 @@ function prop {
 eks_project=$(prop 'project' 'project')
 eks_domain=$(prop 'project' 'domain')
 admin_password=$(prop 'project' 'admin_password')
-NS=es
+export AWS_ACCESS_KEY_ID=$(prop 'credentials' 'aws_access_key_id')
+export AWS_SECRET_ACCESS_KEY=$(prop 'credentials' 'aws_secret_access_key')
+NS=elk
 export STACK_VERSION=7.13.2
 
 #curl -O https://raw.githubusercontent.com/elastic/helm-charts/master/elasticsearch/examples/minikube/values.yaml
@@ -37,6 +40,10 @@ bash create-elastic-certificates.sh
 #https://github.com/elastic/helm-charts/blob/master/elasticsearch/values.yaml
 sleep 10
 
+kubectl -n elk create secret generic aws-s3-keys \
+  --from-literal=access-key-id=${AWS_ACCESS_KEY_ID} \
+  --from-literal=access-secret-key=${AWS_SECRET_ACCESS_KEY}
+
 cp es_values.yaml es_values.yaml_bak
 sed -i "s/eks_project/${eks_project}/g" es_values.yaml_bak
 sed -i "s/eks_domain/${eks_domain}/g" es_values.yaml_bak
@@ -49,6 +56,16 @@ k patch statefulset/elasticsearch-master -p '{"spec": {"template": {"spec": {"no
 kubectl rollout restart statefulset.apps/elasticsearch-master -n ${NS}
 #k get pods | grep elasticsearch-master | awk '{print $1}' | xargs kubectl -n ${NS} delete pod
 kubectl get csr -o name | xargs kubectl certificate approve
+
+cp es_data_values.yaml es_data_values.yaml_bak
+sed -i "s/eks_project/${eks_project}/g" es_data_values.yaml_bak
+sed -i "s/eks_domain/${eks_domain}/g" es_data_values.yaml_bak
+sed -i "s/ADMIN_PASSWORD/${admin_password}/g" es_data_values.yaml_bak
+#helm uninstall elasticsearch-data -n ${NS}
+helm upgrade --debug --install --reuse-values -f es_data_values.yaml_bak elasticsearch-data elastic/elasticsearch --version ${STACK_VERSION} -n ${NS}
+k patch statefulset/elasticsearch-data -p '{"spec": {"template": {"spec": {"nodeSelector": {"team": "devops"}}}}}'
+k patch statefulset/elasticsearch-data -p '{"spec": {"template": {"spec": {"nodeSelector": {"environment": "elk"}}}}}'
+kubectl rollout restart statefulset.apps/elasticsearch-data -n ${NS}
 
 #kubectl -n ${NS} port-forward svc/elasticsearch-master 9200
 #curl --insecure -v -u elastic:wPFNxwADbRtvMp6HYdlI https://es.elk.eks-main.tzcorp.com
@@ -77,7 +94,7 @@ sed -i "s/eks_domain/${eks_domain}/g" elk-ingress.yaml_bak
 k delete -f elk-ingress.yaml_bak -n ${NS}
 k apply -f elk-ingress.yaml_bak -n ${NS}
 
-#curl -ks -X PUT 'https://elastic:Dlwpdldps!323@es.elk.eks-main.tzcorp.com/_security/user/svc_kibana' -H 'Content-Type: application/json' -d'
+#curl -ks -X PUT 'https://elastic:${admin_password}@es.elk.${eks_project}.${eks_domain}/_security/user/svc_kibana' -H 'Content-Type: application/json' -d'
 #{
 #  "password" : "wPFNxwADbRtvMp6HYdlI",
 #  "roles" : [ "kibana_system" ],
@@ -97,15 +114,15 @@ sed -i "s/STAGING/elk/g" ls_values.yaml_bak
 sed -i "s/ADMIN_PASSWORD/${admin_password}/g" ls_values.yaml_bak
 helm upgrade --debug --install --reuse-values -f ls_values.yaml_bak logstash elastic/logstash --version ${STACK_VERSION} -n ${NS}
 kubectl get csr -o name | xargs kubectl certificate approve
-#curl --insecure -v -u elastic:Dlwpdldps\!323 https://elasticsearch-master:9200
-#curl --insecure -v -u elastic:Dlwpdldps\!323 https://es.${eks_domain}
+#curl --insecure -v -u elastic:${admin_password} https://elasticsearch-master:9200
+#curl --insecure -v -u elastic:${admin_password} https://es.${eks_domain}
 
 #curl -XGET http://<elasticsearch IP>:9200 -u logstash_system:l12345 or
 #curl -XGET https://<elasticsearch IP>:9200 -u logstash_system:l12345 -k
 
 curl -XGET https://es.${eks_domain} -u logstash_system:l12345 or
-curl -XGET https://es.${eks_domain}/my_index-000001 -u elastic:Dlwpdldps\!323
-curl -XGET https://es.${eks_domain}/my_index-000001 -u logstash_system:Dlwpdldps\!323
+curl -XGET https://es.${eks_domain}/my_index-000001 -u elastic:${admin_password}
+curl -XGET https://es.${eks_domain}/my_index-000001 -u logstash_system:${admin_password}
 
 #xpack.monitoring.elasticsearch.username: "logstash_system"
 #xpack.monitoring.elasticsearch.password: => "l12345"
@@ -140,21 +157,21 @@ kubectl delete -f metricbeat-kubernetes.yaml_bak -n ${NS}
 kubectl apply -f metricbeat-kubernetes.yaml_bak -n ${NS}
 
 #kubectl run -it busybox --image=alpine:3.6 -n monitoring --overrides='{ "spec": { "nodeSelector": { "team": "devops", "environment": "prod" } } }' -- sh
-#kubectl run -it busybox --image=alpine:3.6 -n es --overrides='{ "spec": { "nodeSelector": { "team": "devops", "environment": "elk" } } }' -- sh
+#kubectl run -it busybox --image=alpine:3.6 -n elk --overrides='{ "spec": { "nodeSelector": { "team": "devops", "environment": "elk" } } }' -- sh
 #nc -zv prometheus-kube-state-metrics.monitoring.svc.cluster.local 8080
 #curl http://prometheus-kube-state-metrics.monitoring.svc.cluster.local:8080/metrics
-#nc -zv elasticsearch-master.es.svc.cluster.local 9200
-#curl http://elasticsearch-master.es.svc.cluster.local:9200
+#nc -zv elasticsearch-master.elk.svc.cluster.local 9200
+#curl http://elasticsearch-master.elk.svc.cluster.local:9200
 
-kubectl -n es exec -it $(kubectl -n es get pod | grep kibana-kibana | awk '{print $1}') -- kibana-encryption-keys generate
+kubectl -n elk exec -it $(kubectl -n elk get pod | grep kibana-kibana | awk '{print $1}') -- kibana-encryption-keys generate
 
-kubectl -n es exec -it $(kubectl -n es get pod | grep elasticsearch-master-0 | awk '{print $1}') -- ssh
+kubectl -n elk exec -it $(kubectl -n elk get pod | grep elasticsearch-master-0 | awk '{print $1}') -- ssh
 #  elasticsearch-keystore remove xpack.notification.email.account.gmail_account.smtp.secure_password
   elasticsearch-keystore add xpack.notification.email.account.gmail_account.smtp.secure_password
   elasticsearch-keystore add xpack.notification.email.account.elastic.smtp.secure_password
   elasticsearch-keystore add xpack.notification.slack.account.monitoring.secure_url
   elasticsearch-keystore add xpack.notification.slack.account.elastic.secure_url
-  # https://hooks.slack.com/services/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
+  # https://hooks.slack.com/services/xxxxxxxxxx/xxxxxxxxxx/xxxxxxxxxx
   elasticsearch-keystore list
 
 
@@ -201,5 +218,5 @@ data:
   gcs.client.default.credentials_file: RWxhc3RpYyBDbG91ZCBvbiBLOHMgKEVDSykK
 
 
-kubectl run -it busybox --image=alpine:3.6 -n es --overrides='{ "spec": { "nodeSelector": { "team": "devops", "environment": "elk" } } }' -- sh
-curl --insecure https://elastic:Dlwpdldps\!323@elasticsearch-master.es.svc.cluster.local:9200
+kubectl run -it busybox --image=alpine:3.6 -n elk --overrides='{ "spec": { "nodeSelector": { "team": "devops", "environment": "elk" } } }' -- sh
+curl --insecure https://elastic:${admin_password}@elasticsearch-master.elk.svc.cluster.local:9200

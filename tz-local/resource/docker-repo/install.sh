@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 
 # https://kubernetes.io/ko/docs/tasks/configure-pod-container/pull-image-private-registry/
+# bash /vagrant/tz-local/resource/docker-repo/install.sh
+cd /vagrant/tz-local/resource/docker-repo
 
 #set -x
 shopt -s expand_aliases
 alias k='kubectl'
-
-# bash /vagrant/tz-local/resource/docker-repo/install.sh
-cd /vagrant/tz-local/resource/docker-repo
 
 function prop {
 	grep "${2}" "/home/vagrant/.aws/${1}" | head -n 1 | cut -d '=' -f2 | sed 's/ //g'
@@ -15,6 +14,7 @@ function prop {
 eks_project=$(prop 'project' 'project')
 eks_domain=$(prop 'project' 'domain')
 basic_password=$(prop 'project' 'basic_password')
+admin_password=$(prop 'project' 'admin_password')
 
 sudo apt-get update -y
 sudo apt-get -y install docker.io jq
@@ -23,10 +23,14 @@ sudo chown -Rf vagrant:vagrant /var/run/docker.sock
 
 mkdir -p ~/.docker
 
-docker login
+docker login -u="tzdevops" -p="${admin_password}"
+
+sleep 2
 
 cat ~/.docker/config.json
+mkdir -p /home/vagrant/.docker
 cp -Rf ~/.docker/config.json /home/vagrant/.docker/config.json
+sudo chown -Rf vagrant:vagrant /home/vagrant/.docker
 
 kubectl delete secret tz-registrykey
 kubectl create secret generic tz-registrykey \

@@ -1,0 +1,8 @@
+type: s3
+config:
+  bucket: devops-thanos-eks-main
+  endpoint: s3.ap-northeast-2.amazonaws.com
+  access_key: AKIAXDB35QWUAYBLDNSP
+  secret_key: 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
+  insecure: true
+

@@ -29,9 +29,11 @@ k delete -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/
 k apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 sleep 20
 k patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
-sleep 60
+sleep 120
 TMP_PASSWORD=$(k -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
-echo ${TMP_PASSWORD}
+echo "############################################"
+echo "TMP_PASSWORD: ${TMP_PASSWORD}"
+echo "############################################"
 
 VERSION=$(curl --silent "https://api.github.com/repos/argoproj/argo-cd/releases/latest" | grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/')
 sudo curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/download/$VERSION/argocd-linux-amd64
@@ -40,7 +42,7 @@ sudo chmod +x /usr/local/bin/argocd
 #brew install argoproj/tap/argocd
 #argocd
 
-argocd login `k get service -n argocd | grep argocd-server | awk '{print $4}' | head -n 1` --username admin --password ${TMP_PASSWORD} --insecure
+argocd login `k get service -n argocd | grep -w "argocd-server " | awk '{print $4}'` --username admin --password ${TMP_PASSWORD} --insecure
 argocd account update-password --account admin --current-password ${TMP_PASSWORD} --new-password ${admin_password}
 
 # basic auth
@@ -58,12 +60,14 @@ sed -i "s/AWS_REGION/${AWS_REGION}/g" ingress-argocd.yaml_bak
 k delete -f ingress-argocd.yaml_bak -n argocd
 k apply -f ingress-argocd.yaml_bak -n argocd
 
-bash /vagrant/tz-local/resource/argocd/update.sh
-bash /vagrant/tz-local/resource/argocd/update.sh
+k patch deploy/argocd-redis -p '{"spec": {"template": {"spec": {"imagePullSecrets": [{"name": "tz-registrykey"}]}}}}' -n argocd
 
 argocd login `k get service -n argocd | grep argocd-server | awk '{print $4}' | head -n 1` --username admin --password ${admin_password} --insecure
 argocd repo add https://github.com/tzkr/tz-helm-charts \
   --username devops-tz --password ${github_token}
+
+bash /vagrant/tz-local/resource/argocd/update.sh
+bash /vagrant/tz-local/resource/argocd/update.sh
 
 exit 0
 

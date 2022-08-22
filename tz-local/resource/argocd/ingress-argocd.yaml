@@ -1,5 +1,5 @@
 
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ingress-argocd
@@ -16,22 +16,25 @@ metadata:
 #    nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - admin'
 spec:
   rules:
-  - host: argocd.eks_domain
-    http:
-      paths:
-      - path: /
-        backend:
-          serviceName: argocd-server
-          servicePort: 443
+#  - host: argocd.eks_domain
+#    http:
+#      paths:
+#      - path: /
+#        backend:
+#          serviceName: argocd-server
+#          servicePort: 443
   - host: argocd.default.eks_project.eks_domain
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: argocd-server
-          servicePort: 443
+          service:
+            name: argocd-server
+            port:
+              number: 443
   tls:
     - hosts:
-        - argocd.eks_domain
+#        - argocd.eks_domain
         - argocd.default.eks_project.eks_domain
       secretName: ingress-argocd-tls

@@ -1,4 +1,4 @@
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ingress-grafana
@@ -12,22 +12,25 @@ metadata:
 #    nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - admin'
 spec:
   rules:
-  - host: grafana.eks_domain
-    http:
-      paths:
-      - path: /
-        backend:
-          serviceName: prometheus-grafana
-          servicePort: 3000
+#  - host: grafana.eks_domain
+#    http:
+#      paths:
+#      - path: /
+#        backend:
+#          serviceName: prometheus-grafana
+#          servicePort: 3000
   - host: grafana.default.eks_project.eks_domain
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: prometheus-grafana
-          servicePort: 3000
+          service:
+            name: prometheus-grafana
+            port:
+              number: 3000
   tls:
     - hosts:
-        - grafana.eks_domain
+#        - grafana.eks_domain
         - grafana.default.eks_project.eks_domain
       secretName: ingress-grafana-tls

@@ -7,6 +7,16 @@
     bash install.sh ${namespaces} ${eks_project} ${domain}
     ex) bash install.sh default eks-main tzcorp.com
             => curl http://test.default.eks-main.tzcorp.com
+        bash install.sh ib-dev eks-main tzcorp.com
+            => curl http://test.ib-dev.eks-main.tzcorp.com
+        bash install.sh devops
+            => curl http://test.devops.eks-main.tzcorp.com
+        bash install.sh devops-dev eks-main tzcorp.com
+            => curl http://test.devops-dev.eks-main.tzcorp.com
+        bash install.sh devops-dev eks-main devops.kr
+            => curl http://test.devops-dev.eks-main.tzcorp.com
+        bash install.sh devops eks-main devops.kr
+            => curl http://test.devops.eks-main.tzcorp.com
 
     2. make a ingress for the app
         cp nginx-ingress.yaml jenkins-ingress.yaml

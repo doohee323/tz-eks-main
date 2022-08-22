@@ -1,0 +1,24 @@
+apiVersion: consul.hashicorp.com/v1alpha1
+kind: ServiceRouter
+metadata:
+  name: static-server-router
+spec:
+  routes:
+    - match:
+        http:
+          pathPrefix: "/"
+      destination:
+        service: "static-server"
+
+#---
+#
+#apiVersion: consul.hashicorp.com/v1alpha1
+#kind: ServiceDefaults
+#metadata:
+#  name: static-server-default
+#spec:
+#  protocol: "http"
+#  upstreamConfig:
+#    defaults:
+#      meshGateway:
+#        mode: local

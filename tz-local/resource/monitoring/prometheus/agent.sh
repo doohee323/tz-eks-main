@@ -59,6 +59,3 @@ curl -v http://${HOST_IP}:9100/metrics
 #ssh -i devops ubuntu@10.0.2.167
 # 10.0.1.4
 # 10.0.2.52
-
-# ssh -i hyeonwootz.pem ubuntu@10.0.1.4
-# ssh -i hyeonwootz.pem ubuntu@10.0.2.52

@@ -1,5 +1,4 @@
-
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ingress-consul
@@ -21,31 +20,45 @@ spec:
 #        backend:
 #          serviceName: consul-server
 #          servicePort: 8500
-  - host: consul.eks_domain
-    http:
-      paths:
-      - path: /
-        backend:
-          serviceName: consul-ui
-          servicePort: 80
+#  - host: consul.eks_domain
+#    http:
+#      paths:
+#      - path: /
+#        backend:
+#          serviceName: consul-ui
+#          servicePort: 80
   - host: consul-server.default.eks_project.eks_domain
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: consul-server
-          servicePort: 8500
+          service:
+            name: consul-server
+            port:
+              number: 8500
   - host: consul.default.eks_project.eks_domain
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: consul-ui
-          servicePort: 80
+          service:
+            name: consul-ui
+            port:
+              number: 8500
+#  - host: consul.NS.eks_project.eks_domain
+#    http:
+#      paths:
+#      - path: /
+#        backend:
+#          serviceName: consul-ui
+#          servicePort: 8500
   tls:
     - hosts:
 #        - consul-server.eks_domain
-        - consul.eks_domain
+#        - consul.eks_domain
         - consul-server.default.eks_project.eks_domain
         - consul.default.eks_project.eks_domain
+#        - consul.NS.eks_project.eks_domain
       secretName: ingress-consul-tls

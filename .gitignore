@@ -32,3 +32,4 @@ unseal2.txt
 myoutput.txt
 cert
 *.zip
+/tz-local/resource/autoscaler/get_helm.sh

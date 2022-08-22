@@ -17,7 +17,7 @@ filebeatConfig:
     output.logstash:
       index: "api-access-%{+yyyy.MM.dd}"
       protocol: http
-	  hosts: ["logstash-logstash.es.svc.cluster.local:5044"]
+	  hosts: ["logstash-logstash.elk.svc.cluster.local:5044"]
       processors:
         - decode_json_fields:
           fields: ["log"]

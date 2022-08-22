@@ -36,7 +36,7 @@ C = NO
 ST = Oslo
 L = Oslo
 O = Personal
-emailAddress = devops@tz.gg
+emailAddress = devops@tz.com
 CN = ${SERVICE}.${NAMESPACE}.svc
 [ v3_req ]
 basicConstraints = CA:FALSE
@@ -56,7 +56,7 @@ openssl req -config ${TMPDIR}/${BASENAME}-csr.conf -new -key ${TMPDIR}/${BASENAM
 
 # Create a file ${TMPDIR}/${BASENAME}.yaml with the following contents
 cat <<EOF >${TMPDIR}/${BASENAME}-csr.yaml
-apiVersion: certificates.k8s.io/v1beta1
+apiVersion: certificates.k8s.io/v1
 kind: CertificateSigningRequest
 metadata:
   name: ${CSR_NAME}
@@ -64,6 +64,7 @@ spec:
   groups:
   - system:authenticated
   request: $(cat ${TMPDIR}/${BASENAME}.csr | base64 | tr -d '\n')
+  signerName: kubernetes.io/kube-apiserver-client
   usages:
   - digital signature
   - key encipherment
@@ -110,4 +111,3 @@ kubectl create secret generic ${SECRET_NAME} \
 
 # Verify the certificate:
 openssl x509 -in ${TMPDIR}/${BASENAME}.crt -noout -text
-

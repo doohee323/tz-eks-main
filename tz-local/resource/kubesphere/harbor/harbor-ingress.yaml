@@ -1,0 +1,56 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-harbor
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+#    nginx.ingress.kubernetes.io/auth-type: basic
+#    nginx.ingress.kubernetes.io/auth-secret: basic-auth-harbor
+#    nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - admin'
+spec:
+  rules:
+  - host: harbor.NS.eks_project.eks_domain
+    http:
+      paths:
+      - path: /*
+        pathType: Prefix
+        backend:
+          service:
+            name: harbor-mm3d67-harbor-portal
+            port:
+              number: 8080
+#      - path: /api/*
+#        backend:
+#          serviceName: harbor-mm3d67-harbor-core
+#          servicePort: 80
+#      - path: /service/*
+#        backend:
+#          serviceName: harbor-mm3d67-harbor-core
+#          servicePort: 80
+#      - path: /v2/*
+#        backend:
+#          serviceName: harbor-mm3d67-harbor-core
+#          servicePort: 80
+#      - path: /chartrepo/*
+#        backend:
+#          serviceName: harbor-mm3d67-harbor-core
+#          servicePort: 80
+#      - path: /c/*
+#        backend:
+#          serviceName: harbor-mm3d67-harbor-core
+#          servicePort: 80
+#  - host: notary.NS.eks_project.eks_domain
+#    http:
+#      paths:
+#      - path: /
+#        backend:
+#          serviceName: harbor-mm3d67-harbor-notary-server
+#          servicePort: 4443
+  tls:
+    - hosts:
+        - harbor.NS.eks_project.eks_domain
+#        - notary.NS.eks_project.eks_domain
+      secretName: ingress-harbor-tls

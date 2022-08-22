@@ -10,7 +10,7 @@ prometheusOperator:
      cpu: 100m
      memory: 100Mi
   nodeSelector:
-    environment: prod
+    environment: monitoring
     team: devops
 #  affinity:
 #    nodeAffinity:
@@ -24,10 +24,30 @@ prometheusOperator:
 #           - e2e-az2
 
 prometheus:
+  disableCompaction: true
+  externalLabels:
+    cluster: data-producer-0
   prometheusSpec:
     externalUrl: https://prometheus.default.eks_project.eks_domain
+    thanos:
+      image: docker.io/bitnami/thanos
+      version: v0.18.1
+      objectStorageConfig:
+        key: thanos-objstore.yml
+        name: thanos-objstore-secret
+      minTime: -3h
+    thanosService:
+      clusterIP: ""
+      enabled: true
+      port: 10901
+      portName: grpc
+      targetPort: grpc
+      type: ClusterIP
+    thanosServiceMonitor:
+      enabled: true
+      interval: 5s
     nodeSelector:
-      environment: prod
+      environment: monitoring
       team: devops
 #    podAntiAffinity: ""
 #    podAntiAffinityTopologyKey: kubernetes.io/hostname
@@ -125,6 +145,18 @@ prometheus:
           module: [http_2xx]
         static_configs:
           - targets:
+            - https://ext-ea.b9.to/admin
+            - https://pubgct.btd.gg
+            - https://api.gocre.jp/api/health
+            - https://gocre.jp
+            - http://tz.com
+            - https://tz.com
+            - http://tz.kr
+            - https://tz.kr
+            - http://www.tz.kr
+            - https://www.tz.kr
+            - http://tzcorp.com
+            - https://tzcorp.com
             - http://jenkins.tzcorp.com/login
             - https://argocd.tzcorp.com
             - https://grafana.tzcorp.com
@@ -132,6 +164,9 @@ prometheus:
             - https://alertmanager.default.eks_project.tzcorp.com
             - https://vault.tzcorp.com
             - https://consul.tzcorp.com
+            - https://api.devops.kr
+            - https://devops.kr
+            - https://ranking.devops.kr
         relabel_configs:
           - source_labels: [__address__]
             target_label: __param_target
@@ -145,13 +180,13 @@ prometheus:
           - targets:
             # jenkins
             - 20.10.11.28:9090
-            # tgdre-job
+            # devopsre-job
             - 10.0.1.138:9090
-            # tgdre-prod
+            # devopsre-prod
             - 10.0.2.184:9090
             - 10.0.1.212:9090
             - 10.0.1.221:9090
-            # tgdkr-mrd
+            # devopskr-mrd
             - 54.180.146.14:9090
         scheme: http
       - job_name: 'node-exporter'
@@ -160,11 +195,11 @@ prometheus:
           - targets:
             # jenkins
             - 20.10.11.28:9100
-            # tgdre-job
+            # devopsre-job
             - 10.0.1.138:9100
-            # tgdre-prod
+            # devopsre-prod
             - 10.0.2.184:9100
             - 10.0.1.212:9100
             - 10.0.1.221:9100
-            # tgdkr-mrd
+            # devopskr-mrd
             - 54.180.146.14:9100

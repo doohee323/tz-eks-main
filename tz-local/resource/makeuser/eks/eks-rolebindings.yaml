@@ -6,6 +6,18 @@ subjects:
 - kind: User
   name: doogee.hong
   apiGroup: rbac.authorization.k8s.io
+- kind: User
+  name: hyeonwoo
+  apiGroup: rbac.authorization.k8s.io
+- kind: User
+  name: sm.ku
+  apiGroup: rbac.authorization.k8s.io
+- kind: User
+  name: ec.song
+  apiGroup: rbac.authorization.k8s.io
+- kind: User
+  name: jeonghee.kang
+  apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: ClusterRole
   name: ns-list
@@ -25,3 +37,75 @@ roleRef:
   kind: Role
   name: devops-manager
   apiGroup: rbac.authorization.k8s.io
+
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: devops
+  name: devops-manager-binding
+subjects:
+- kind: User
+  name: sm.ku
+  apiGroup: rbac.authorization.k8s.io
+- kind: User
+  name: jeonghee.kang
+  apiGroup: rbac.authorization.k8s.io
+- kind: User
+  name: doogee.hong
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: devops-manager
+  apiGroup: rbac.authorization.k8s.io
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: devops-dev
+  name: devops-manager-binding-dev
+subjects:
+- kind: User
+  name: sm.ku
+  apiGroup: rbac.authorization.k8s.io
+- kind: User
+  name: jeonghee.kang
+  apiGroup: rbac.authorization.k8s.io
+- kind: User
+  name: doogee.hong
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: devops-manager-dev
+  apiGroup: rbac.authorization.k8s.io
+
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: datateam
+  name: datateam-manager-binding
+subjects:
+- kind: User
+  name: ec.song
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: datateam-manager
+  apiGroup: rbac.authorization.k8s.io
+
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: datateam-dev
+  name: datateam-manager-binding-dev
+subjects:
+- kind: User
+  name: ec.song
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: datateam-manager-dev
+  apiGroup: rbac.authorization.k8s.io
+

@@ -16,38 +16,39 @@ eks_domain=$(prop 'project' 'domain')
 VAULT_TOKEN=$(prop 'project' 'vault')
 AWS_REGION=$(prop 'config' 'region')
 
-export VAULT_ADDR="https://vault.default.${eks_project}.${eks_domain}"
+export VAULT_ADDR="http://vault.default.${eks_project}.${eks_domain}"
 vault login ${VAULT_TOKEN}
 
 curl -s ${VAULT_ADDR}/v1/sys/seal-status | jq
-EXTERNAL_VAULT_ADDR="https://vault.default.${eks_project}.${eks_domain}"
+EXTERNAL_VAULT_ADDR="http://vault.default.${eks_project}.${eks_domain}"
 echo $EXTERNAL_VAULT_ADDR
+
+bash /vagrant/tz-local/resource/vault/vault-injection/cert.sh
+kubectl get csr -o name | xargs kubectl certificate approve
+
+vault secrets enable -path=secret/ kv
+vault auth enable kubernetes
 
 #kubectl -n vault create serviceaccount vault-auth
 cp -Rf vault-auth-service-account.yaml vault-auth-service-account.yaml_bak
 sed -i "s/namespace: vault/namespace: vault/g" vault-auth-service-account.yaml_bak
 kubectl -n vault delete -f vault-auth-service-account.yaml_bak
 kubectl -n vault create -f vault-auth-service-account.yaml_bak
-export VAULT_SA_NAME=$(kubectl -n vault get sa vault-auth -o jsonpath="{.secrets[*]['name']}")
-export SA_JWT_TOKEN=$(kubectl -n vault get secret $VAULT_SA_NAME -o jsonpath="{.data.token}" | base64 --decode; echo)
-export SA_CA_CRT=$(kubectl -n vault get secret $VAULT_SA_NAME -o jsonpath="{.data['ca\.crt']}" | base64 --decode; echo)
-pushd `pwd`
-cd /vagrant/terraform-aws-eks/workspace/base
-export K8S_HOST=$(terraform output | grep 'cluster_endpoint' |  cut -d '=' -f2 | sed 's/ //g')
-echo "K8S_HOST: ${K8S_HOST}"
-echo "SA_JWT_TOKEN: ${SA_JWT_TOKEN}"
-echo "SA_CA_CRT: ${SA_CA_CRT}"
-popd
+# Prepare kube api server data
+export SECRET_NAME="$(kubectl -n vault get serviceaccount vault-auth  -o go-template='{{ (index .secrets 0).name }}')"
+export TR_ACCOUNT_TOKEN="$(kubectl -n vault get secret ${SECRET_NAME} -o go-template='{{ .data.token }}' | base64 --decode)"
+export K8S_API_SERVER="$(kubectl -n vault config view --raw -o go-template="{{ range .clusters }}{{ index .cluster \"server\" }}{{ end }}")"
+export K8S_CACERT="$(kubectl -n vault config view --raw -o go-template="{{ range .clusters }}{{ index .cluster \"certificate-authority-data\" }}{{ end }}" | base64 --decode)"
+echo "SECRET_NAME: ${SECRET_NAME}"
+echo "TR_ACCOUNT_TOKEN: ${TR_ACCOUNT_TOKEN}"
+echo "K8S_API_SERVER: ${K8S_API_SERVER}"
+echo "K8S_CACERT: ${K8S_CACERT}"
 
-bash /vagrant/tz-local/resource/vault/vault-injection/cert.sh
-
-kubectl get csr -o name | xargs kubectl certificate approve
-vault secrets enable -path=secret/ kv
-vault auth enable kubernetes
+# Send kube config to vault
 vault write auth/kubernetes/config \
-        token_reviewer_jwt="$SA_JWT_TOKEN" \
-        kubernetes_host="$K8S_HOST" \
-        kubernetes_ca_cert="$SA_CA_CRT"
+        kubernetes_host="${K8S_API_SERVER}"
+        kubernetes_ca_cert="${K8S_CACERT}"
+        token_reviewer_jwt="${TR_ACCOUNT_TOKEN}"
 
 vault write auth/kubernetes/role/devops-dev \
         bound_service_account_names=vault-auth \
@@ -68,7 +69,7 @@ exit 0
 #apk update
 #apk add curl jq
 
-export VAULT_ADDR="https://vault.default.${eks_project}.${eks_domain}"
+export VAULT_ADDR="http://vault.default.${eks_project}.${eks_domain}"
 #export VAULT_ADDR=http://10.20.4.13:8200
 #export SA_JWT_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
 
@@ -166,3 +167,36 @@ kubectl -n vault create -f auto-auth.yaml
 kubectl -n vault apply -f auto-auth-pod.yaml --record
 
 
+kubectl run -it busybox --image=ubuntu:16.04 -n vault -- sh
+apt update
+apt install netcat curl iputils-ping telnet -y
+
+export VAULT_ADDR=http://vault.vault.svc.cluster.local:8200
+telnet vault.vault.svc.cluster.local 8200
+telnet vault.vault.svc.cluster.local 8201
+
+
+
+
+exit 0
+
+
+export VAULT_SA_NAME=$(kubectl -n vault get sa vault-auth -o jsonpath="{.secrets[*]['name']}")
+export SA_JWT_TOKEN=$(kubectl -n vault get secret $VAULT_SA_NAME -o jsonpath="{.data.token}" | base64 --decode; echo)
+export SA_CA_CRT=$(kubectl -n vault get secret $VAULT_SA_NAME -o jsonpath="{.data['ca\.crt']}" | base64 --decode; echo)
+pushd `pwd`
+cd /vagrant/terraform-aws-eks/workspace/base
+export K8S_HOST=$(terraform output | grep 'cluster_endpoint' |  cut -d '=' -f2 | sed 's/ //g')
+echo "K8S_HOST: ${K8S_HOST}"
+echo "SA_JWT_TOKEN: ${SA_JWT_TOKEN}"
+echo "SA_CA_CRT: ${SA_CA_CRT}"
+popd
+
+vault secrets enable -path=secret/ kv
+vault auth enable kubernetes
+vault write auth/kubernetes/config \
+        token_reviewer_jwt="$SA_JWT_TOKEN" \
+        kubernetes_host="$K8S_HOST" \
+        kubernetes_ca_cert="$SA_CA_CRT" \
+        issuer="https://kubernetes.default.svc.cluster.local"
+#        disable_iss_validation=true

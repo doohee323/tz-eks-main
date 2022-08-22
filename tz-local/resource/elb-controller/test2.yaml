@@ -1,4 +1,4 @@
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ingress-external-test
@@ -13,13 +13,16 @@ spec:
   rules:
     - http:
         paths:
-          - path: /*
+          - path: /
+            pathType: Prefix
             backend:
-              serviceName: ingress-test
-              servicePort: 80
+              service:
+                name: ingress-test
+                port:
+                  number: 80
 
 ---
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ingress-internal-test
@@ -30,10 +33,13 @@ spec:
   rules:
     - http:
         paths:
-          - path: /*
+          - path: /
+            pathType: Prefix
             backend:
-              serviceName: ingress-test
-              servicePort: 80
+              service:
+                name: ingress-test
+                port:
+                  number: 80
 
 ---
 
@@ -73,4 +79,3 @@ spec:
       targetPort: 80
       nodePort: 30012
   type: LoadBalancer
-

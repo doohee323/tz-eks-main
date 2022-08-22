@@ -23,18 +23,32 @@ datadog:
   # ref: https://app.datadoghq.com/account/settings#agent/kubernetes
   apiKey: datadog_apikey
 
-  # datadog.apiKeyExistingSecret -- Use existing Secret which stores API key instead of creating a new one
+  # datadog.apiKeyExistingSecret -- Use existing Secret which stores API key instead of creating a new one. The value should be set with the `api-key` key inside the secret.
   ## If set, this parameter takes precedence over "apiKey".
 #  apiKeyExistingSecret:  # <DATADOG_API_KEY_SECRET>
 
   # datadog.appKey -- Datadog APP key required to use metricsProvider
   ## If you are using clusterAgent.metricsProvider.enabled = true, you must set
   ## a Datadog application key for read access to your metrics.
-#  appKey:  # <DATADOG_APP_KEY>
+  appKey:  datadog_appkey
 
-  # datadog.appKeyExistingSecret -- Use existing Secret which stores APP key instead of creating a new one
+  # datadog.appKeyExistingSecret -- Use existing Secret which stores APP key instead of creating a new one. The value should be set with the `app-key` key inside the secret.
   ## If set, this parameter takes precedence over "appKey".
 #  appKeyExistingSecret:  # <DATADOG_APP_KEY_SECRET>
+
+  ## Configure the secret backend feature https://docs.datadoghq.com/agent/guide/secrets-management
+  ## Examples: https://docs.datadoghq.com/agent/guide/secrets-management/#setup-examples-1
+  #secretBackend:
+    # datadog.secretBackend.command -- Configure the secret backend command, path to the secret backend binary.
+    ## Note: If the command value is "/readsecret_multiple_providers.sh" the agents will have permissions to get secret objects.
+    ## Read more about "/readsecret_multiple_providers.sh": https://docs.datadoghq.com/agent/guide/secrets-management/#script-for-reading-from-multiple-secret-providers-readsecret_multiple_providerssh
+#    command:  # "/readsecret.sh" or "/readsecret_multiple_providers.sh" or any custom binary path
+
+    # datadog.secretBackend.arguments -- Configure the secret backend command arguments (space-separated strings).
+#    arguments:  # "/etc/secret-volume" or any other custom arguments
+
+    # datadog.secretBackend.timeout -- Configure the secret backend command timeout in seconds.
+#    timeout:  # 30
 
   # datadog.securityContext -- Allows you to overwrite the default PodSecurityContext on the Daemonset or Deployment
   securityContext: {}
@@ -56,7 +70,7 @@ datadog:
   ## * Overall length should not be higher than 80 characters.
   ## Compared to the rules of GKE, dots are allowed whereas they are not allowed on GKE:
   ## https://cloud.google.com/kubernetes-engine/docs/reference/rest/v1beta1/projects.locations.clusters#Cluster.FIELDS.name
-  clusterName: eks_project
+#  clusterName: eks_project
 
   # datadog.site -- The site of the Datadog intake to send Agent data to
   ## Set to 'datadoghq.eu' to send data to the EU site.
@@ -67,11 +81,11 @@ datadog:
 #  dd_url:  # https://app.datadoghq.com
 
   # datadog.logLevel -- Set logging verbosity, valid log levels are: trace, debug, info, warn, error, critical, off
-  logLevel: INFO
+  logLevel: error
 
   # datadog.kubeStateMetricsEnabled -- If true, deploys the kube-state-metrics deployment
   ## ref: https://github.com/kubernetes/kube-state-metrics/tree/kube-state-metrics-helm-chart-2.13.2/charts/kube-state-metrics
-  kubeStateMetricsEnabled: true
+  kubeStateMetricsEnabled: false
 
   kubeStateMetricsNetworkPolicy:
     # datadog.kubeStateMetricsNetworkPolicy.create -- If true, create a NetworkPolicy for kube state metrics
@@ -87,37 +101,69 @@ datadog:
     ## Migration guide: https://docs.datadoghq.com/integrations/kubernetes_state_core/?tab=helm#migration-from-kubernetes_state-to-kubernetes_state_core
     ignoreLegacyKSMCheck: true
 
+    # datadog.kubeStateMetricsCore.collectSecretMetrics -- Enable watching secret objects and collecting their corresponding metrics kubernetes_state.secret.*
+    ## Configuring this field will change the default kubernetes_state_core check configuration and the RBACs granted to Datadog Cluster Agent to run the kubernetes_state_core check.
+    collectSecretMetrics: false
+
+    # datadog.kubeStateMetricsCore.useClusterCheckRunners -- For large clusters where the Kubernetes State Metrics Check Core needs to be distributed on dedicated workers.
+    ## Configuring this field will create a separate deployment which will run Cluster Checks, including Kubernetes State Metrics Core.
+    ## ref: https://docs.datadoghq.com/agent/cluster_agent/clusterchecksrunner?tab=helm
+    useClusterCheckRunners: false
+
+    # datadog.kubeStateMetricsCore.labelsAsTags -- Extra labels to collect from resources and to turn into datadog tag.
+    ## It has the following structure:
+    ## labelsAsTags:
+    ##   <resource1>:        # can be pod, deployment, node, etc.
+    ##     <label1>: <tag1>  # where <label1> is the kubernetes label and <tag1> is the datadog tag
+    ##     <label2>: <tag2>
+    ##   <resource2>:
+    ##     <label3>: <tag3>
+    ##
+    ## Warning: the label must match the transformation done by kube-state-metrics,
+    ## for example tags.datadoghq.com/version becomes label_tags_datadoghq_com_version.
+    labelsAsTags: {}
+    #  pod:
+    #    app: app
+    #  node:
+    #    zone: zone
+    #    team: team
+
   ## Manage Cluster checks feature
   ## ref: https://docs.datadoghq.com/agent/autodiscovery/clusterchecks/
   ## Autodiscovery via Kube Service annotations is automatically enabled
   clusterChecks:
     # datadog.clusterChecks.enabled -- Enable the Cluster Checks feature on both the cluster-agents and the daemonset
-    enabled: true
+    enabled: false
 
   # datadog.nodeLabelsAsTags -- Provide a mapping of Kubernetes Node Labels to Datadog Tags
-  nodeLabelsAsTags:
-    cluster-name: eks_project-node
+#  nodeLabelsAsTags:
+#    cluster-name: eks_project-node
   #   beta.kubernetes.io/instance-type: aws-instance-type
   #   kubernetes.io/role: kube_role
   #   <KUBERNETES_NODE_LABEL>: <DATADOG_TAG_KEY>
 
   # datadog.podLabelsAsTags -- Provide a mapping of Kubernetes Labels to Datadog Tags
-  podLabelsAsTags:
-    cluster-name: eks_project-pod
+#  podLabelsAsTags:
+#    cluster-name: eks_project-pod
   #   app: kube_app
   #   release: helm_release
   #   <KUBERNETES_LABEL>: <DATADOG_TAG_KEY>
 
   # datadog.podAnnotationsAsTags -- Provide a mapping of Kubernetes Annotations to Datadog Tags
-  podAnnotationsAsTags:
-    cluster-name: eks_project-podanno
+#  podAnnotationsAsTags:
+#    cluster-name: eks_project-podanno
   #   iam.amazonaws.com/role: kube_iamrole
   #   <KUBERNETES_ANNOTATIONS>: <DATADOG_TAG_KEY>
 
+  # datadog.namespaceLabelsAsTags -- Provide a mapping of Kubernetes Namespace Labels to Datadog Tags
+  namespaceLabelsAsTags: {}
+  #   env: environment
+  #   <KUBERNETES_NAMESPACE_LABEL>: <DATADOG_TAG_KEY>
+
   # datadog.tags -- List of static tags to attach to every metric, event and service check collected by this Agent.
   ## Learn more about tagging: https://docs.datadoghq.com/tagging/
-  tags:
-    - cluster-name: eks_project
+#  tags:
+#    - cluster-name: eks_project
   #   - "<KEY_1>:<VALUE_1>"
   #   - "<KEY_2>:<VALUE_2>"
 
@@ -142,6 +188,9 @@ datadog:
     # @default -- /var/run/host-kubelet-ca.crt if hostCAPath else /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
     agentCAPath:
 
+  # datadog.expvarPort -- Specify the port to expose pprof and expvar to not interfer with the agentmetrics port from the cluster-agent, which defaults to 5000
+  expvarPort: 6000
+
   ## dogstatsd configuration
   ## ref: https://docs.datadoghq.com/agent/kubernetes/dogstatsd/
   ## To emit custom metrics from your Kubernetes application, use DogStatsD.
@@ -156,8 +205,8 @@ datadog:
 
     # datadog.dogstatsd.tags -- List of static tags to attach to every custom metric, event and service check collected by Dogstatsd.
     ## Learn more about tagging: https://docs.datadoghq.com/tagging/
-    tags:
-      - cluster-name: eks_project
+#    tags:
+#      - cluster-name: eks_project
     #   - "<KEY_1>:<VALUE_1>"
     #   - "<KEY_2>:<VALUE_2>"
 
@@ -181,12 +230,12 @@ datadog:
     ##
     ## WARNING: Make sure that hosts using this are properly firewalled otherwise
     ## metrics and traces are accepted from any host able to connect to this host.
-    useHostPort: false
+    useHostPort: true
 
     # datadog.dogstatsd.useHostPID -- Run the agent in the host's PID namespace
     ## This is required for Dogstatsd origin detection to work.
     ## See https://docs.datadoghq.com/developers/dogstatsd/unix_socket/
-    useHostPID: false
+    useHostPID: true
 
     # datadog.dogstatsd.nonLocalTraffic -- Enable this to make each node accept non-local statsd traffic (from outside of the pod)
     ## ref: https://github.com/DataDog/docker-dd-agent#environment-variables
@@ -194,7 +243,7 @@ datadog:
 
   # datadog.collectEvents -- Enables this to start event collection from the kubernetes API
   ## ref: https://docs.datadoghq.com/agent/kubernetes/#event-collection
-  collectEvents: true
+  collectEvents: false
 
   # datadog.leaderElection -- Enables leader election mechanism for event collection
   leaderElection: true
@@ -217,13 +266,17 @@ datadog:
     ## ref: https://docs.datadoghq.com/agent/basic_agent_usage/kubernetes/#log-collection-setup
     containerCollectUsingFiles: true
 
+    # datadog.logs.autoMultiLineDetection -- Allows the Agent to detect common multi-line patterns automatically.
+    ## ref: https://docs.datadoghq.com/agent/logs/advanced_log_collection/?tab=configurationfile#automatic-multi-line-aggregation
+    autoMultiLineDetection: true
+
   ## Enable apm agent and provide custom configs
   apm:
     # datadog.apm.socketEnabled -- Enable APM over Socket (Unix Socket or windows named pipe)
     ## ref: https://docs.datadoghq.com/agent/kubernetes/apm/
-    socketEnabled: true
+    socketEnabled: false
 
-    # datadog.apm.portEnabled -- Enable APM over TCP communication (port 8216 by default
+    # datadog.apm.portEnabled -- Enable APM over TCP communication (port 8126 by default)
     ## ref: https://docs.datadoghq.com/agent/kubernetes/apm/
     portEnabled: false
 
@@ -291,32 +344,24 @@ datadog:
   # datadog.criSocketPath -- Path to the container runtime socket (if different from Docker)
   criSocketPath:  # /var/run/containerd/containerd.sock
 
-  # datadog.serviceTopology -- Configure service topology to send custom metrics and traces without using host ports
-  # Important notes:
-  # - The Service Topology feature in Kubernetes is still in alpha and disabled by default, please make sure it's enabled in your cluster configuration
-  # - The environment variable DD_AGENT_HOST in your application pod template must be configured to reach the topology service
-  ## ref: https://kubernetes.io/docs/concepts/services-networking/service-topology/
-  serviceTopology:
-
-    # datadog.serviceTopology.enabled -- Enabling this will allow sending custom metrics and APM traces to the Datadog Agent on the same node without using a host port
-    # Important note: Enabling this option without enabling Service Topology in the cluster will result in wrong tagging for traces and custom metrics
-    enabled: false
-
-    # datadog.serviceTopology.serviceName -- Configure the name of the service responsible for routing the custom metrics and/or traces to the Datadog Agent
-    # Important note: DD_AGENT_HOST must be configured in your app to target this service.
-    # Example using DNS record: DD_AGENT_HOST=datadog-agent.<datadog-namespace>.svc.cluster.local
-    serviceName: datadog-agent
-
   ## Enable process agent and provide custom configs
   processAgent:
     # datadog.processAgent.enabled -- Set this to true to enable live process monitoring agent
     ## Note: /etc/passwd is automatically mounted to allow username resolution.
     ## ref: https://docs.datadoghq.com/graphing/infrastructure/process/#kubernetes-daemonset
-    enabled: true
+    enabled: false
 
     # datadog.processAgent.processCollection -- Set this to true to enable process collection in process monitoring agent
     ## Requires processAgent.enabled to be set to true to have any effect
     processCollection: false
+
+    # datadog.processAgent.stripProcessArguments -- Set this to scrub all arguments from collected processes
+    ## Requires processAgent.enabled and processAgent.processCollection to be set to true to have any effect
+    ## ref: https://docs.datadoghq.com/infrastructure/process/?tab=linuxwindows#process-arguments-scrubbing
+    stripProcessArguments: false
+
+    # datadog.processAgent.processDiscovery -- Enables or disables autodiscovery of integrations
+    processDiscovery: false
 
   ## Enable systemProbe agent and provide custom configs
   systemProbe:
@@ -326,7 +371,7 @@ datadog:
 
     # datadog.systemProbe.enableConntrack -- Enable the system-probe agent to connect to the netlink/conntrack subsystem to add NAT information to connection data
     ## Ref: http://conntrack-tools.netfilter.org/
-    enableConntrack: true
+    enableConntrack: false
 
     # datadog.systemProbe.seccomp -- Apply an ad-hoc seccomp profile to the system-probe agent to restrict its privileges
     ## Note that this will break `kubectl exec … -c system-probe -- /bin/bash`
@@ -347,8 +392,26 @@ datadog:
     # datadog.systemProbe.enableOOMKill -- Enable the OOM kill eBPF-based check
     enableOOMKill: false
 
+    # datadog.systemProbe.enableRuntimeCompiler -- Enable the runtime compiler for eBPF probes
+    enableRuntimeCompiler: false
+
+    # datadog.systemProbe.mountPackageManagementDirs -- Enables mounting of specific package management directories when runtime compilation is enabled
+    mountPackageManagementDirs: []
+    ## For runtime compilation to be able to download kernel headers, the host's package management folders
+    ## must be mounted to the /host directory. For example, for Ubuntu & Debian the following mount would be necessary:
+    # - name: "apt-config-dir"
+    #   hostPath: /etc/apt
+    #   mountPath: /host/etc/apt
+    ## If this list is empty, then all necessary package management directories (for all supported OSs) will be mounted.
+
+    # datadog.systemProbe.osReleasePath -- Specify the path to your os-release file if you don't want to attempt mounting all `/etc/*-release` file by default
+    #osReleasePath:
+
+    # datadog.systemProbe.runtimeCompilationAssetDir -- Specify a directory for runtime compilation assets to live in
+    runtimeCompilationAssetDir: /var/tmp/datadog-agent/system-probe
+
     # datadog.systemProbe.collectDNSStats -- Enable DNS stat collection
-    collectDNSStats: true
+    collectDNSStats: false
 
     # datadog.systemProbe.maxTrackedConnections -- the maximum number of tracked connections
     maxTrackedConnections: 131072
@@ -356,22 +419,30 @@ datadog:
     # datadog.systemProbe.conntrackMaxStateSize -- the maximum size of the userspace conntrack cache
     conntrackMaxStateSize: 131072  # 2 * maxTrackedConnections by default, per  https://github.com/DataDog/datadog-agent/blob/d1c5de31e1bba72dfac459aed5ff9562c3fdcc20/pkg/process/config/config.go#L229
 
+    # datadog.systemProbe.conntrackInitTimeout -- the time to wait for conntrack to initialize before failing
+    conntrackInitTimeout: 10s
 
   orchestratorExplorer:
     # datadog.orchestratorExplorer.enabled -- Set this to false to disable the orchestrator explorer
     ## This requires processAgent.enabled and clusterAgent.enabled to be set to true
     ## ref: TODO - add doc link
-    enabled: true
+    enabled: false
 
     # datadog.orchestratorExplorer.container_scrubbing -- Enable the scrubbing of containers in the kubernetes resource YAML for sensitive information
     ## The container scrubbing is taking significant resources during data collection.
     ## If you notice that the cluster-agent uses too much CPU in larger clusters
     ## turning this option off will improve the situation.
     container_scrubbing:
-      enabled: true
+      enabled: false
 
   networkMonitoring:
     # datadog.networkMonitoring.enabled -- Enable network performance monitoring
+    enabled: false
+
+  ## Universal Service Monitoring is currently in private beta.
+  ## See https://www.datadoghq.com/blog/universal-service-monitoring-datadog/ for more details and private beta signup.
+  serviceMonitoring:
+    # datadog.serviceMonitoring.enabled -- Enable Universal Service Monitoring
     enabled: false
 
   ## Enable security agent and provide custom configs
@@ -401,7 +472,7 @@ datadog:
   ## Manage NetworkPolicy
   networkPolicy:
     # datadog.networkPolicy.create -- If true, create NetworkPolicy for all the components
-    create: false
+    create: true
 
     # datadog.networkPolicy.flavor -- Flavor of the network policy to use.
     # Can be:
@@ -449,7 +520,7 @@ datadog:
   # datadog.containerExclude -- Exclude containers from the Agent
   # Autodiscovery, as a space-sepatered list
   ## ref: https://docs.datadoghq.com/agent/guide/autodiscovery-management/?tab=containerizedagent#exclude-containers
-#  containerExclude:  # "image:datadog/agent"
+  containerExclude:  "image:bpineau/katafygio"
 
   # datadog.containerInclude -- Include containers in the Agent Autodiscovery,
   # as a space-separated list.  If a container matches an include rule, it’s
@@ -484,7 +555,7 @@ datadog:
 ## ref: https://docs.datadoghq.com/agent/kubernetes/cluster/
 clusterAgent:
   # clusterAgent.enabled -- Set this to false to disable Datadog Cluster Agent
-  enabled: true
+  enabled: false
 
   ## Define the Datadog Cluster-Agent image to work with
   image:
@@ -492,7 +563,7 @@ clusterAgent:
     name: cluster-agent
 
     # clusterAgent.image.tag -- Cluster Agent image tag to use
-    tag: 1.15.0
+    tag: 1.17.0
 
     # clusterAgent.image.repository -- Override default registry + image.name for Cluster Agent
     repository:
@@ -559,7 +630,7 @@ clusterAgent:
     useDatadogMetrics: false
 
     # clusterAgent.metricsProvider.createReaderRbac -- Create `external-metrics-reader` RBAC automatically (to allow HPA to read data from Cluster Agent)
-    createReaderRbac: true
+    createReaderRbac: false
 
     # clusterAgent.metricsProvider.aggregator -- Define the aggregator the cluster agent will use to process the metrics. The options are (avg, min, max, sum)
     aggregator: avg
@@ -580,62 +651,76 @@ clusterAgent:
   ## ref: https://docs.datadoghq.com/agent/cluster_agent/commands/#cluster-agent-options
   env: []
 
+  # clusterAgent.envFrom --  Set environment variables specific to Cluster Agent from configMaps and/or secrets
+  ## The Cluster-Agent supports many additional environment variables
+  ## ref: https://docs.datadoghq.com/agent/cluster_agent/commands/#cluster-agent-options
+  envFrom: []
+  #   - configMapRef:
+  #       name: <CONFIGMAP_NAME>
+  #   - secretRef:
+  #       name: <SECRET_NAME>
+
   admissionController:
     # clusterAgent.admissionController.enabled -- Enable the admissionController to be able to inject APM/Dogstatsd config and standard tags (env, service, version) automatically into your pods
-    enabled: false
+    enabled: true
 
     # clusterAgent.admissionController.mutateUnlabelled -- Enable injecting config without having the pod label 'admission.datadoghq.com/enabled="true"'
     mutateUnlabelled: false
 
-  # clusterAgent.confd -- Provide additional cluster check configurations
-  ## Each key will become a file in /conf.d
+  # clusterAgent.confd -- Provide additional cluster check configurations. Each key will become a file in /conf.d.
   ## ref: https://docs.datadoghq.com/agent/autodiscovery/
   confd: {}
   #   mysql.yaml: |-
   #     cluster_check: true
   #     instances:
-  #       - server: '<EXTERNAL_IP>'
+  #       - host: <EXTERNAL_IP>
   #         port: 3306
-  #         user: datadog
-  #         pass: '<YOUR_CHOSEN_PASSWORD>'
+  #         username: datadog
+  #         password: <YOUR_CHOSEN_PASSWORD>
 
-  # clusterAgent.advancedConfd -- Provide additional cluster check configurations
-  ## Each key is an integration containing several config files, it replaces clusterAgent.confd if set
+  # clusterAgent.advancedConfd -- Provide additional cluster check configurations. Each key is an integration containing several config files.
   ## ref: https://docs.datadoghq.com/agent/autodiscovery/
   advancedConfd: {}
   #  mysql.d:
   #    1.yaml: |-
   #      cluster_check: true
   #      instances:
-  #        - server: '<EXTERNAL_IP>'
+  #        - host: <EXTERNAL_IP>
   #          port: 3306
-  #          user: datadog
-  #          pass: '<YOUR_CHOSEN_PASSWORD>'
+  #          username: datadog
+  #          password: <YOUR_CHOSEN_PASSWORD>
   #    2.yaml:  |-
   #      cluster_check: true
   #      instances:
-  #        - server: '<EXTERNAL_IP>'
+  #        - host: <EXTERNAL_IP>
   #          port: 3306
-  #          user: datadog
-  #          pass: '<YOUR_CHOSEN_PASSWORD>'
+  #          username: datadog
+  #          password: <YOUR_CHOSEN_PASSWORD>
 
   # clusterAgent.resources -- Datadog cluster-agent resource requests and limits.
-  requests:
-    cpu: 200m
-    memory: 256Mi
-  limits:
-    cpu: 200m
-    memory: 256Mi
+  resources: {}
+  # requests:
+  #   cpu: 200m
+  #   memory: 256Mi
+  # limits:
+  #   cpu: 200m
+  #   memory: 256Mi
 
   # clusterAgent.priorityClassName -- Name of the priorityClass to apply to the Cluster Agent
 #  priorityClassName:  # system-cluster-critical
 
+  # clusterAgent.nodeSelector -- Allow the Cluster Agent Deployment to be scheduled on selected nodes
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
+  ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
   nodeSelector:
-    team: devops
-    environment: datadog
     kubernetes.io/os: linux
 
+  # clusterAgent.tolerations -- Allow the Cluster Agent Deployment to schedule on tainted nodes ((requires Kubernetes >= 1.6))
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
+
   # clusterAgent.affinity -- Allow the Cluster Agent Deployment to schedule using affinity rules
+  ## By default, Cluster Agent Deployment Pods are forced to run on different Nodes.
   ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
 
@@ -667,6 +752,10 @@ clusterAgent:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+
+  # clusterAgent.deploymentAnnotations -- Annotations to add to the cluster-agents's deployment
+  deploymentAnnotations: {}
+  #   key: "value"
 
   # clusterAgent.podAnnotations -- Annotations to add to the cluster-agents's pod(s)
   podAnnotations: {}
@@ -730,7 +819,7 @@ existingClusterAgent:
   serviceName:  # <EXISTING_DCA_SERVICE_NAME>
 
   # existingClusterAgent.clusterchecksEnabled -- set this to false if you don’t want the agents to run the cluster checks of the joined external cluster agent
-  clusterchecksEnabled: true
+  clusterchecksEnabled: false
 
 agents:
   # agents.enabled -- You should keep Datadog DaemonSet enabled!
@@ -749,7 +838,7 @@ agents:
     name: agent
 
     # agents.image.tag -- Define the Agent version to use
-    tag: 7.31.0
+    tag: 7.33.0
 
     # agents.image.tagSuffix -- Suffix to append to Agent tag
     ## Ex:
@@ -811,6 +900,7 @@ agents:
     privileged: false
 
     # agents.podSecurity.capabilities -- Allowed capabilities
+    ## capabilities must contain all agents.containers.*.securityContext.capabilities.
     capabilities:
       - SYS_ADMIN
       - SYS_RESOURCE
@@ -819,8 +909,12 @@ agents:
       - NET_BROADCAST
       - NET_RAW
       - IPC_LOCK
+      - CHOWN
       - AUDIT_CONTROL
       - AUDIT_READ
+
+    # agents.podSecurity.allowedUnsafeSysctls -- Allowed unsafe sysclts
+    allowedUnsafeSysctls: []
 
     # agents.podSecurity.volumes -- Allowed volumes types
     volumes:
@@ -835,32 +929,43 @@ agents:
       - "runtime/default"
       - "localhost/system-probe"
 
+    apparmor:
+      # agents.podSecurity.apparmor.enabled -- If true, enable apparmor enforcement
+      ## see: https://kubernetes.io/docs/tutorials/clusters/apparmor/
+      enabled: false
+
     # agents.podSecurity.apparmorProfiles -- Allowed apparmor profiles
     apparmorProfiles:
       - "runtime/default"
       - "unconfined"
 
-    apparmor:
-      # agents.podSecurity.apparmor.enabled -- If true, enable apparmor enforcement
-      ## see: https://kubernetes.io/docs/tutorials/clusters/apparmor/
-      enabled: true
+    # agents.podSecurity.defaultApparmor -- Default AppArmor profile for all containers but system-probe
+    defaultApparmor: runtime/default
 
   containers:
     agent:
       # agents.containers.agent.env -- Additional environment variables for the agent container
       env: []
 
+      # agents.containers.agent.envFrom -- Set environment variables specific to agent container from configMaps and/or secrets
+      envFrom: []
+      #   - configMapRef:
+      #       name: <CONFIGMAP_NAME>
+      #   - secretRef:
+      #       name: <SECRET_NAME>
+
       # agents.containers.agent.logLevel -- Set logging verbosity, valid log levels are: trace, debug, info, warn, error, critical, and off
       ## If not set, fall back to the value of datadog.logLevel.
-      logLevel:  # INFO
+      logLevel:  error
 
       # agents.containers.agent.resources -- Resource requests and limits for the agent container.
-      requests:
-        cpu: 250m
-        memory: 256Mi
-      limits:
-        cpu: 1000m
-        memory: 750Mi
+      resources: {}
+      #  requests:
+      #    cpu: 200m
+      #    memory: 256Mi
+      #  limits:
+      #    cpu: 200m
+      #    memory: 256Mi
 
       # agents.containers.agent.healthPort -- Port number to use in the node agent for the healthz endpoint
       healthPort: 5555
@@ -893,17 +998,25 @@ agents:
       # agents.containers.processAgent.env -- Additional environment variables for the process-agent container
       env: []
 
+      # agents.containers.processAgent.envFrom -- Set environment variables specific to process-agent from configMaps and/or secrets
+      envFrom: []
+      #   - configMapRef:
+      #       name: <CONFIGMAP_NAME>
+      #   - secretRef:
+      #       name: <SECRET_NAME>
+
       # agents.containers.processAgent.logLevel -- Set logging verbosity, valid log levels are: trace, debug, info, warn, error, critical, and off
       ## If not set, fall back to the value of datadog.logLevel.
-      logLevel:  # INFO
+      logLevel:  error
 
       # agents.containers.processAgent.resources -- Resource requests and limits for the process-agent container
-      requests:
-        cpu: 100m
-        memory: 200Mi
-      limits:
-        cpu: 100m
-        memory: 200Mi
+      resources: {}
+      #  requests:
+      #    cpu: 100m
+      #    memory: 200Mi
+      #  limits:
+      #    cpu: 100m
+      #    memory: 200Mi
 
       # agents.containers.processAgent.securityContext -- Allows you to overwrite the default container SecurityContext for the process-agent container.
       securityContext: {}
@@ -915,16 +1028,24 @@ agents:
       # agents.containers.traceAgent.env -- Additional environment variables for the trace-agent container
       env:
 
+      # agents.containers.traceAgent.envFrom -- Set environment variables specific to trace-agent from configMaps and/or secrets
+      envFrom: []
+      #   - configMapRef:
+      #       name: <CONFIGMAP_NAME>
+      #   - secretRef:
+      #       name: <SECRET_NAME>
+
       # agents.containers.traceAgent.logLevel -- Set logging verbosity, valid log levels are: trace, debug, info, warn, error, critical, and off
-      logLevel:  # INFO
+      logLevel:  error
 
       # agents.containers.traceAgent.resources -- Resource requests and limits for the trace-agent container
-      requests:
-        cpu: 100m
-        memory: 200Mi
-      limits:
-        cpu: 100m
-        memory: 200Mi
+      resources: {}
+      #  requests:
+      #    cpu: 100m
+      #    memory: 200Mi
+      #  limits:
+      #    cpu: 100m
+      #    memory: 200Mi
 
       # agents.containers.traceAgent.livenessProbe -- Override default agent liveness probe settings
       # @default -- Every 15s
@@ -943,23 +1064,32 @@ agents:
       # agents.containers.systemProbe.env -- Additional environment variables for the system-probe container
       env: []
 
+      # agents.containers.systemProbe.envFrom -- Set environment variables specific to system-probe from configMaps and/or secrets
+      envFrom: []
+      #   - configMapRef:
+      #       name: <CONFIGMAP_NAME>
+      #   - secretRef:
+      #       name: <SECRET_NAME>
+
       # agents.containers.systemProbe.logLevel -- Set logging verbosity, valid log levels are: trace, debug, info, warn, error, critical, and off.
       ## If not set, fall back to the value of datadog.logLevel.
-      logLevel:  # INFO
+      logLevel:  error
 
       # agents.containers.systemProbe.resources -- Resource requests and limits for the system-probe container
-      requests:
-        cpu: 100m
-        memory: 200Mi
-      limits:
-        cpu: 100m
-        memory: 200Mi
+      resources: {}
+      #  requests:
+      #    cpu: 100m
+      #    memory: 200Mi
+      #  limits:
+      #    cpu: 100m
+      #    memory: 200Mi
 
       # agents.containers.systemProbe.securityContext -- Allows you to overwrite the default container SecurityContext for the system-probe container.
+      ## agents.podSecurity.capabilities must reflect the changed made in securityContext.capabilities.
       securityContext:
-        privileged: true
+        privileged: false
         capabilities:
-          add: ["SYS_ADMIN", "SYS_RESOURCE", "SYS_PTRACE", "NET_ADMIN", "NET_BROADCAST", "NET_RAW", "IPC_LOCK"]
+          add: ["SYS_ADMIN", "SYS_RESOURCE", "SYS_PTRACE", "NET_ADMIN", "NET_BROADCAST", "NET_RAW", "IPC_LOCK", "CHOWN"]
 
       # agents.containers.systemProbe.ports -- Allows to specify extra ports (hostPorts for instance) for this container
       ports: []
@@ -968,29 +1098,38 @@ agents:
       # agents.containers.securityAgent.env -- Additional environment variables for the security-agent container
       env:
 
+      # agents.containers.securityAgent.envFrom -- Set environment variables specific to security-agent from configMaps and/or secrets
+      envFrom: []
+      #   - configMapRef:
+      #       name: <CONFIGMAP_NAME>
+      #   - secretRef:
+      #       name: <SECRET_NAME>
+
       # agents.containers.securityAgent.logLevel -- Set logging verbosity, valid log levels are: trace, debug, info, warn, error, critical, and off
       ## If not set, fall back to the value of datadog.logLevel.
-      logLevel:  # INFO
+      logLevel:  error
 
       # agents.containers.securityAgent.resources -- Resource requests and limits for the security-agent container
-      requests:
-        cpu: 100m
-        memory: 200Mi
-      limits:
-        cpu: 100m
-        memory: 200Mi
+      resources: {}
+      #  requests:
+      #    cpu: 100m
+      #    memory: 200Mi
+      #  limits:
+      #    cpu: 100m
+      #    memory: 200Mi
 
       # agents.containers.securityAgent.ports -- Allows to specify extra ports (hostPorts for instance) for this container
       ports: []
 
     initContainers:
       # agents.containers.initContainers.resources -- Resource requests and limits for the init containers
-      requests:
-        cpu: 100m
-        memory: 200Mi
-      limits:
-        cpu: 100m
-        memory: 200Mi
+      resources: {}
+      #  requests:
+      #    cpu: 100m
+      #    memory: 200Mi
+      #  limits:
+      #    cpu: 100m
+      #    memory: 200Mi
 
   # agents.volumes -- Specify additional volumes to mount in the dd-agent container
   volumes: []
@@ -1020,9 +1159,13 @@ agents:
   #  - name: ndots
   #    value: "1"
 
+  # agents.daemonsetAnnotations -- Annotations to add to the DaemonSet
+  daemonsetAnnotations: {}
+  #   key: "value"
+
   # agents.podAnnotations -- Annotations to add to the DaemonSet's Pods
   podAnnotations: {}
-  #   <POD_ANNOTATION>: '[{"key": "<KEY>", "value": "<VALUE>"}]'
+  #   key: "value"
 
   # agents.tolerations -- Allow the DaemonSet to schedule on tainted nodes (requires Kubernetes >= 1.6)
   tolerations: []
@@ -1030,8 +1173,6 @@ agents:
   # agents.nodeSelector -- Allow the DaemonSet to schedule on selected nodes
   ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
   nodeSelector:
-    team: devops
-    environment: datadog
     kubernetes.io/os: linux
 
   # agents.affinity -- Allow the DaemonSet to schedule using affinity rules
@@ -1045,8 +1186,15 @@ agents:
     rollingUpdate:
       maxUnavailable: "10%"
 
-  # agents.priorityClassName -- Sets PriorityClassName if defineds
+  # agents.priorityClassCreate -- Creates a priorityClass for the Datadog Agent's Daemonset pods.
+  priorityClassCreate: false
+
+  # agents.priorityClassName -- Sets PriorityClassName if defined
   priorityClassName:
+
+  # agents.priorityClassValue -- Value used to specify the priority of the scheduling of Datadog Agent's Daemonset pods.
+  ## The PriorityClass uses PreemptLowerPriority.
+  priorityClassValue: 1000000000
 
   # agents.podLabels -- Sets podLabels if defined
   # Note: These labels are also used as label selectors so they are immutable.
@@ -1088,6 +1236,15 @@ agents:
     # DEPRECATED. Use datadog.networkPolicy.create instead
     create: false
 
+  localService:
+    # agents.localService.overrideName -- Name of the internal traffic service to target the agent running on the local node
+    overrideName: ""
+
+    # agents.localService.forceLocalServiceEnabled -- Force the creation of the internal traffic policy service to target the agent running on the local node.
+    # By default, the internal traffic service is created only on Kubernetes 1.22+ where the feature became beta and enabled by default.
+    # This option allows to force the creation of the internal traffic service on kubernetes 1.21 where the feature was alpha and required a feature gate to be explicitly enabled.
+    forceLocalServiceEnabled: false
+
 clusterChecksRunner:
   # clusterChecksRunner.enabled -- If true, deploys agent dedicated for running the Cluster Checks instead of running in the Daemonset's agents.
   ## ref: https://docs.datadoghq.com/agent/autodiscovery/clusterchecks/
@@ -1099,7 +1256,7 @@ clusterChecksRunner:
     name: agent
 
     # clusterChecksRunner.image.tag -- Define the Agent version to use
-    tag: 7.31.0
+    tag: 7.33.0
 
     # clusterChecksRunner.image.tagSuffix -- Suffix to append to Agent tag
     ## Ex:
@@ -1124,7 +1281,7 @@ clusterChecksRunner:
   # Provide Cluster Checks Deployment pods RBAC configuration
   rbac:
     # clusterChecksRunner.rbac.create -- If true, create & use RBAC resources
-    create: true
+    create: false
 
     # clusterChecksRunner.rbac.dedicated -- If true, use a dedicated RBAC resource for the cluster checks agent(s)
     dedicated: false
@@ -1141,15 +1298,16 @@ clusterChecksRunner:
   replicas: 2
 
   # clusterChecksRunner.resources -- Datadog clusterchecks-agent resource requests and limits.
-  requests:
-    cpu: 200m
-    memory: 500Mi
-  limits:
-    cpu: 200m
-    memory: 500Mi
+  resources: {}
+  # requests:
+  #   cpu: 200m
+  #   memory: 500Mi
+  # limits:
+  #   cpu: 200m
+  #   memory: 500Mi
 
   # clusterChecksRunner.affinity -- Allow the ClusterChecks Deployment to schedule using affinity rules.
-  ## By default, ClusterChecks Deployment Pods are forced to run on different Nodes.
+  ## By default, ClusterChecks Deployment Pods are preferred to run on different Nodes.
   ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
 
@@ -1176,7 +1334,7 @@ clusterChecksRunner:
   #
   nodeSelector:
     team: devops
-    environment: datadog
+    environment: prod
     kubernetes.io/os: linux
 
   # clusterChecksRunner.tolerations -- Tolerations for pod assignment
@@ -1219,6 +1377,10 @@ clusterChecksRunner:
     successThreshold: 1
     failureThreshold: 6
 
+  # clusterChecksRunner.deploymentAnnotations -- Annotations to add to the cluster-checks-runner's Deployment
+  deploymentAnnotations: {}
+  #   key: "value"
+
   # clusterChecksRunner.podAnnotations -- Annotations to add to the cluster-checks-runner's pod(s)
   podAnnotations: {}
   #   key: "value"
@@ -1228,6 +1390,15 @@ clusterChecksRunner:
   env: []
   #   - name: <ENV_VAR_NAME>
   #     value: <ENV_VAR_VALUE>
+
+  # clusterChecksRunner.envFrom -- Set environment variables specific to Cluster Checks Runner from configMaps and/or secrets
+  ## envFrom to pass configmaps or secrets as environment
+  ## ref: https://github.com/DataDog/datadog-agent/tree/main/Dockerfiles/agent#environment-variables
+  envFrom: []
+  #   - configMapRef:
+  #       name: <CONFIGMAP_NAME>
+  #   - secretRef:
+  #       name: <SECRET_NAME>
 
   # clusterChecksRunner.volumes -- Specify additional volumes to mount in the cluster checks container
   volumes: []
@@ -1259,33 +1430,34 @@ clusterChecksRunner:
 datadog-crds:
   crds:
     # datadog-crds.crds.datadogMetrics -- Set to true to deploy the DatadogMetrics CRD
-    datadogMetrics: true
+    datadogMetrics: false
 
 kube-state-metrics:
   rbac:
     # kube-state-metrics.rbac.create -- If true, create & use RBAC resources
-    create: true
+    create: false
 
   serviceAccount:
     # kube-state-metrics.serviceAccount.create -- If true, create ServiceAccount, require rbac kube-state-metrics.rbac.create true
-    create: true
+    create: false
 
     # kube-state-metrics.serviceAccount.name -- The name of the ServiceAccount to use.
     ## If not set and create is true, a name is generated using the fullname template
     name:
 
   # kube-state-metrics.resources -- Resource requests and limits for the kube-state-metrics container.
-  requests:
-    cpu: 200m
-    memory: 256Mi
-  limits:
-    cpu: 200m
-    memory: 256Mi
+  resources: {}
+  #   requests:
+  #     cpu: 200m
+  #     memory: 256Mi
+  #   limits:
+  #     cpu: 200m
+  #     memory: 256Mi
 
   # kube-state-metrics.nodeSelector -- Node selector for KSM. KSM only supports Linux.
   nodeSelector:
     team: devops
-    environment: datadog
+    environment: prod
     kubernetes.io/os: linux
 
   # # kube-state-metrics.image -- Override default image information for the kube-state-metrics container.
@@ -1301,3 +1473,11 @@ providers:
   gke:
     # providers.gke.autopilot -- Enables Datadog Agent deployment on GKE Autopilot
     autopilot: false
+
+  eks:
+    ec2:
+      # providers.eks.ec2.useHostnameFromFile -- Use hostname from EC2 filesystem instead of fetching from metadata endpoint.
+      ## When deploying to EC2-backed EKS infrastructure, there are situations where the
+      ## IMDS metadata endpoint is not accesible to containers. This flag mounts the host's
+      ## `/var/lib/cloud/data/instance-id` and uses that for Agent's hostname instead.
+      useHostnameFromFile: false

@@ -10,7 +10,7 @@ prometheusOperator:
      cpu: 100m
      memory: 100Mi
   nodeSelector:
-    environment: prod
+    environment: monitoring
     team: devops
 #  affinity:
 #    nodeAffinity:
@@ -26,8 +26,17 @@ prometheusOperator:
 prometheus:
   prometheusSpec:
     externalUrl: https://prometheus.default.eks_project.eks_domain
+#    remoteWrite:
+#    - url: "https://mimir.default.eks-main.tzcorp.com/api/v1/push"
+#      basicAuth:
+#          username:
+#            name: grafanacloudsecret
+#            key: username
+#          password:
+#            name: grafanacloudsecret
+#            key: password
     nodeSelector:
-      environment: prod
+      environment: monitoring
       team: devops
 #    podAntiAffinity: ""
 #    podAntiAffinityTopologyKey: kubernetes.io/hostname
@@ -147,13 +156,13 @@ prometheus:
           - targets:
             # jenkins
             - 20.10.11.28:9090
-            # tgdre-job
+            # devopsre-job
             - 10.0.1.138:9090
-            # tgdre-prod
+            # devopsre-prod
             - 10.0.2.184:9090
             - 10.0.1.212:9090
             - 10.0.1.221:9090
-            # tgdkr-mrd
+            # devopskr-mrd
             - 54.180.146.14:9090
         scheme: http
       - job_name: 'node-exporter'
@@ -162,19 +171,19 @@ prometheus:
           - targets:
             # jenkins
             - 20.10.11.28:9100
-            # tgdre-job
+            # devopsre-job
             - 10.0.1.138:9100
-            # tgdre-prod
+            # devopsre-prod
             - 10.0.2.184:9100
             - 10.0.1.212:9100
             - 10.0.1.221:9100
-            # tgdkr-mrd
+            # devopskr-mrd
             - 54.180.146.14:9100
 
 grafana:
   enabled: true
   nodeSelector:
-    environment: prod
+    environment: monitoring
     team: devops
   persistence:
     enabled: true
@@ -190,12 +199,12 @@ alertmanager:
   config:
     global:
       resolve_timeout: 5m
-      smtp_from: devops@tz.gg
+      smtp_from: devops@tz.com
       smtp_smarthost: smtp.gmail.com:587
-      smtp_auth_username: devops@tz.gg
+      smtp_auth_username: devops@tz.com
       smtp_auth_password: admin_password
       smtp_require_tls: true
-      slack_api_url: https://hooks.slack.com/services/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
+      slack_api_url: https://hooks.slack.com/services/xxxxxxxxxx/xxxxxxxxxx/xxxxxxxxxx
     route:
       group_by: ['alertname', 'cluster', 'service']
       group_wait: 30s
@@ -235,7 +244,7 @@ alertmanager:
         text: '{{ template "slack.default.text" . }}'
       email_configs:
       - send_resolved: true
-        to: devops@tz.gg
+        to: devops@tz.com
     - name: devops-dev
       slack_configs:
       - send_resolved: true
@@ -263,7 +272,7 @@ alertmanager:
   alertmanagerSpec:
     externalUrl: https://alertmanager.default.eks_project.eks_domain
     nodeSelector:
-      environment: prod
+      environment: monitoring
       team: devops
 #    affinity:
 #     nodeAffinity:

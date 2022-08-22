@@ -16,7 +16,11 @@ eks_project=$(prop 'project' 'project')
 eks_domain=$(prop 'project' 'domain')
 AWS_REGION=$(prop 'config' 'region')
 aws_account_id=$(aws sts get-caller-identity --query Account --output text)
-eks_role=$(aws iam list-roles --out=text | grep "${eks_project}2" | grep "0000000" | tail -n 1 | awk '{print $7}')
+#eks_role=$(aws iam list-roles --out=text | grep "${eks_project}" | grep "0000000" | head -n 1 | awk '{print $7}')
+pushd `pwd`
+cd /vagrant/terraform-aws-eks/workspace/base
+eks_role=$(terraform output | grep cluster_iam_role_arn | awk '{print $3}' | tr "/" "\n" | tail -n 1)
+popd
 echo eks_role: ${eks_role}
 
 shopt -s expand_aliases
@@ -85,8 +89,8 @@ file_system_id=$(aws efs create-file-system \
 echo "file_system_id: ${file_system_id}"  # fs-2d20aa4d
 #aws efs delete-file-system \
 #    --file-system-id ${file_system_id}
-#aws efs describe-file-systems \
-#    --file-system-id ${file_system_id}
+aws efs describe-file-systems \
+    --file-system-id ${file_system_id}
 
 aws ec2 describe-subnets \
     --filters "Name=vpc-id,Values=${VPC_ID}" \
@@ -130,6 +134,15 @@ helm upgrade --debug --install --reuse-values -f values.yaml_bak \
     efs-provisioner-${NS} stable/efs-provisioner -n ${NS} \
     --version "0.13.2"
 
+eksctl create iamserviceaccount \
+    --name efs-provisioner-sa \
+    --namespace ${NS} \
+    --cluster ${eks_project} \
+    --region ${AWS_REGION} \
+    --attach-policy-arn arn:aws:iam::${aws_account_id}:policy/${policy_name} \
+    --override-existing-serviceaccounts \
+    --approve
+
 sleep 60
 
 cp efs_test.yaml efs_test.yaml_bak
@@ -139,6 +152,6 @@ sed -i "s/STAGING/${STAGING}/g" efs_test.yaml_bak
 kubectl delete -f efs_test.yaml_bak -n ${NS} --grace-period=0 --force
 kubectl apply -f efs_test.yaml_bak -n ${NS}
 
-#aws eks describe-cluster --name eks-main-c --query "cluster.identity.oidc.issuer" --output text
+#aws eks describe-cluster --name eks-main --query "cluster.identity.oidc.issuer" --output text
 #aws iam list-open-id-connect-providers | grep 599A2C9BF622289E39164597D4E9C37C
-#eksctl utils associate-iam-oidc-provider --cluster eks-main-c --approve
+#eksctl utils associate-iam-oidc-provider --cluster eks-main --approve

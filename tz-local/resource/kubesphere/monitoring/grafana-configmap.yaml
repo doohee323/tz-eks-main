@@ -1,0 +1,65 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: grafana-config
+data:
+  grafana.ini: |
+    [analytics]
+    check_for_updates = true
+    [grafana_net]
+    url = https://grafana.net
+    [log]
+    mode = console
+    [paths]
+    data = /var/lib/grafana/data
+    logs = /var/log/grafana
+    plugins = /var/lib/grafana/plugins
+    provisioning = /etc/grafana/provisioning
+    [smtp]
+    enabled = true
+    host = smtp.gmail.com:587
+    user = devops@tz.com
+    password = admin_password
+    skip_verify = true
+    from_address = devops@tz.com
+    from_name = Grafana (eks_project)
+    ehlo_identity = grafana.default.eks_project.eks_domain
+    [server]
+    protocol = http
+    domain = grafana.default.eks_project.eks_domain
+    root_url = https://grafana.default.eks_project.eks_domain
+
+---
+
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: prometheus-kube-prometheus-grafana-datasource
+data:
+  datasource.yaml: |-
+    apiVersion: 1
+    datasources:
+    - name: Prometheus
+      type: prometheus
+      url: http://prometheus-kube-prometheus-prometheus.kubesphere-monitoring-system.svc.cluster.local:9090
+      access: proxy
+      isDefault: true
+    - name: Loki
+      type: loki
+      url: http://loki.kubesphere-monitoring-system.svc.cluster.local:3100/
+      access: proxy
+---
+
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: loki-loki-stack
+data:
+  loki-stack-datasource.yaml: |-
+    apiVersion: 1
+    datasources:
+    - name: Loki
+      type: loki
+      access: proxy
+      url: http://loki.kubesphere-monitoring-system.svc.cluster.local:3100/
+      version: 1

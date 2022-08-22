@@ -67,9 +67,7 @@ data "aws_iam_policy_document" "cluster_assume_role_policy" {
       type        = "AWS"
       identifiers = [
           "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/doohee.hong",
-          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/ec.song",
-          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/hj.jeon",
-          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/haram"
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/doogee.hong"
       ]
     }
   }
