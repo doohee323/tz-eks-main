@@ -1,4 +1,4 @@
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ingress-vault
@@ -9,22 +9,25 @@ metadata:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
   rules:
-  - host: vault.eks_domain
-    http:
-      paths:
-      - path: /
-        backend:
-          serviceName: vault
-          servicePort: 8200
+#  - host: vault.eks_domain
+#    http:
+#      paths:
+#      - path: /
+#        backend:
+#          serviceName: vault
+#          servicePort: 8200
   - host: vault.default.eks_project.eks_domain
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: vault
-          servicePort: 8200
+          service:
+            name: vault
+            port:
+              number: 8200
   tls:
     - hosts:
-        - vault.eks_domain
+#        - vault.eks_domain
         - vault.default.eks_project.eks_domain
       secretName: ingress-vault-tls

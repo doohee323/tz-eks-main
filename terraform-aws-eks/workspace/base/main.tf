@@ -1,48 +1,182 @@
-terraform {
-  required_version = ">= 0.12.0"
-
-  backend "s3" {
-    region  = "ap-northeast-2"
-    bucket  = "terraform-state-eks-main-01"
-    key     = "terraform.tfstate"
-    encrypt        = true
-    dynamodb_table = "terraform-lock-2"
-  }
-}
-
-resource "aws_s3_bucket" "tfstate" {
-  bucket = "terraform-state-${local.cluster_name}-01"
-  versioning {
-    enabled = true
-  }
-}
-
-resource "aws_dynamodb_table" "terraform_state_lock" {
-  name           = "terraform-lock-2"
-  hash_key       = "LockID"
-  billing_mode   = "PAY_PER_REQUEST"
-  attribute {
-    name = "LockID"
-    type = "S"
-  }
-}
-
 provider "aws" {
-  version = ">= 2.28.1"
-  region  = local.region
+  region = local.region
 }
 
-provider "local" {
-  version = "~> 1.2"
+provider "kubernetes" {
+  host                   = module.eks.cluster_endpoint
+  cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    command     = "aws"
+    # This requires the awscli to be installed locally where Terraform is executed
+    args = ["eks", "get-token", "--cluster-name", module.eks.cluster_id]
+  }
 }
 
-provider "null" {
-  version = "~> 2.1"
+################################################################################
+# EKS Module
+################################################################################
+
+module "eks" {
+  source = "../.."
+
+  cluster_name                    = local.name
+  cluster_version                 = "1.24"
+  cluster_endpoint_private_access = true
+  cluster_endpoint_public_access  = true
+
+  cluster_addons = {
+    coredns = {
+      resolve_conflicts = "OVERWRITE"
+    }
+    kube-proxy = {}
+    vpc-cni = {
+      resolve_conflicts = "OVERWRITE"
+    }
+  }
+
+  # Encryption key
+  create_kms_key = true
+  cluster_encryption_config = [{
+    resources = ["secrets"]
+  }]
+  kms_key_deletion_window_in_days = 7
+  enable_kms_key_rotation         = true
+
+  vpc_id                   = module.vpc.vpc_id
+  subnet_ids               = module.vpc.private_subnets
+  control_plane_subnet_ids = module.vpc.intra_subnets
+
+  # Extend cluster security group rules
+  cluster_security_group_additional_rules = {
+    egress_nodes_ephemeral_ports_tcp = {
+      description                = "To node 1025-65535"
+      protocol                   = "tcp"
+      from_port                  = 1025
+      to_port                    = 65535
+      type                       = "egress"
+      source_node_security_group = true
+    }
+  }
+
+  # Extend node-to-node security group rules
+  node_security_group_ntp_ipv4_cidr_block = ["169.254.169.123/32"]
+  node_security_group_additional_rules = {
+    ingress_self_all = {
+      description = "Node to node all ports/protocols"
+      protocol    = "-1"
+      from_port   = 0
+      to_port     = 0
+      type        = "ingress"
+      self        = true
+    }
+    egress_all = {
+      description      = "Node all egress"
+      protocol         = "-1"
+      from_port        = 0
+      to_port          = 0
+      type             = "egress"
+      cidr_blocks      = ["0.0.0.0/0"]
+      ipv6_cidr_blocks = ["::/0"]
+    }
+    ingress_allow_access_from_control_plane = {
+      type                          = "ingress"
+      protocol                      = "tcp"
+      from_port                     = 9443
+      to_port                       = 9443
+      source_cluster_security_group = true
+      description                   = "Allow access from control plane to webhook port of AWS load balancer controller"
+    }
+  }
+
+  # EKS Managed Node Group(s)
+  eks_managed_node_group_defaults = {
+    ami_type       = "AL2_x86_64"
+    instance_types = ["t3.medium"]
+
+    attach_cluster_primary_security_group = false
+    vpc_security_group_ids                = [aws_security_group.all_worker_mgmt.id]
+  }
+
+  eks_managed_node_groups = {
+    devops = {
+      min_size     = 1
+      max_size     = 4
+      desired_size = 1
+      instance_types = [local.instance_type]
+      subnets = [element(module.vpc.private_subnets, 0)]
+      disk_size = 30
+      labels = {
+        team = "devops"
+        environment = "prod"
+      }
+      update_config = {
+        max_unavailable_percentage = 70 # or set `max_unavailable`
+      }
+      vpc_security_group_ids = [
+        aws_security_group.worker_group_devops.id
+      ]
+    }
+    consul = {
+      min_size     = 1
+      max_size     = 5
+      desired_size = 1
+      instance_types = ["t3.medium"]
+      subnets = [element(module.vpc.private_subnets, 0)]
+      disk_size = 100
+      labels = {
+        team = "devops"
+        environment = "consul"
+      }
+      update_config = {
+        max_unavailable_percentage = 70
+      }
+      vpc_security_group_ids = [
+        aws_security_group.worker_group_devops.id
+      ]
+    }
+  }
+
+  cluster_identity_providers = {
+    sts = {
+      client_id = "sts.amazonaws.com"
+    }
+  }
+
+  # aws-auth configmap
+  manage_aws_auth_configmap = true
+
+  aws_auth_roles = local.aws_auth_roles
+
+  aws_auth_users = local.aws_auth_users
+
+  aws_auth_accounts = [
+    var.account_id
+  ]
+
+  tags = local.tags
 }
 
-provider "template" {
-  version = "~> 2.1"
+################################################################################
+# Disabled creation
+################################################################################
+
+module "disabled_eks" {
+  source = "../.."
+
+  create = false
 }
+
+module "disabled_eks_managed_node_group" {
+  source = "../../modules/eks-managed-node-group"
+
+  create = false
+}
+
+################################################################################
+# Supporting resources
+################################################################################
 
 data "aws_eks_cluster" "cluster" {
   name = module.eks.cluster_id
@@ -50,129 +184,4 @@ data "aws_eks_cluster" "cluster" {
 
 data "aws_eks_cluster_auth" "cluster" {
   name = module.eks.cluster_id
-}
-
-provider "kubernetes" {
-  host                   = data.aws_eks_cluster.cluster.endpoint
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
-  token                  = data.aws_eks_cluster_auth.cluster.token
-  load_config_file       = false
-  version                = "~> 1.11"
-}
-
-module "eks" {
-  source          = "../.."
-  cluster_name    = local.cluster_name
-  cluster_version = "1.17"
-  subnets         = module.vpc.private_subnets
-  enable_irsa     = true
-
-  tags = {
-    application = local.cluster_name,
-    environment = "prod",
-    service = "web",
-    team = "tz",
-  }
-
-  vpc_id = module.vpc.vpc_id
-
-//  worker_groups = [
-//    for subnet in module.vpc.private_subnets :
-//    {
-//      subnets              = [subnet],
-//      asg_desired_capacity = 3,
-//      instance_type        = "m5.large",
-//    }
-//  ]
-
-  worker_groups = [
-    {
-      name                 = "devops"
-      instance_type        = local.instance_type
-      additional_userdata           = "echo devops-eks"
-      asg_desired_capacity = 1
-      min_capacity = 1
-      max_capacity = 1
-      additional_security_group_ids = [aws_security_group.worker_group_devops.id]
-      tags = [
-        {
-          key                 = "k8s.io/cluster-autoscaler/enabled"
-          propagate_at_launch = "false"
-          value               = "true"
-        },
-        {
-          key                 = "k8s.io/cluster-autoscaler/${local.cluster_name}"
-          propagate_at_launch = "false"
-          value               = "true"
-        },
-        {
-          key                 = "org"
-          propagate_at_launch = "false"
-          value               = "tz"
-        }
-      ]
-    },
-  ]
-
-  node_groups_defaults = {
-    ami_type  = "AL2_x86_64"
-    disk_size = 50
-  }
-
-
-    devops-dev = {
-      desired_capacity = 2
-      max_capacity     = 5
-      min_capacity     = 3
-      instance_types = [local.instance_type]
-      subnets = [element(module.vpc.private_subnets, 0)]
-      disk_size = 30
-      k8s_labels = {
-        team = "devops"
-        environment = "dev"
-      }
-    },
-    consul = {
-      desired_capacity = 3
-      max_capacity     = 5
-      min_capacity     = 1
-      instance_types = [local.instance_type]
-      subnets = [element(module.vpc.private_subnets, 1)]
-      disk_size = 100
-      k8s_labels = {
-        team = "devops"
-        environment = "consul"
-      }
-    },
-    datadog = {
-      desired_capacity = 2
-      max_capacity     = 7
-      min_capacity     = 2
-      instance_types = [local.instance_type]
-      subnets = [element(module.vpc.private_subnets, 1)]
-      disk_size = 30
-      k8s_labels = {
-        team = "devops"
-        environment = "datadog"
-      }
-    },
-    elk = {
-      desired_capacity = 6
-      max_capacity     = 7
-      min_capacity     = 4
-      instance_types = ["m5.large"]
-      subnets = [element(module.vpc.private_subnets, 2)]
-      disk_size = 30
-      k8s_labels = {
-        team = "devops"
-        environment = "elk"
-      }
-    }
-  }
-
-  worker_additional_security_group_ids = [aws_security_group.all_worker_mgmt.id]
-  map_roles    = local.map_roles
-  map_users    = local.map_users
-  map_accounts = var.map_accounts
-
 }

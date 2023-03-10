@@ -42,7 +42,7 @@ scp -i ~/.ssh/eks-main -r /home/vagrant/.ssh ubuntu@3.38.108.153:/home/ubuntu/.s
 #mv /home/ubuntu/resources/a.zip /opt/bastion/a.zip
 
 sudo chown -Rf ubuntu:ubuntu /opt/bastion
-sudo mv /opt/bastion/xxxxxxxxxxxxx-2021-07-AWS-Detail.csv /opt/bastion/aws_cost.csv
+sudo mv /opt/bastion/746446553436-2021-07-AWS-Detail.csv /opt/bastion/aws_cost.csv
 sudo apt-get update && sudo apt-get install mysql-client -y
 
 

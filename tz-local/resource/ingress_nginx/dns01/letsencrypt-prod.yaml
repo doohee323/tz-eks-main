@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: aws-route53-secret-access-key-secret
+data:
+  secret-access-key: CERT_MANAGER_AWS_SECRET_ACCESS_KEY_BASE64
+
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: devops@tz.gg
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - selector:
+        dnsZones:
+          - eks_domain
+          - mytwip.net
+          - twip.dev
+          - t1live.gg
+      dns01:
+        route53:
+          region: us-west-1
+          accessKeyID: CERT_MANAGER_AWS_ACCESS_KEY_ID
+          secretAccessKeySecretRef:
+            name: aws-route53-secret-access-key-secret
+            key: secret-access-key
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ingress-cert-prod
+spec:
+  secretName: ingress-cert-prod
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-prod
+  dnsNames:
+    - eks_domain
+    - mytwip.net
+    - '*.mytwip.net'
+    - twip.dev
+    - t1live.gg

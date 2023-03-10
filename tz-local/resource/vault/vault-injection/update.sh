@@ -5,12 +5,10 @@
 #https://www.vaultproject.io/docs/platform/k8
 # s/injector
 
+source /root/.bashrc
 #bash /vagrant/tz-local/resource/vault/vault-injection/update.sh
 cd /vagrant/tz-local/resource/vault/vault-injection
 
-function prop {
-	grep "${2}" "/home/vagrant/.aws/${1}" | head -n 1 | cut -d '=' -f2 | sed 's/ //g'
-}
 eks_project=$(prop 'project' 'project')
 eks_domain=$(prop 'project' 'domain')
 VAULT_TOKEN=$(prop 'project' 'vault')
@@ -21,28 +19,32 @@ vault login ${VAULT_TOKEN}
 
 vault list auth/kubernetes/role
 
+source /root/.bashrc
 #bash /vagrant/tz-local/resource/vault/vault-injection/cert.sh default
 kubectl get csr -o name | xargs kubectl certificate approve
 
-PROJECTS=($(kubectl get namespaces | awk '{print $1}' | tr '\n' ' '))
-#PROJECTS=(devops-dev devops-prod)
+#PROJECTS=($(kubectl get namespaces | awk '{print $1}' | tr '\n' ' '))
+#PROJECTS=(ssakdook ssakdook-dev)
+PROJECTS=(argocd consul common common-dev datateam datateam-dev default devops devops-dev extension extension-dev monitoring tgd tgd-dev twip twip-dev ssakdook ssakdook-dev vault)
 for item in "${PROJECTS[@]}"; do
   echo "====================="
   echo ${item}
   accounts="default"
   namespaces="default"
-
+  staging="dev"
   if [[ "${item/*-dev/}" == "" ]]; then
-    echo "=====================dev"
-    project=${item}
+    project=${item/-prod/}
     accounts=${accounts},${item}-svcaccount
     namespaces=${namespaces},${item}  # devops-dev
+    echo "===================dev==${project} / ${namespaces}"
   else
-    echo "=====================prod"
     project=${item}-prod
-    accounts=${accounts},${item}-dev-svcaccount,${project}-svcaccount # devops-dev devops-prod
-    namespaces=${namespaces},${project}-dev,${project}  # devops-dev devops
+    project_qa=${item}-qa
+    accounts=${accounts},${item}-dev-svcaccount,${item}-qa-svcaccount,${project}-svcaccount # devops-dev devops-prod
+    namespaces=${namespaces},${item/-prod/}-dev,${item/-prod/}  # devops-dev devops
+    staging="prod"
   fi
+  echo "===================${staging}==${project} / ${namespaces}"
 #  for value in "${accounts[@]}"; do
 #     echo $value
 #  done
@@ -50,6 +52,8 @@ for item in "${PROJECTS[@]}"; do
 #     echo $value
 #  done
   if [[ -f /vagrant/tz-local/resource/vault/data/${project}.hcl ]]; then
+    echo ${item} : ${item/*-dev/}
+    echo project: ${project}
     vault write auth/kubernetes/role/${project} \
             bound_service_account_names=${accounts} \
             bound_service_account_namespaces=${namespaces} \
@@ -59,6 +63,17 @@ for item in "${PROJECTS[@]}"; do
     vault kv put secret/${project}/dbinfo name='localhost' passwod=1111 ttl='30s'
     vault kv put secret/${project}/foo name='localhost' passwod=1111 ttl='30s'
     vault read auth/kubernetes/role/${project}
+    if [ "${staging}" == "prod" ]; then
+      vault write auth/kubernetes/role/${project_qa} \
+              bound_service_account_names=${accounts} \
+              bound_service_account_namespaces=${namespaces} \
+              policies=tz-vault-${project_qa} \
+              ttl=24h
+      vault policy write tz-vault-${project_qa} /vagrant/tz-local/resource/vault/data/${project_qa}.hcl
+      vault kv put secret/${project_qa}/dbinfo name='localhost' passwod=1111 ttl='30s'
+      vault kv put secret/${project_qa}/foo name='localhost' passwod=1111 ttl='30s'
+      vault read auth/kubernetes/role/${project_qa}
+    fi
   fi
 done
 

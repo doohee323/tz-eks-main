@@ -13,9 +13,6 @@ k delete namespace jenkins
 k create namespace jenkins
 k apply -f jenkins.yaml
 
-function prop {
-	grep "${2}" "/home/vagrant/.aws/${1}" | head -n 1 | cut -d '=' -f2 | sed 's/ //g'
-}
 aws_access_key_id=$(prop 'credentials' 'aws_access_key_id')
 aws_secret_access_key=$(prop 'credentials' 'aws_secret_access_key')
 cp -Rf values.yaml values.yaml_bak
@@ -30,7 +27,8 @@ sed -i "s/aws_region/${aws_region}/g" values.yaml_bak
 sed -i "s/eks_project/${eks_project}/g" values.yaml_bak
 
 helm delete jenkins -n jenkins
-helm install jenkins jenkins/jenkins  -f values.yaml_bak -n jenkins
+#--reuse-values
+helm upgrade --debug --install --reuse-values jenkins jenkins/jenkins  -f values.yaml_bak -n jenkins
 #k patch svc jenkins --type='json' -p '[{"op":"replace","path":"/spec/type","value":"NodePort"},{"op":"replace","path":"/spec/ports/0/nodePort","value":31000}]' -n jenkins
 #k patch svc jenkins -p '{"spec": {"ports": [{"port": 8080,"targetPort": 8080, "name": "http"}], "type": "ClusterIP"}}' -n jenkins --force
 
@@ -38,15 +36,6 @@ cp -Rf jenkins-ingress.yaml jenkins-ingress.yaml_bak
 sed -i "s/eks_project/${eks_project}/g" jenkins-ingress.yaml_bak
 sed -i "s/eks_domain/${eks_domain}/g" jenkins-ingress.yaml_bak
 k apply -f jenkins-ingress.yaml_bak -n jenkins
-
-# install plugins
-kubectl -n jenkins exec -it pod/jenkins-0 -- sh
-wget https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/2.9.0/jenkins-plugin-manager-2.9.0.jar
-kubectl -n jenkins cp jenkins-plugin-manager-2.9.0.jar jenkins-0:/var/jenkins_home
-kubectl -n jenkins cp /vagrant/tz-local/resource/jenkins/jobs/devops-crawler jenkins-0:/var/jenkins_home/jobs/devops-crawler
-kubectl -n jenkins cp /vagrant/tz-local/resource/jenkins/jobs/devops-crawler/install_plugins.sh jenkins-0:/var/jenkins_home/jobs/devops-crawler/install_plugins.sh
-kubectl -n jenkins exec -it pod/jenkins-0 -- sh /var/jenkins_home/jobs/devops-crawler/install_plugins.sh
-rm -Rf jenkins-plugin-manager-2.9.0.jar
 
 # restart
 kubectl -n jenkins delete pod/jenkins-0
@@ -62,6 +51,25 @@ aws ecr create-repository \
 
 aws s3api create-bucket --bucket jenkins-${eks_project} --region ${aws_region} --create-bucket-configuration LocationConstraint=${aws_region}
 
+
+eks_project=$(prop 'project' 'project')
+AWS_REGION=$(prop 'config' 'region')
+aws ecr get-login-password --region ${AWS_REGION}
+#--profile ${eks_project}
+#
+#aws ecr get-login-password --region ${AWS_REGION} \
+#      | docker login --username AWS --password-stdin ${aws_account_id}.dkr.ecr.${AWS_REGION}.amazonaws.com
+
+AWS_REGION=us-west-1
+ECR_REGISTRY="746446553436.dkr.ecr.${AWS_REGION}.amazonaws.com"
+echo "{\"credHelpers\":{\"$ECR_REGISTRY\":\"ecr-login\"}}" > /root/.docker/config2.json
+kubectl -n jenkins delete configmap docker-config
+kubectl -n jenkins create configmap docker-config --from-file=/root/.docker/config2.json
+
+kubectl -n jenkins delete secret aws-secret
+kubectl -n jenkins create secret generic aws-secret \
+  --from-file=/root/.aws/credentials
+
 echo "
 ##[ Jenkins ]##########################################################
 #  - URL: http://jenkins.default.${eks_project}.${eks_domain}
@@ -76,4 +84,25 @@ cat /vagrant/info
 exit 0
 
 #kubectl -n jenkins cp jenkins-0:/var/jenkins_home/jobs/devops-crawler/config.xml /vagrant/tz-local/resource/jenkins/jobs/config.xml
+
+# k8s settings
+https://jenkins.default.eks-main-t.tzcorp.com/manage/configureClouds/
+  Kubernetes
+    Jenkins URL: http://jenkins.jenkins.svc.cluster.local
+  WebSocket: check
+  Pod Labels
+    Key: jenkins
+    Value: slave
+
+## google oauth2
+사용자 인증 정보 > OAuth 2.0 클라이언트 ID
+  웹 애플리케이션
+  승인된 리디렉션 URI: https://jenkins.default.eks-main-t.tzcorp.com/securityRealm/finishLogin
+  613669517643-xxx
+
+https://jenkins.default.eks-main-t.tzcorp.com/manage/configureSecurity/
+  Disable remember me: check
+  Security Realm: Login with Google
+  Client Id: 613669517643-xxx
+  client_secret: GOCSPX-xxx
 

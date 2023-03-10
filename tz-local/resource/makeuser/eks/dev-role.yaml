@@ -1,0 +1,30 @@
+#2. Create a role
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: k8s-reader
+rules:
+#- apiGroups: [""]
+- apiGroups: ["*"]
+#- apiGroups: ["", "metrics.k8s.io", "extensions", "apps", "networking.k8s.io", "networking", "batch", "storage.k8s.io"]
+  resources: ["*"]
+#  resources: ["nodes", "namespaces", "deployments", "pods", "secrets", "pods/log", "configmaps",
+#              "daemonsets", "statefulsets", "replicasets",
+#              "jobs", "cronjobs", "services", "endpoints", "ingresses",
+#              "storageclasses"]
+  verbs: ["get", "watch", "list"]
+
+---
+#3. Create a ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: k8s-reader
+subjects:
+  - kind: User
+    name: doogee.hong
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+   kind: ClusterRole
+   name: k8s-reader
+   apiGroup: rbac.authorization.k8s.io

@@ -1,11 +1,34 @@
-variable "INSTANCE_DEVICE_NAME" {
-  default = "/dev/xvdh"     # nvme1n1  xvdh
+variable "account_id" {
+}
+variable "cluster_name" {
+}
+variable "region" {
+  default = "us-west-1"
+}
+variable "environment" {
+  default = "prod"
+}
+variable "tzcorp_zone_id" {
+  default = "ZEGN8MOW1060B"
+}
+variable "VCP_BCLASS" {
+  default = "10.50"
+}
+variable "instance_type" {
+  default = "t3.medium"
+}
+variable "DEVOPS_UTIL_CIDR" {
+  default = "10.10.0.0/16"
+}
+variable "EKS_EXTERNAL_IP" {
+  default = "3.37.171.13/32"
+}
+variable "JENKINS_IP" {
+  default = "3.35.170.100/32"
 }
 
-variable "instance_type" {
-  # Smallest recommended, where ~1.1Gb of 2Gb memory is available for the Kubernetes pods after ‘warming up’ Docker, Kubelet, and OS
-  default = "t3.medium"
-  type    = string
+variable "INSTANCE_DEVICE_NAME" {
+  default = "/dev/xvdh"     # nvme1n1  xvdh
 }
 
 variable "kms_key_arn" {
@@ -24,13 +47,8 @@ variable "lb_main_port" {
 }
 
 # The load balancer protocol
-
 variable "lb_main_protocol" {
   default = "HTTP"
-}
-
-variable "main_endpoint" {
-  default = ["main.tzcorp.com"]
 }
 
 variable "map_accounts" {
@@ -38,7 +56,7 @@ variable "map_accounts" {
   type        = list(string)
 
   default = [
-    "xxxxxxxxxxxxx",
+    "746446553436",
   ]
 }
 
@@ -52,8 +70,8 @@ variable "map_roles" {
 
   default = [
     {
-      rolearn  = "arn:aws:iam::xxxxxxxxxxxxx:role/eks-main20210423000805524600000001"
-      username = "eks-main20210423000805524600000001"
+      rolearn  = "arn:aws:iam::746446553436:role/eks-main-t20221104030123224500000002"
+      username = "eks-main-t20221104030123224500000002"
       groups   = ["system:masters"]
     },
   ]
@@ -69,7 +87,7 @@ variable "map_users" {
 
   default = [
     {
-      userarn  = "arn:aws:iam::xxxxxxxxxxxxx:user/devops"
+      userarn  = "arn:aws:iam::746446553436:user/devops"
       username = "devops"
       groups   = ["system:masters"]
     }

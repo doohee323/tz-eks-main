@@ -45,32 +45,3 @@ resource "aws_security_group_rule" "nsg_task_main_egress_rule" {
   security_group_id = aws_security_group.nsg_main_task.id
 }
 
-# For bastions
-resource "aws_security_group" "eks-main-dev-bastion" {
-  vpc_id = module.vpc.vpc_id
-  name = "${local.cluster_name}_dev_bastion"
-  description = "${local.cluster_name} Dev Bastion Security Group"
-  tags = {
-    Name = "${local.cluster_name} Dev Bastion Security Group"
-    Description = ""
-  }
-}
-
-resource "aws_security_group_rule" "eks-main-dev-bastion-ssh-from-all" {
-  description = "Allow all SSH connections"
-  type = "ingress"
-  from_port = "22"
-  to_port = "22"
-  protocol = "TCP"
-  cidr_blocks = local.allowed_management_cidr_blocks
-  security_group_id = aws_security_group.eks-main-dev-bastion.id
-}
-
-resource "aws_security_group_rule" "eks-main-dev-bastion-egress" {
-  type        = "egress"
-  from_port   = "-1"
-  to_port     = "-1"
-  protocol    = "-1"
-  cidr_blocks = ["0.0.0.0/0"]
-  security_group_id = aws_security_group.eks-main-dev-bastion.id
-}

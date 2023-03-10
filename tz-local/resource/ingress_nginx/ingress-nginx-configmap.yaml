@@ -4,3 +4,5 @@ metadata:
   name: ingress-nginx-controller
 data:
   ssl-redirect: 'false'
+  allow-snippet-annotations: 'false'
+

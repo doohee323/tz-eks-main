@@ -12,8 +12,8 @@
         "StringEquals": {
           "oidc.eks.us-west-1.amazonaws.com/id/F99FFD52869B8DC329F3F85DEE51F37E:aud": "sts.amazonaws.com",
           "oidc.eks.ap-northeast-1.amazonaws.com/id/F99FFD52869B8DC329F3F85DEE51F37E:sub": [
-            "system:serviceaccount:default:eks-main",
-            "system:serviceaccount:kube-system:eks-main"
+            "system:serviceaccount:default:eks_project",
+            "system:serviceaccount:kube-system:eks_project"
           ]
         },
         "__doc_comment": "scope the role to the service account (optional)",

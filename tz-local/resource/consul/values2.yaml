@@ -1,20 +1,29 @@
 global:
   name: consul
+  domain: consul
   enabled: true
   datacenter: tz-dc
   gossipEncryption:
     secretName: "consul-gossip-encryption-key"
     secretKey: "key"
   tls:
-    enabled: false
-    enableAutoEncrypt: false
-    verify: false
-    httpsOnly: false
+    enabled: true
+    enableAutoEncrypt: true
+    verify: true
+    serverAdditionalDNSSANs:
+    - 'consul-dns.consul.svc.cluster.local'
+    - 'consul-server.consul.svc.cluster.local'
+    - 'consul.service.consul'
+    - 'consul-dns.svc.cluster.local'
+    - 'server.tz-dc.consul'
+    - 'consul-server.consul.svc'
+    - 'consul-server-0.consul-server.consul.svc'
   acls:
     manageSystemACLs: true
   metrics:
     enabled: true
     enableAgentMetrics: true
+    agentMetricsRetentionTime: '1m'
   scrape_interval:  5s
   scrape_timeout: 3s
 
@@ -46,11 +55,14 @@ server:
   extraConfig: |
     {
       "enable_central_service_config": false,
+      "telemetry": {
+        "prometheus_retention_time": "30s"
+      },
       "ui_config": {
         "enabled": true,
         "metrics_provider": "prometheus",
         "metrics_proxy": {
-          "base_url": "http://prometheus-server"
+          "base_url": "http://prometheus-server.consul.svc.cluster.local"
         }
       }
     }
@@ -60,21 +72,22 @@ server:
 alertmanager:
   enabled: false
 
-#  acls:
-#    manageSystemACLs: true
-
 ui:
   enabled: true
   service:
     enabled: true
-    type: 'ClusterIP'
+    type: 'NodePort'
 
 connectInject:
   enabled: true
+  default: false
+  logLevel: debug
   metrics:
-    defaultEnableMerging: true
+    defaultEnableMerging: false
 #  centralConfig:
 #    enabled: false
+  transparentProxy:
+    defaultEnabled: true
 
 # Enable CRD Controller
 controller:
@@ -85,6 +98,34 @@ prometheus:
 
 client:
   enabled: true
+  exposeGossipPorts: true
+#  resources:
+#    requests:
+#      memory: '8Gi'
+#      cpu: '2'
+#      disk: '15Gi'
+#    limits:
+#      memory: '8Gi'
+#      cpu: '2'
+#      disk: '15Gi'
   extraConfig: |
     {"enable_central_service_config": false}
 
+dns:
+  enabled: true
+  type: ClusterIP
+  clusterIP: 172.20.39.237
+
+syncCatalog:
+  enabled: true
+  default: true
+  k8sAllowNamespaces: ['my-ns-1', 'my-ns-2']
+  k8sDenyNamespaces: []
+
+#ingressGateways:
+#  enabled: true
+#  gateways:
+#    - name: ingress-gateway
+#      service:
+#        type: LoadBalancer
+#

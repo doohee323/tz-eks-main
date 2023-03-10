@@ -1,9 +1,50 @@
+#################################################################
+# Default .gitignore content for all terraform-aws-modules below
+#################################################################
+
+.DS_Store
+
+# Local .terraform directories
+**/.terraform/*
+
+# Terraform lockfile
+.terraform.lock.hcl
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+*.tfplan
+
+# Crash log files
+crash.log
+
+# Exclude all .tfvars files, which are likely to contain sentitive data, such as
+# password, private keys, and other secrets. These should not be part of version
+# control as they are data points which are potentially sensitive and subject
+# to change depending on the environment.
+*.tfvars
+
+# Ignore override files as they are usually used to override resources locally and so
+# are not checked in
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+
+.releaserc.json
+
+
 project
 config
 credentials
 .terraform
 .vagrant
 .idea
+.DS_Store
 terraform.tfstate
 terraform.tfstate.backup
 *.tfstate.lock.info
@@ -14,11 +55,9 @@ terraform-aws-eks/workspace/base/eks-*
 aws-iam-authenticator
 s3_bucket_id
 *_bak
-/scripts/
 /terraform-aws-eks/workspace/base/kubeconfig_eks-data
 /terraform-aws-eks/workspace/base/eks-data.pub
 /terraform-aws-eks/workspace/base/eks-data
-/scripts/keybase_amd64.deb
 info
 devops-utils
 devops-utils.pub
@@ -32,3 +71,19 @@ unseal2.txt
 myoutput.txt
 cert
 *.zip
+lb2.tf
+/tz-local/resource/adshield/keys/adshield
+/tz-local/resource/adshield/keys/adshield.pub
+/tz-local/resource/adshield/keys/readme.txt
+*.lock.hcl
+get_helm.sh
+/tz-local/resource/elb-controller/iam_policy.json
+/terraform-aws-eks/workspace/base/errored.tfstate
+/tz-local/docker/docker-compose.yml_bake
+prometheus-operator
+linkerd-control-plane
+linkerd-viz
+ca.crt
+ca.key
+issuer.crt
+issuer.key

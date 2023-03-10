@@ -19,7 +19,7 @@
       "Effect": "Allow",
       "Principal": {
         "AWS": [
-          "arn:aws:iam::487604454824:user/doohee.hong"
+          "arn:aws:iam::aws_account_id:user/doohee.hong"
         ]
       },
       "Action": "sts:AssumeRole"

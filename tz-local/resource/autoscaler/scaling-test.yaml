@@ -5,7 +5,7 @@ metadata:
     app: scaling-test
   name: scaling-test
 spec:
-  replicas: 1
+  replicas: 5
   selector:
     matchLabels:
       app: scaling-test
@@ -25,4 +25,29 @@ spec:
         team: devops
         environment: dev
 
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: scaling-test
+spec:
+  minReplicas: 1
+  maxReplicas: 1
+  scaleTargetRef:
+    kind: Deployment
+    name: scaling-test
+    apiVersion: apps/v1
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 10
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 10
 

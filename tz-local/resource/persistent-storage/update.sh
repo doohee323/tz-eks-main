@@ -2,9 +2,6 @@
 
 cd /vagrant/tz-local/resource/persistent-storage
 
-function prop {
-	grep "${2}" "/home/vagrant/.aws/${1}" | head -n 1 | cut -d '=' -f2 | sed 's/ //g'
-}
 AWS_REGION=$(prop 'config' 'region')
 eks_project=$(prop 'project' 'project')
 aws_account_id=$(aws sts get-caller-identity --query Account --output text)

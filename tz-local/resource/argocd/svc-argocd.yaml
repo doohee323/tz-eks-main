@@ -26,7 +26,7 @@
 #
 #---
 
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: argocd-external
@@ -43,13 +43,16 @@ spec:
   - host: argocd.eks_domain
     http:
       paths:
-      - backend:
-          serviceName: argocd-server
-          servicePort: 443
-        path: /*
+        - path: /*
+          pathType: Prefix
+          backend:
+            service:
+              name: argocd-server
+              port:
+                number: 443
 
 ---
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: argocd-internal
@@ -61,8 +64,11 @@ spec:
     - http:
         paths:
           - path: /*
+            pathType: Prefix
             backend:
-              serviceName: argocd-server
-              servicePort: 443
+              service:
+                name: argocd-server
+                port:
+                  number: 443
 
 ---

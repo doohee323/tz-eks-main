@@ -1,7 +1,6 @@
 #------------------------------------------------------------------------------#
 # Key pair
 #------------------------------------------------------------------------------#
-
 # Performs 'ImportKeyPair' API operation (not 'CreateKeyPair')
 resource "aws_key_pair" "main" {
   public_key      = file("./${local.cluster_name}.pub")
@@ -14,7 +13,7 @@ resource "aws_key_pair" "main" {
 resource "aws_kms_key" "eks-main-vault-kms" {
   description             = "Vault unseal key"
   tags = {
-    Name = "vault-kms-unseal-${local.cluster_name}"
+    Name = "${local.cluster_name}-vault-kms-unseal"
   }
 }
 

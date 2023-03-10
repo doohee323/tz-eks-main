@@ -7,16 +7,21 @@ sudo apt purge terraform -y
 #sudo apt install terraform
 sudo apt install terraform=0.13.6
 terraform -v
-sudo apt install awscli jq unzip -y
+sudo apt install jq unzip -y
 
 wget "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz"
 tar xvfz "eksctl_$(uname -s)_amd64.tar.gz"
 rm -Rf "eksctl_$(uname -s)_amd64.tar.gz"
 sudo mv eksctl /usr/local/bin
 
-curl -o aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.18.9/2020-11-02/bin/linux/amd64/aws-iam-authenticator
+curl -Lo aws-iam-authenticator https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v0.5.9/aws-iam-authenticator_0.5.9_linux_amd64
 chmod +x aws-iam-authenticator
-sudo mv aws-iam-authenticator /usr/local/bin
+mv aws-iam-authenticator /usr/local/bin
+#/usr/local/bin/aws-iam-authenticator version
+
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
 
 echo "## [ install helm3 ] ######################################################"
 sudo curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
@@ -46,10 +51,32 @@ complete -C /usr/local/bin/vault vault
 
 sudo apt-get update && sudo apt-get install mysql-client -y
 
-bash /home/ubuntu/resources/ebs.sh
-mv /home/ubuntu/resources/a.zip /opt/bastion
-cd /opt/bastion
-tar xvfz a.zip | grep *.cvs | xargs -n1 -i mv {} a.cvs
+#bash /home/ubuntu/resources/ebs.sh
+#mv /home/ubuntu/resources/a.zip /opt/bastion
+#cd /opt/bastion
+#tar xvfz a.zip | grep *.cvs | xargs -n1 -i mv {} a.cvs
+
+
+sudo apt-get install -y docker.io apt-transport-https jq docker-compose
+cat <<EOF | sudo tee /etc/docker/daemon.json
+{
+  "group": "root"
+}
+EOF
+
+sudo usermod -G docker ubuntu
+sudo chown -Rf ubuntu:ubuntu /var/run/docker.sock
+mkdir -p ~/.docker
+sudo service docker restart
+sudo systemctl enable docker
+
+git clone https://github.com/tzkr/tz-mcall.git
+cd tz-mcall
+git checkout -b external origin/external
+
+cd docker
+docker-compose -f docker-compose.yaml build --no-cache
+docker-compose -f docker-compose.yaml up -d
 
 exit 0
 

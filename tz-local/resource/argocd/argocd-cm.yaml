@@ -8,7 +8,21 @@ metadata:
     app.kubernetes.io/name: argocd-cm
     app.kubernetes.io/part-of: argocd
 data:
-  # add an additional local user with apiKey and login capabilities
-  #   apiKey - allows generating API keys
-  #   login - allows to login using UI
+  admin.enabled: 'true'
+  application.instanceLabelKey: argocd.argoproj.io/instance
+  dex.config: |
+    connectors:
+    - config:
+        issuer: 'https://accounts.google.com'
+        clientID: "argocd_google_client_id"
+        clientSecret: "argocd_google_client_secret"
+      type: oidc
+      id: google
+      name: Google
+      redirectURI: 'https://argocd.default.eks_project.eks_domain/api/dex/callback'
+  exec.enabled: 'false'
+  server.rbac.log.enforce.enable: 'false'
+  timeout.hard.reconciliation: 0s
+  timeout.reconciliation: 180s
+  url: https://argocd.default.eks_project.eks_domain
   accounts.tz-admin: apiKey, login

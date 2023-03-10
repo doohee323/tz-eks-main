@@ -1,0 +1,174 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-demo-argo-vault
+spec:
+  selector:
+    matchLabels:
+      app: devops-demo-argo-vault
+  replicas: 2
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+      labels:
+        org: tz
+        team: devops
+        project: demo
+        environment: prod
+        app: devops-demo-argo-vault
+    spec:
+      serviceAccountName: devops-prod-svcaccount
+      imagePullSecrets:
+        - name: tz-registrykey
+      containers:
+      - name: devops-demo-argo-vault
+#        image: devops-crawler:latest
+        image: 746446553436.dkr.ecr.us-west-1.amazonaws.com/devops-demo:cfc19-9
+        imagePullPolicy: Always
+#        startupProbe:
+#          httpGet:
+#            path: /
+#            port: 8080
+#          failureThreshold: 5
+#          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+#        livenessProbe:
+#          httpGet:
+#            path: /
+#            port: 8080
+#          initialDelaySeconds: 5
+#          periodSeconds: 10
+        envFrom:
+        - configMapRef:
+            name: devops-demo-configmap
+        - secretRef:
+            name: devops-demo-argocd-vault-credentials-argo-vault
+#        - secretRef:
+#            name: devops-demo-externalsecret-argo-vault
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: devops-demo-configmap
+data:
+  GIT_BRANCH: argo-vault
+  DB_HOSTNAME: host.docker.internal
+  DB_R_HOSTNAME: host.docker.internal
+
+#---
+#apiVersion: external-secrets.io/v1beta1
+#kind: ExternalSecret
+#metadata:
+#  name: devops-externalsecret-argo-vault
+#spec:
+#  refreshInterval: "15s"
+#  secretStoreRef:
+#    name: devops-prod
+#    kind: SecretStore
+#  target:
+#    name: devops-demo-externalsecret-argo-vault
+#  data:
+#  - secretKey: name
+#    remoteRef:
+#      key: secret/devops-prod/dbinfo
+#      property: name
+#  - secretKey: passwod
+#    remoteRef:
+#      key: secret/devops-prod/dbinfo
+#      property: passwod
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: devops-demo-argo-vault
+spec:
+  type: NodePort
+  selector:
+    app: devops-demo-argo-vault
+  ports:
+    - port: 80
+      name: api-80
+      targetPort: 8080
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: devops-demo-argo-vault
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  rules:
+  - host: argo-vault.devops.eks-main-t.tzcorp.com
+    http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: devops-demo-argo-vault
+              port:
+                number: 80
+  tls:
+    - hosts:
+        - argo-vault.devops.eks-main-t.tzcorp.com
+      secretName: devops-demo-argo-vault
+
+#---
+#apiVersion: policy/v1
+#kind: PodDisruptionBudget
+#metadata:
+#  name: devops-demo-argo-vault-min
+#spec:
+#  minAvailable: 2
+#  selector:
+#    matchLabels:
+#      app: devops-demo-argo-vault
+
+#---
+#apiVersion: policy/v1
+#kind: PodDisruptionBudget
+#metadata:
+#  name: devops-demo-argo-vault-max
+#spec:
+#  maxUnavailable: 4
+#  selector:
+#    matchLabels:
+#      app: devops-demo-argo-vault
+
+#---
+#apiVersion: autoscaling/v2
+#kind: HorizontalPodAutoscaler
+#metadata:
+#  name: devops-demo-argo-vault
+#spec:
+#  scaleTargetRef:
+#    apiVersion: apps/v1
+#    kind: Deployment
+#    name: devops-demo-argo-vault
+#  minReplicas: 2
+#  maxReplicas: 10
+#  metrics:
+#  - type: Resource
+#    resource:
+#      name: cpu
+#      target:
+#        type: Utilization
+#        averageUtilization: 80
+#  - type: Resource
+#    resource:
+#      name: memory
+#      target:
+#        type: Utilization
+#        averageUtilization: 80
