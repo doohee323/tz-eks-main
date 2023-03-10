@@ -96,11 +96,14 @@ for allocation_id in $(aws ec2 describe-addresses --query 'Addresses[?Associatio
   aws ec2 release-address --allocation-id ${allocation_id}
 done
 
+for item in $(eksctl get nodegroup --cluster=${eks_project} | grep ${eks_project} | awk '{print $2}'); do
+	eksctl delete nodegroup --cluster=${eks_project} --name=${item} --disable-eviction
+done
+
 ECR_REPO=$(aws ecr describe-repositories --out=text | grep ${eks_project} | awk '{print $6}')
 S3_REPO=$(aws s3api list-buckets --query "Buckets[].Name" | grep ${eks_project})
 
 if [[ "$(aws eks describe-cluster --name ${eks_project} | grep ${eks_project})" != "" ]]; then
-  #terraform init
   terraform destroy -auto-approve
   if [[ $? != 0 ]]; then
     sleep 30
@@ -119,10 +122,6 @@ if [[ "$(aws eks describe-cluster --name ${eks_project} | grep ${eks_project})" 
   fi
 fi
 
-for item in $(eksctl get nodegroup --cluster=${eks_project} | grep ${eks_project} | awk '{print $2}'); do
-	eksctl delete nodegroup --cluster=${eks_project} --name=${item} --disable-eviction
-done
-
 cleanTfFiles
 
 git checkout /vagrant/terraform-aws-eks/local.tf
@@ -140,79 +139,3 @@ echo "S3 bucket: ${S3_REPO} jenkins-${eks_project}"
 cat /vagrant/info
 
 exit 0
-
-#- k8s-master-role in IAM Roles
-#aws iam remove-role-from-instance-profile --instance-profile-name k8s-master-role --role-name k8s-master-role
-#aws iam delete-instance-profile --instance-profile-name k8s-master-role
-#aws iam delete-role --role-name k8s-master-role
-#policy_name=`aws iam list-role-policies --role-name k8s-master-role --output=text | awk '{print $2}'`
-#if [[ "${policy_name}" != "" ]]]; then
-#    aws iam delete-role-policy --role-name k8s-master-role --policy-name ${policy_name}
-#fi
-
-
-kubectl get namespace consul -o json > consul.json
-kubectl replace --raw "/api/v1/namespaces/consul/finalize" -f ./consul.json
-kubectl delete namespace consul
-kubectl get namespace
-
-#kubectl get apiservice|grep False
-#kubectl api-resources --verbs=list --namespaced -o name | xargs -n 1 kubectl get -n consul
-
-In one terminal:
-  kubectl proxy
-In another terminal:
-  NS=kubesphere-monitoring-system
-
-#  helm uninstall consul -n consul
-  kubectl delete namespace ${NS}
-  kubectl get ns ${NS} -o json | \
-  jq '.spec.finalizers=[]' | \
-  curl -X PUT http://localhost:8001/api/v1/namespaces/${NS}/finalize -H "Content-Type: application/json" --data @-
-
-  kubectl patch ns ${NS} -p '{"metadata":{"finalizers":null}}';
-  kubectl delete ns ${NS};
-
-
-NS=kubesphere-alerting-system
-NS=kubesphere-controls-system
-NS=kubesphere-devops-system
-NS=kubesphere-devops-worker
-NS=kubesphere-logging-system
-NS=kubesphere-monitoring-system
-NS=kubesphere-monitoring-federated
-NS=openpitrix-system
-NS=kubesphere-system
-
-for ns in kubesphere-alerting-system kubesphere-controls-system kubesphere-devops-system kubesphere-devops-worker kubesphere-logging-system kubesphere-monitoring-system kubesphere-monitoring-federated openpitrix-system kubesphere-system
-do
-  echo kubectl delete ns $ns
-  kubectl delete ns $ns
-#   2>/dev/null
-done
-
-#kubectl delete namespace kubesphere-alerting-system kubesphere-controls-system kubesphere-devops-system kubesphere-devops-worker kubesphere-logging-system kubesphere-monitoring-system kubesphere-monitoring-federated openpitrix-system kubesphere-system
-
-#kubectl delete pod/prometheus-k8s-0 -n kubesphere-monitoring-system --grace-period=0 --force
-#kubectl delete pod/prometheus-k8s-1 -n kubesphere-monitoring-system --grace-period=0 --force
-#kubectl delete pod/elasticsearch-logging-data-0 -n kubesphere-logging-system --grace-period=0 --force
-
-kubectl delete pod/cluster-autoscaler-aws-cluster-autoscaler-6774fccbbd-8kdmb -n kube-system --grace-period=0 --force
-kubectl delete pod/ebs-csi-node-tx2j8 -n kube-system --grace-period=0 --force
-
-kubectl delete customresourcedefinition/challenges.acme.cert-manager.io --grace-period=0 --force
-#terraform force-unlock 1a52103b-39b1-8851-0ddf-57713d7f619c
-
-kubectl get Challenges --all-namespaces
-
-kubectl delete Challenges nginx-dns01-tls-fqhjd-1322534090-702053642 --grace-period=0 --force
-
-kubectl delete ServiceDefaults/tz-consul-service -n consul --grace-period=0 --force
-postgres
-devops-demo
-devops-demo-public
-devops-demo-front
-kubectl delete ProxyDefaults/global -n consul --grace-period=0 --force
-kubectl delete Mesh/mesh -n consul --grace-period=0 --force
-
-
