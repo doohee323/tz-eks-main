@@ -133,7 +133,7 @@ vault kv get secret/twip/database
 
 export new_token=$(vault token create -policy=tz-vault-devops-prod | grep token | head -n 1 | awk '{print $2}')
 export new_token=s.pMoZ0JmzSd2K4espkjVqF4mF
-export VAULT_ADDR=https://vault.default.eks-main-t.tzcorp.com
+export VAULT_ADDR=https://vault.default.eks-main-s.tzcorp.com
 
 vault kv put secret/devops-prod/dbinfo passwod=22222 name=local.tzcorp.com
 vault kv get secret/devops-prod/dbinfo

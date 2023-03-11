@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #https://box0830.tistory.com/311
-#bash /vagrant/tz-local/resource/ingress_nginx/update.sh extension-dev eks-main-t tz.gg
+#bash /vagrant/tz-local/resource/ingress_nginx/update.sh extension-dev eks-main-s tz.gg
 
 source /root/.bashrc
 cd /vagrant/tz-local/resource/ingress_nginx
@@ -84,5 +84,5 @@ echo curl https://test.${NS}.${eks_project}.${eks_domain}
 
 exit 0
 
-https://test.extension-dev.eks-main-t.tz.gg/
+https://test.extension-dev.eks-main-s.tz.gg/
 https://devops.extension.eks-main.tz.gg/

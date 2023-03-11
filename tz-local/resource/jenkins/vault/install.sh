@@ -14,7 +14,7 @@ vault -autocomplete-install
 complete -C /usr/local/bin/vault vault
 vault -h
 
-export VAULT_ADDR=http://vault.default.eks-main-t.tzcorp.com
+export VAULT_ADDR=http://vault.default.eks-main-s.tzcorp.com
 #export VAULT_ADDR=http://vault.vault.svc.cluster.local
 #export VAULT_ADDR=https://vault.default.${eks_project}.${eks_domain}
 vault login ${vault_token}
@@ -64,7 +64,7 @@ vault kv get secret/devops-dev/dbinfo
 
 exit 0
 
-https://jenkins.default.eks-main-t.tzcorp.com/manage/configure
+https://jenkins.default.eks-main-s.tzcorp.com/manage/configure
 Vault URL: http://vault.vault.svc.cluster.local:8200
   Add Credentials
     Vault App Role Credential

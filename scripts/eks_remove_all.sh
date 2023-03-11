@@ -10,6 +10,7 @@ function cleanTfFiles() {
   rm -Rf .terraform
   rm -Rf terraform.tfstate
   rm -Rf terraform.tfstate.backup
+  rm -Rf .terraform.lock.hcl
   rm -Rf s3_bucket_id
   rm -Rf /vagrant/config_*
   rm -Rf /home/vagrant/.aws
@@ -122,7 +123,14 @@ if [[ "$(aws eks describe-cluster --name ${eks_project} | grep ${eks_project})" 
   fi
 fi
 
-cleanTfFiles
+aws logs delete-log-group --log-group-name /aws/eks/${eks_project}/cluster
+aws s3 rm s3://terraform-state-${eks_project}-01 --recursive
+aws s3 rb s3://terraform-state-${eks_project}-01
+aws ec2 delete-key-pair --key-name ${eks_project}
+aws iam delete-group --group-name ${eks_project}-k8sAdmin
+aws iam delete-group --group-name ${eks_project}-k8sDev
+
+#cleanTfFiles
 
 git checkout /vagrant/terraform-aws-eks/local.tf
 git checkout ${PROJECT_BASE}/locals.tf

@@ -86,7 +86,7 @@ exit 0
 #kubectl -n jenkins cp jenkins-0:/var/jenkins_home/jobs/devops-crawler/config.xml /vagrant/tz-local/resource/jenkins/jobs/config.xml
 
 # k8s settings
-https://jenkins.default.eks-main-t.tzcorp.com/manage/configureClouds/
+https://jenkins.default.eks-main-s.tzcorp.com/manage/configureClouds/
   Kubernetes
     Jenkins URL: http://jenkins.jenkins.svc.cluster.local
   WebSocket: check
@@ -97,10 +97,10 @@ https://jenkins.default.eks-main-t.tzcorp.com/manage/configureClouds/
 ## google oauth2
 사용자 인증 정보 > OAuth 2.0 클라이언트 ID
   웹 애플리케이션
-  승인된 리디렉션 URI: https://jenkins.default.eks-main-t.tzcorp.com/securityRealm/finishLogin
+  승인된 리디렉션 URI: https://jenkins.default.eks-main-s.tzcorp.com/securityRealm/finishLogin
   613669517643-xxx
 
-https://jenkins.default.eks-main-t.tzcorp.com/manage/configureSecurity/
+https://jenkins.default.eks-main-s.tzcorp.com/manage/configureSecurity/
   Disable remember me: check
   Security Realm: Login with Google
   Client Id: 613669517643-xxx

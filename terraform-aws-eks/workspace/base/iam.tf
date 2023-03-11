@@ -156,7 +156,7 @@ resource "aws_iam_role_policy_attachment" "eks-main-ecr-policy" {
 #########################################
 # IAM S3 policy
 #########################################
-resource "aws_iam_role_policy_attachment" "eks-main-t3full-policy" {
+resource "aws_iam_role_policy_attachment" "eks-main-s3full-policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
   role       = module.eks.cluster_iam_role_name
   depends_on = [module.es_s3_iam_policy]

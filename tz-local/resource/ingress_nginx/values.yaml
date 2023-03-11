@@ -13,7 +13,7 @@ controller:
   service:
     externalTrafficPolicy: "Local"
     type: LoadBalancer
-    loadBalancerSourceRanges: allowed_management_cidr_blocks
+    loadBalancerSourceRanges: []
 
   config:
     enable-real-ip: "true"

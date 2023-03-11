@@ -62,7 +62,7 @@ if [ ! -d "${PROJECT_BASE}/.terraform" ]; then
   terraform plan -var-file=".auto.tfvars"
   terraform apply -var-file=".auto.tfvars" -auto-approve
 
-  bash /vagrant/scripts/eks_addtion.sh
+#  bash /vagrant/scripts/eks_addtion.sh
 
   echo "
   ##[ Summary ]##########################################################

@@ -110,7 +110,7 @@ metadata:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
   rules:
-  - host: argo-vault.devops.eks-main-t.tzcorp.com
+  - host: argo-vault.devops.eks-main-s.tzcorp.com
     http:
       paths:
         - path: /
@@ -122,7 +122,7 @@ spec:
                 number: 80
   tls:
     - hosts:
-        - argo-vault.devops.eks-main-t.tzcorp.com
+        - argo-vault.devops.eks-main-s.tzcorp.com
       secretName: devops-demo-argo-vault
 
 #---

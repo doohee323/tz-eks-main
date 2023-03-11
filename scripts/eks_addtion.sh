@@ -19,7 +19,7 @@ bash /vagrant/tz-local/resource/makeuser/eks/eks-users.sh
 
 #bash /vagrant/tz-local/resource/local-dns/install.sh
 bash /vagrant/tz-local/resource/ingress_nginx/install.sh
-bash /vagrant/tz-local/resource/elb-controller/install.sh
+#bash /vagrant/tz-local/resource/elb-controller/install.sh
 bash /vagrant/tz-local/resource/autoscaler/install.sh
 
 bash /vagrant/tz-local/resource/consul/install.sh

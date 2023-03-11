@@ -14,16 +14,16 @@ terraform {
 
 //  backend "s3" {
 //    region  = "us-west-1"
-//    bucket  = "terraform-state-eks-main-t-01"
+//    bucket  = "terraform-state-eks-main-s-01"
 //    key     = "terraform.tfstate"
 //    encrypt        = true
-//    dynamodb_table = "terraform-eks-main-t-lock-2"
+//    dynamodb_table = "terraform-eks-main-s-lock-2"
 //  }
 }
 
 
 resource "aws_s3_bucket" "tfstate" {
-  bucket = "terraform-state-${local.cluster_name}-01"
+  bucket = "terraform-state-${local.cluster_name}-1001"
   versioning {
     enabled = true
   }

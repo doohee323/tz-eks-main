@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-#cd /Volumes/workspace/tz/tz-eks-main-t/tz-local/docker
+#cd /Volumes/workspace/tz/tz-eks-main-s/tz-local/docker
 #set -x
 
 eks_project=${eks_project}

@@ -94,7 +94,7 @@ argocd repo add https://github.com/tzkr/tz-argocd-repo \
 kubectl config get-contexts
 #CURRENT   NAME             CLUSTER          AUTHINFO         NAMESPACE
 #          eks_eks-main-p   eks_eks-main-p   eks_eks-main-p
-#*         eks_eks-main-t   eks_eks-main-t   eks_eks-main-t
+#*         eks_eks-main-s   eks_eks-main-s   eks_eks-main-s
 argocd cluster add --yes eks_eks-main-p
 
 bash /vagrant/tz-local/resource/argocd/update.sh
@@ -200,7 +200,7 @@ kubectl get secret devops-demo-argocd-vault-credentials-argo-vault -o yaml -n de
 echo 'MTIz' | base64 -d
 kubectl rollout restart deployment devops-demo-argo-vault -n devops
 
-curl https://argo-vault.devops.eks-main-t.tzcorp.com/index
+curl https://argo-vault.devops.eks-main-s.tzcorp.com/index
 
 exit 0
 
