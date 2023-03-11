@@ -23,7 +23,7 @@ terraform {
 
 
 resource "aws_s3_bucket" "tfstate" {
-  bucket = "terraform-state-${local.cluster_name}-1001"
+  bucket = "terraform-state-${local.cluster_name}-001"
   versioning {
     enabled = true
   }

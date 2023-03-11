@@ -18,6 +18,7 @@ function cleanTfFiles() {
   sudo rm -Rf /root/.aws
   sudo rm -Rf /root/.kube
   rm -Rf /vagrant/terraform-aws-eks/workspace/base/lb2.tf
+  rm -Rf /vagrant/terraform-aws-eks/workspace/base/.terraform
 }
 
 if [[ "$1" == "cleanTfFiles" ]]; then
@@ -104,6 +105,13 @@ done
 ECR_REPO=$(aws ecr describe-repositories --out=text | grep ${eks_project} | awk '{print $6}')
 S3_REPO=$(aws s3api list-buckets --query "Buckets[].Name" | grep ${eks_project})
 
+aws logs delete-log-group --log-group-name /aws/eks/${eks_project}/cluster
+aws s3 rm s3://terraform-state-${eks_project}-01 --recursive
+aws s3 rb s3://terraform-state-${eks_project}-01
+aws ec2 delete-key-pair --key-name ${eks_project}
+aws iam delete-group --group-name ${eks_project}-k8sAdmin
+aws iam delete-group --group-name ${eks_project}-k8sDev
+
 if [[ "$(aws eks describe-cluster --name ${eks_project} | grep ${eks_project})" != "" ]]; then
   terraform destroy -auto-approve
   if [[ $? != 0 ]]; then
@@ -123,18 +131,7 @@ if [[ "$(aws eks describe-cluster --name ${eks_project} | grep ${eks_project})" 
   fi
 fi
 
-aws logs delete-log-group --log-group-name /aws/eks/${eks_project}/cluster
-aws s3 rm s3://terraform-state-${eks_project}-01 --recursive
-aws s3 rb s3://terraform-state-${eks_project}-01
-aws ec2 delete-key-pair --key-name ${eks_project}
-aws iam delete-group --group-name ${eks_project}-k8sAdmin
-aws iam delete-group --group-name ${eks_project}-k8sDev
-
-#cleanTfFiles
-
-git checkout /vagrant/terraform-aws-eks/local.tf
-git checkout ${PROJECT_BASE}/locals.tf
-git checkout ${PROJECT_BASE}/variables.tf
+cleanTfFiles
 
 echo "
 ##[ Summary ]##########################################################
@@ -147,3 +144,6 @@ echo "S3 bucket: ${S3_REPO} jenkins-${eks_project}"
 cat /vagrant/info
 
 exit 0
+
+
+#kubectl delete pod/metrics-server-679799879f-kkk9g -n kube-system --grace-period=0 --force

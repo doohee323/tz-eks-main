@@ -1,8 +1,5 @@
 #!/bin/bash
 
-export docker_user="doohee323"
-export docker_passwd="hdh971097"
-
 if [[ "$1" == "remove" ]]; then
   bash eks_remove_all.sh
   exit 0
