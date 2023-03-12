@@ -46,12 +46,13 @@ if [ ! -d "${PROJECT_BASE}/.terraform" ]; then
   terraform apply -var-file=".auto.tfvars" -auto-approve
 
   export KUBECONFIG=`ls kubeconfig_${eks_project}*`
-  cp -Rf $KUBECONFIG /vagrant/config_${eks_project}
+  cp -Rf ${KUBECONFIG} /vagrant/resources/config_${eks_project}
+
   sudo mkdir -p /root/.kube
-  sudo cp -Rf $KUBECONFIG /root/.kube/config
+  sudo cp -Rf ${KUBECONFIG} /root/.kube/config
   sudo chmod -Rf 600 /root/.kube/config
   mkdir -p /home/vagrant/.kube
-  cp -Rf $KUBECONFIG /home/vagrant/.kube/config
+  cp -Rf ${KUBECONFIG} /home/vagrant/.kube/config
   sudo chmod -Rf 600 /home/vagrant/.kube/config
   export KUBECONFIG=/home/vagrant/.kube/config
   sudo chown -Rf vagrant:vagrant /home/vagrant
@@ -62,7 +63,7 @@ if [ ! -d "${PROJECT_BASE}/.terraform" ]; then
   terraform plan -var-file=".auto.tfvars"
   terraform apply -var-file=".auto.tfvars" -auto-approve
 
-#  bash /vagrant/scripts/eks_addtion.sh
+  bash /vagrant/scripts/eks_addtion.sh
 
   echo "
   ##[ Summary ]##########################################################

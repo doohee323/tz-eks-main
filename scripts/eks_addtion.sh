@@ -13,7 +13,7 @@ eks_project=$(prop 'project' 'project')
 
 exit 0
 
-bash /vagrant/tz-local/resource/makeuser/eks/eks-users.sh
+#bash /vagrant/tz-local/resource/makeuser/eks/eks-users.sh
 bash /vagrant/tz-local/resource/persistent-storage/install.sh
 #bash /vagrant/tz-local/resource/vpc_cni/install.sh
 

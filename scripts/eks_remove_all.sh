@@ -131,8 +131,6 @@ if [[ "$(aws eks describe-cluster --name ${eks_project} | grep ${eks_project})" 
   fi
 fi
 
-cleanTfFiles
-
 echo "
 ##[ Summary ]##########################################################
 echo "You might need to delete these resources."
@@ -146,4 +144,7 @@ cat /vagrant/info
 exit 0
 
 
-#kubectl delete pod/metrics-server-679799879f-kkk9g -n kube-system --grace-period=0 --force
+kubectl delete pod/ebs-csi-node-4xg86 -n kube-system --grace-period=0 --force
+kubectl delete pod/ingress-nginx-admission-patch-5djpp -n default --grace-period=0 --force
+
+#Your worker nodes do not have access to the cluster. Verify if the node instance role is present and correctly configured in the aws-auth ConfigMap.

@@ -13,7 +13,7 @@
         export docker_user="doohee323"
         export docker_passwd="hdh971097"
         
-        sh bs.sh
+        sh bootstrap.sh
         
     3. output
         ssh-key)

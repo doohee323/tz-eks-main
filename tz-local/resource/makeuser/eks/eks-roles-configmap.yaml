@@ -30,21 +30,5 @@ data:
       "username": "doohee.hong"
     - "groups":
       - "system:masters"
-      "userarn": "arn:aws:iam::aws_account_id:user/leddy.lee"
-      "username": "leddy.lee"
-    - "groups":
-      - "system:masters"
       "userarn": "arn:aws:iam::aws_account_id:user/doogee.hong"
       "username": "doogee.hong"
-    - "groups":
-      - "system:masters"
-      "userarn": "arn:aws:iam::aws_account_id:user/jeonghee.kang"
-      "username": "jeonghee.kang"
-    - "groups":
-      - "system:masters"
-      "userarn": "arn:aws:iam::aws_account_id:user/ec.song"
-      "username": "ec.song"
-    - "groups":
-      - "system:masters"
-      "userarn": "arn:aws:iam::aws_account_id:user/sm.ku"
-      "username": "sm.ku"
