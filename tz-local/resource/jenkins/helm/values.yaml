@@ -90,7 +90,7 @@ controller:
   # The Protocol can be overwritten by specifying `controller.jenkinsUrlProtocol`.
   # jenkinsUrlProtocol: "https"
   # If you are not using the provided ingress you can specify `controller.jenkinsUrl` to change the url definition.
-  # jenkinsUrl: "jenkins.devops.new-nation.church"
+  # jenkinsUrl: "jenkins.devops.t1zone.net"
   # If you set this prefix and use ingress controller then you might want to set the ingress path below
   # jenkinsUriPrefix: "/jenkins"
   # Enable pod security context (must be `true` if podSecurityContextOverride, runAsUser or fsGroup are set)
@@ -478,7 +478,7 @@ controller:
 #    apiVersion: "networking.k8s.io/v1"
 #    labels: {}
 #    annotations:
-#      alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-west-1:746446553436:certificate/758ed5f7-bdef-482c-837f-f784ad13e6e9
+#      alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-west-1:472304975363:certificate/758ed5f7-bdef-482c-837f-f784ad13e6e9
 #      alb.ingress.kubernetes.io/group.name: private-group
 #      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
 #      alb.ingress.kubernetes.io/manage-backend-security-group-rules: "true"
@@ -493,7 +493,7 @@ controller:
 #    # Set this path to jenkinsUriPrefix above or use annotations to rewrite path
 #    # path: "/jenkins"
 #    # configures the hostname e.g. jenkins.example.com
-#    hostName: jenkins.devops.new-nation.church
+#    hostName: jenkins.devops.t1zone.net
 
   # often you want to have your controller all locked down and private
   # but you still want to get webhooks from your SCM

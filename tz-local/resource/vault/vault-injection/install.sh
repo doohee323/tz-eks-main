@@ -88,7 +88,7 @@ exit 0
 #apk add curl jq
 
 export VAULT_ADDR="https://vault.default.${eks_project}.${eks_domain}"
-#export VAULT_ADDR=http://10.50.4.13:8200
+#export VAULT_ADDR=http://10.20.4.13:8200
 #export SA_JWT_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
 
 curl -s $VAULT_ADDR/v1/sys/seal-status | jq

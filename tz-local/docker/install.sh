@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 export eks_project=eks-main-s
-export eks_domain=new-nation.church
+export eks_domain=t1zone.net
 export tz_project=devops-utils
 #export vault_token=xxxxx
 

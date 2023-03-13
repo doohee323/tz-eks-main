@@ -19,7 +19,7 @@ provider "kubernetes" {
 ################################################################################
 
 module "eks" {
-  source = "../.."
+  source  = "terraform-aws-modules/eks/aws"
 
   cluster_name                    = local.name
   cluster_version                 = "1.24"
@@ -38,9 +38,11 @@ module "eks" {
 
   # Encryption key
   create_kms_key = true
-  cluster_encryption_config = [{
-    resources = ["secrets"]
-  }]
+  cluster_encryption_config = {
+    "resources": [
+      "secrets"
+    ]
+  }
   kms_key_deletion_window_in_days = 7
   enable_kms_key_rotation         = true
 
@@ -61,7 +63,7 @@ module "eks" {
   }
 
   # Extend node-to-node security group rules
-  node_security_group_ntp_ipv4_cidr_block = ["169.254.169.123/32"]
+//  node_security_group_ntp_ipv4_cidr_block = ["169.254.169.123/32"]
   node_security_group_additional_rules = {
     ingress_self_all = {
       description = "Node to node all ports/protocols"
@@ -93,7 +95,7 @@ module "eks" {
   # EKS Managed Node Group(s)
   eks_managed_node_group_defaults = {
     ami_type       = "AL2_x86_64"
-    instance_types = ["t3.medium"]
+    instance_types = [local.instance_type]
 
     attach_cluster_primary_security_group = false
     vpc_security_group_ids                = [aws_security_group.all_worker_mgmt.id]
@@ -122,7 +124,7 @@ module "eks" {
       min_size     = 1
       max_size     = 5
       desired_size = 1
-      instance_types = ["t3.medium"]
+      instance_types = [local.instance_type]
       subnets = [element(module.vpc.private_subnets, 0)]
       disk_size = 100
       labels = {
@@ -163,13 +165,13 @@ module "eks" {
 ################################################################################
 
 module "disabled_eks" {
-  source = "../.."
+  source  = "terraform-aws-modules/eks/aws"
 
   create = false
 }
 
 module "disabled_eks_managed_node_group" {
-  source = "../../modules/eks-managed-node-group"
+  source = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
 
   create = false
 }

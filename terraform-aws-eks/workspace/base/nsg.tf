@@ -13,7 +13,6 @@ resource "aws_security_group" "nsg_main_task" {
 }
 
 # Rules for the LB (Targets the task SG)
-
 resource "aws_security_group_rule" "nsg_lb_main_egress_rule" {
   description              = "Only allow SG ${local.cluster_name}-${local.environment}-lb to connect to ${local.cluster_name}-${local.environment}-task on port ${var.container_main_port}"
   type                     = "egress"

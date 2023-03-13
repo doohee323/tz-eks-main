@@ -26,7 +26,7 @@ locals {
     },
     {
       rolearn  = "arn:aws:iam::${var.account_id}:role/${local.cluster_name}-k8sAdmin"
-      username = "doohee323"
+      username = "${local.cluster_name}-k8sAdmin"
       groups   = ["system:masters"]
     },
     {
@@ -48,8 +48,8 @@ locals {
       groups   = ["system:masters"]
     },
     {
-      userarn  = "arn:aws:iam::${var.account_id}:user/doohee323"
-      username = "doohee323"
+      userarn  = "arn:aws:iam::${var.account_id}:user/${local.cluster_name}-k8sAdmin"
+      username = "${local.cluster_name}-k8sAdmin"
       groups   = ["system:masters"]
     }
   ]

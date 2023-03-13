@@ -4,11 +4,9 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = ">= 3.72"
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = ">= 2.10"
     }
   }
 
@@ -21,11 +19,10 @@ terraform {
 //  }
 }
 
-
-resource "aws_s3_bucket" "tfstate" {
+resource "aws_s3_bucket_versioning" "tfstate" {
   bucket = "terraform-state-${local.cluster_name}-001"
-  versioning {
-    enabled = true
+  versioning_configuration {
+    status = "Enabled"
   }
 }
 

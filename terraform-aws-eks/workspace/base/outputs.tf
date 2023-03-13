@@ -194,8 +194,3 @@ output "allowed_management_cidr_blocks" {
 output "route53_zone_id" {
   value = local.tzcorp_zone_id
 }
-
-output "cert_manager_irsa_role_arn" {
-  value = module.cert_manager_irsa.this_iam_role_arn
-}
-

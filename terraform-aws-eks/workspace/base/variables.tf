@@ -9,13 +9,13 @@ variable "environment" {
   default = "prod"
 }
 variable "tzcorp_zone_id" {
-  default = "ZEGN8MOW1060B"
+  default = "Z02506481727V529IYA6J"
 }
 variable "VCP_BCLASS" {
-  default = "10.50"
+  default = "10.20"
 }
 variable "instance_type" {
-  default = "t3.medium"
+  default = "t3.small"
 }
 
 variable "INSTANCE_DEVICE_NAME" {
@@ -32,12 +32,10 @@ variable "container_main_port" {
   default = "31000"
 }
 
-# The port the load balancer will listen on
 variable "lb_main_port" {
   default = "80"
 }
 
-# The load balancer protocol
 variable "lb_main_protocol" {
   default = "HTTP"
 }
@@ -47,7 +45,7 @@ variable "map_accounts" {
   type        = list(string)
 
   default = [
-    "746446553436",
+    "472304975363",
   ]
 }
 
@@ -61,7 +59,7 @@ variable "map_roles" {
 
   default = [
     {
-      rolearn  = "arn:aws:iam::746446553436:role/eks-main-t20221104030123224500000002"
+      rolearn  = "arn:aws:iam::472304975363:role/eks-main-t20221104030123224500000002"
       username = "eks-main-t20221104030123224500000002"
       groups   = ["system:masters"]
     },
@@ -78,7 +76,7 @@ variable "map_users" {
 
   default = [
     {
-      userarn  = "arn:aws:iam::746446553436:user/devops"
+      userarn  = "arn:aws:iam::472304975363:user/devops"
       username = "devops"
       groups   = ["system:masters"]
     }
