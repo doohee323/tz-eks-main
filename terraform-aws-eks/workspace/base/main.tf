@@ -91,9 +91,9 @@ module "eks" {
       ]
     }
     consul = {
-      min_size     = 2
+      min_size     = 1
       max_size     = 5
-      desired_size = 2
+      desired_size = 1
       instance_types = ["t3.medium"]
       subnets = [element(module.vpc.private_subnets, 0)]
       disk_size = 100

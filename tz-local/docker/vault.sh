@@ -27,8 +27,8 @@ if [ "$1" == "help" ]; then
   echo " bash /vagrant/tz-local/docker/vault.sh put devops-prod devops-utils resources"
   echo " bash /vagrant/tz-local/docker/vault.sh get devops-prod devops-utils"
   echo " bash /vagrant/tz-local/docker/vault.sh delete devops-prod devops-utils"
-  echo " bash /vagrant/tz-local/docker/vault.sh fput tgd-dev tz-partners_pk.pem pk.pem"
-  echo " bash /vagrant/tz-local/docker/vault.sh fget tgd-dev tz-partners_pk.pem"
+  echo " bash /vagrant/tz-local/docker/vault.sh fput devops-dev tz-partners_pk.pem pk.pem"
+  echo " bash /vagrant/tz-local/docker/vault.sh fget devops-dev tz-partners_pk.pem"
   echo "##################################################################################################"
   exit 0
 fi

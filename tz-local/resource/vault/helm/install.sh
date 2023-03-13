@@ -81,14 +81,15 @@ echo $VAULT_ADDR
 
 k -n vault exec -ti vault-0 -- vault operator init -key-shares=3 -key-threshold=2 | sed 's/\x1b\[[0-9;]*m//g' > /vagrant/resources/unseal.txt
 sleep 20
-vault_token_new=$(cat /vagrant/resources/unseal.txt | grep "Initial Root Token:" | awk '{print $4}')
+vault_token_new=$(cat /vagrant/resources/unseal.txt | grep "Initial Root Token:" | tail -n 1 | awk '{print $4}')
 echo "#######################################################"
 echo "vault_token_new: ${vault_token_new}"
 echo "#######################################################"
 if [[ "${vault_token_new}" != "" ]]; then
-  sed -i "s/${vault_token}/${vault_token_new}/g" /vagrant/resources/project
-  sed -i "s/${vault_token}/${vault_token_new}/g" ~/.aws/project
-  sed -i "s/${vault_token}/${vault_token_new}/g" /home/vagrant/.aws/project
+  awk '!/vault=/' /vagrant/resources/project > tmpfile && mv tmpfile /vagrant/resources/project
+  echo "vault=${vault_token_new}" >> /vagrant/resources/project
+  cp -Rf /vagrant/resources/project ~/.aws/project
+  cp -Rf /vagrant/resources/project /home/vagrant/.aws/project
 fi
 
 # vault operator unseal

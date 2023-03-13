@@ -80,8 +80,4 @@ done
 vault secrets list
 vault secrets list -detailed
 
-vault policy write tz-vault-devops-prod-readonly /vagrant/tz-local/resource/vault/data/devops-readonly.hcl
-vault token create -ttl=8760h -policy=tz-vault-devops-prod-readonly
-vault write auth/userpass/users/devops.admin password=devops.admin policies=read-role,tz-vault-devops-dev,tz-vault-devops-qa,tz-vault-devops-prod,tz-vault-userpass
-
 exit 0
