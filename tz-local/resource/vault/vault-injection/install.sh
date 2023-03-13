@@ -261,7 +261,7 @@ vault login xxxx
 # add jupyterhub-hub !!!
 #  serviceAccountName: jupyterhub-hub
 #  serviceAccount: jupyterhub-hub
-#  nodeName: ip-10-20-3-14.us-west-1.compute.internal
+#  nodeName: ip-10-20-3-14.us-west-2.compute.internal
 #  securityContext:
 vault write auth/kubernetes/role/datateam-dev \
         bound_service_account_names=datateam-dev-svcaccount,jupyterhub-hub \

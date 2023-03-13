@@ -41,6 +41,14 @@ if [ ! -d "${PROJECT_BASE}/.terraform" ]; then
   terraform plan -var-file=".auto.tfvars"
   terraform apply -var-file=".auto.tfvars" -auto-approve
 
+  if [[ $? != 0 ]]; then
+    echo "############ failed provisioning! ############"
+    terraform destroy -auto-approve
+    bash /vagrant/scripts/eks_remove_all.sh
+    bash /vagrant/scripts/eks_remove_all.sh cleanTfFiles
+    exit 1
+  fi
+
   export KUBECONFIG=`ls kubeconfig_${eks_project}*`
   cp -Rf ${KUBECONFIG} /vagrant/resources/config_${eks_project}
 

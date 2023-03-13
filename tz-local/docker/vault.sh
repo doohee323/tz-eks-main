@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-#cd /Volumes/workspace/tz/tz-eks-main-s/tz-local/docker
+#cd /Volumes/workspace/tz/tz-eks-main-t/tz-local/docker
 #set -x
 
 eks_project=${eks_project}
@@ -10,7 +10,7 @@ bucket_name=devops-prod
 source_name=resources
 
 if [ "${eks_project}" == "" ]; then
-  eks_project=eks-main-s
+  eks_project=eks-main-t
 fi
 if [ "${eks_domain}" == "" ]; then
   eks_domain=t1zone.net

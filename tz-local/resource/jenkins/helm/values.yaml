@@ -478,7 +478,7 @@ controller:
 #    apiVersion: "networking.k8s.io/v1"
 #    labels: {}
 #    annotations:
-#      alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-west-1:472304975363:certificate/758ed5f7-bdef-482c-837f-f784ad13e6e9
+#      alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-west-2:472304975363:certificate/758ed5f7-bdef-482c-837f-f784ad13e6e9
 #      alb.ingress.kubernetes.io/group.name: private-group
 #      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
 #      alb.ingress.kubernetes.io/manage-backend-security-group-rules: "true"

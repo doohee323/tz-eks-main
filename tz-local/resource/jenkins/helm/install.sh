@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+source /root/.bashrc
 cd /vagrant/tz-local/resource/jenkins/helm
 
 #set -x
@@ -76,26 +77,4 @@ echo "
 cat /vagrant/info
 
 exit 0
-
-#kubectl -n jenkins cp jenkins-0:/var/jenkins_home/jobs/devops-crawler/config.xml /vagrant/tz-local/resource/jenkins/jobs/config.xml
-
-# k8s settings
-https://jenkins.default.${eks_project}.${eks_domain}/manage/configureClouds/
-  Kubernetes
-    Jenkins URL: http://jenkins.jenkins.svc.cluster.local
-  WebSocket: check
-  Pod Labels
-    Key: jenkins
-    Value: slave
-
-## google oauth2
-client auth info > OAuth 2.0 client ID
-  web application
-  authorized redirection URI: https://jenkins.default.${eks_project}.${eks_domain}/securityRealm/finishLogin
-
-https://jenkins.default.${eks_project}.${eks_domain}/manage/configureSecurity/
-  Disable remember me: check
-  Security Realm: Login with Google
-  Client Id: 613669517643-xxx
-  client_secret: GOCSPX-xxx
 

@@ -122,7 +122,7 @@ resource "aws_iam_group_membership" "k8sDev" {
   name = "${local.cluster_name}-k8sDev"
   users = [
     "${local.cluster_name}-k8sDev",
-    "doogee323"
+//    "doogee323"
   ]
   group = aws_iam_group.k8sDev.name
 }

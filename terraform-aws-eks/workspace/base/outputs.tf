@@ -194,3 +194,9 @@ output "allowed_management_cidr_blocks" {
 output "route53_zone_id" {
   value = local.tzcorp_zone_id
 }
+
+output "kubeconfig" {
+  description = "kubectl config file contents for this EKS cluster."
+  value       = local.kubeconfig
+}
+

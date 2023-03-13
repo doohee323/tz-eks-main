@@ -46,12 +46,6 @@ if [[ "${AWS_DEFAULT_REGION}" == "" || "${eks_project}" == "" ]]; then
   exit 1
 fi
 
-sed -i "s/aws_region/${aws_region}/g" /vagrant/terraform-aws-eks/local.tf
-sed -i "s/eks_project/${eks_project}/g" /vagrant/terraform-aws-eks/local.tf
-sed -i "s/aws_region/${aws_region}/g" ${PROJECT_BASE}/locals.tf
-sed -i "s/eks_project/${eks_project}/g" ${PROJECT_BASE}/locals.tf
-sed -i "s/aws_account_id/${aws_account_id}/g" ${PROJECT_BASE}/locals.tf
-
 for item in $(eksctl get nodegroup --cluster=${eks_project} | grep ${eks_project} | awk '{print $2}'); do
 	eksctl delete nodegroup --cluster=${eks_project} --name=${item} --disable-eviction
 done
