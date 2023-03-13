@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-# https://codeburst.io/read-vaults-secrets-from-jenkin-s-declarative-pipeline-50a690659d6
 cd /vagrant/tz-local/resource/jenkins/vault
 
 eks_project=$(prop 'project' 'project')
@@ -14,20 +13,13 @@ vault -autocomplete-install
 complete -C /usr/local/bin/vault vault
 vault -h
 
-export VAULT_ADDR=http://vault.default.eks-main-s.tzcorp.com
-#export VAULT_ADDR=http://vault.vault.svc.cluster.local
-#export VAULT_ADDR=https://vault.default.${eks_project}.${eks_domain}
+export VAULT_ADDR=http://vault.default.${eks_project}.${eks_domain}
 vault login ${vault_token}
 
-# Enable approle on vault
 vault auth enable approle
-# Make sure a v2 kv secrets engine enabled:
 vault secrets enable kv-v2
-# Upgrading from Version 1 if you needit
 vault kv enable-versioning secret/
 
-# Create jenkins policy
-#vault policy write jenkins jenkins-policy.hcl
 vault policy write jenkins jenkins-policy.hcl
 vault policy list
 
@@ -63,32 +55,3 @@ vault kv delete secret/devops-dev/dbinfo
 vault kv get secret/devops-dev/dbinfo
 
 exit 0
-
-https://jenkins.default.eks-main-s.tzcorp.com/manage/configure
-Vault URL: http://vault.vault.svc.cluster.local:8200
-  Add Credentials
-    Vault App Role Credential
-      Role ID: 06e1f9bf-xxx
-      Secret ID: 4b59eaa2-xxx
-      ID: vault-approle
-
-# bastion
-kubectl apply -f ubuntu.yaml -n jenkins
-apt update && apt install wget unzip -y
-wget https://releases.hashicorp.com/vault/1.3.1/vault_1.3.1_linux_amd64.zip
-unzip vault_1.3.1_linux_amd64.zip
-rm -Rf vault_1.3.1_linux_amd64.zip
-mv vault /usr/local/bin/
-vault -autocomplete-install
-complete -C /usr/local/bin/vault vault
-
-
-kubectl -n jenkins exec -it pod/bastion -- sh
-AWS_REGION=us-west-1
-ECR_REGISTRY="746446553436.dkr.ecr.${AWS_REGION}.amazonaws.com"
-echo "{\"credHelpers\":{\"$ECR_REGISTRY\":\"ecr-login\"}}" > /root/.docker/config2.json
-
-/kaniko/executor
---context "${CI_PROJECT_DIR}"
---dockerfile "${CI_PROJECT_DIR}/Dockerfile"
---destination "${CI_REGISTRY_IMAGE}:${CI_COMMIT_TAG}"

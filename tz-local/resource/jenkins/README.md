@@ -6,10 +6,10 @@
 ```
 
  - get jenkins url
-   => http://jenkins.eks-main.tzcorp.com
+   => http://jenkins.eks-main.new-nation.church
 
  - setting kubernetes plugin
-    http://jenkins.eks-main.tzcorp.com/configureClouds/
+    http://jenkins.eks-main.new-nation.church/configureClouds/
    - Name: k8s-aws  
    - Kubernetes URL: https://kubernetes.default
    - Kubernetes Namespace: jenkins
@@ -26,39 +26,35 @@
     - github
       1. get github's personal access token: ex) d465eaa43af65cececde0a63e310c2bxxxxxxxx
         https://github.com/settings/tokens
-      2. http://jenkins.eks-main.tzcorp.com/credentials/store/system/domain/_/newCredentials
+      2. http://jenkins.eks-main.new-nation.church/credentials/store/system/domain/_/newCredentials
         Kind: Username with password
-        Username: ex) doohee.hong@tz.kr
+        Username: ex) doohee323@new-nation.church
         Password: ex) d465eaa43af65cececde0a63e310c2bxxxxxxxx
         ID: Github
 
     - aws
-        http://jenkins.eks-main.tzcorp.com/credentials/store/system/domain/_/newCredentials
+        http://jenkins.eks-main.new-nation.church/credentials/store/system/domain/_/newCredentials
         Kind: Secret text
         Secret: ex) AKIATEMCRY56PRC5xxxxx
         ID: jenkins-aws-secret-key-id
 
-        http://jenkins.eks-main.tzcorp.com/credentials/store/system/domain/_/newCredentials
+        http://jenkins.eks-main.new-nation.church/credentials/store/system/domain/_/newCredentials
         Kind: Secret text
         Secret: ex) Kotgln3kkPevmfKxxxxxxxxxxxxxxxxxxx
         ID: jenkins-aws-secret-access-key
 
     - jenkins-aws-secret
       1. get aws access key: ex) 	AKIATEMCRY56PRC5xxxxx
-      2. http://jenkins.eks-main.tzcorp.com/credentials/store/system/domain/_/newCredentials
+      2. http://jenkins.eks-main.new-nation.church/credentials/store/system/domain/_/newCredentials
         Kind: AWS Credentials
         ID: jenkins-aws-secret
         Access Key ID: ex) AKIATEMCRY56PRC5xxxxx
         Secret Access Key: ex) Kotgln3kkPevmfKxxxxxxxxxxxxxxxxxxx
-        
-
-
 
     - set a sample project (devops-crawler)
-        http://jenkins.eks-main.tzcorp.com/ 
+        http://jenkins.eks-main.new-nation.church/ 
         - Github
-            - Credentials: ex) doohee.hong@tz.kr
-        
+            - Credentials: ex) doohee323@new-nation.church
 
 ```
 

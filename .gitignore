@@ -37,7 +37,6 @@ terraform.rc
 
 .releaserc.json
 
-
 project
 config
 credentials
@@ -55,36 +54,20 @@ terraform-aws-eks/workspace/base/eks-*
 aws-iam-authenticator
 s3_bucket_id
 *_bak
-/terraform-aws-eks/workspace/base/kubeconfig_eks-data
-/terraform-aws-eks/workspace/base/eks-data.pub
-/terraform-aws-eks/workspace/base/eks-data
 info
-devops-utils
-devops-utils.pub
 _data
-backup.zip
-tz-eks-backup*
 /resources
-tz-local/resource/vault/vault-injection/cert/vault*
-grafana-backup-tool
+/projects
 unseal2.txt
 myoutput.txt
 cert
 *.zip
 lb2.tf
-/tz-local/resource/adshield/keys/adshield
-/tz-local/resource/adshield/keys/adshield.pub
-/tz-local/resource/adshield/keys/readme.txt
 *.lock.hcl
 get_helm.sh
-/tz-local/resource/elb-controller/iam_policy.json
-/terraform-aws-eks/workspace/base/errored.tfstate
-/tz-local/docker/docker-compose.yml_bake
-prometheus-operator
-linkerd-control-plane
-linkerd-viz
 ca.crt
 ca.key
 issuer.crt
 issuer.key
 *_bake
+

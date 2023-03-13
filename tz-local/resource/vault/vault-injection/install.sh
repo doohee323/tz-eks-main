@@ -55,8 +55,8 @@ vault write auth/kubernetes/config \
 
 export VAULT_ADDR="https://vault.default.${eks_project}.${eks_domain}"
 #export VAULT_ADDR=http://vault.vault.svc.cluster.local:8200
-#vault write auth/userpass/users/doohee.hong password=1111111 policies=tz-vault-devops
-vault login -method=userpass username=doohee.hong
+#vault write auth/userpass/users/doogee323 password=1111111 policies=tz-vault-devops
+vault login -method=userpass username=doogee323
 
 ## ********* in vault pod *********
 #VAULT_ADDR=http://vault.vault.svc.cluster.local:8200
@@ -220,8 +220,8 @@ vault write auth/kubernetes/config \
 
 export VAULT_ADDR="https://vault.default.${eks_project}.${eks_domain}"
 #export VAULT_ADDR=http://vault.vault.svc.cluster.local:8200
-#vault write auth/userpass/users/doohee.hong password=1111111 policies=tz-vault-devops
-vault login -method=userpass username=doohee.hong
+#vault write auth/userpass/users/doogee323 password=1111111 policies=tz-vault-devops
+vault login -method=userpass username=doogee323
 
 vault kv put secret/twip-dev/foo name='localhost2' \
   passwod='222' \

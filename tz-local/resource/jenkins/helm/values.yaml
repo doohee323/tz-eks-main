@@ -90,7 +90,7 @@ controller:
   # The Protocol can be overwritten by specifying `controller.jenkinsUrlProtocol`.
   # jenkinsUrlProtocol: "https"
   # If you are not using the provided ingress you can specify `controller.jenkinsUrl` to change the url definition.
-  # jenkinsUrl: "jenkins.devops.tzcorp.com"
+  # jenkinsUrl: "jenkins.devops.new-nation.church"
   # If you set this prefix and use ingress controller then you might want to set the ingress path below
   # jenkinsUriPrefix: "/jenkins"
   # Enable pod security context (must be `true` if podSecurityContextOverride, runAsUser or fsGroup are set)
@@ -493,7 +493,7 @@ controller:
 #    # Set this path to jenkinsUriPrefix above or use annotations to rewrite path
 #    # path: "/jenkins"
 #    # configures the hostname e.g. jenkins.example.com
-#    hostName: jenkins.devops.tzcorp.com
+#    hostName: jenkins.devops.new-nation.church
 
   # often you want to have your controller all locked down and private
   # but you still want to get webhooks from your SCM
@@ -553,7 +553,7 @@ controller:
   prometheus:
     # If enabled, add the prometheus plugin to the list of plugins to install
     # https://plugins.jenkins.io/prometheus
-    enabled: true
+    enabled: false
     # Additional labels to add to the ServiceMonitor object
     serviceMonitorAdditionalLabels: {}
     # Set a custom namespace where to deploy ServiceMonitor resource
@@ -858,7 +858,7 @@ persistence:
   ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
   ##   GKE, AWS & OpenStack)
   ##
-  storageClass: gp3
+  storageClass: gp2
   annotations: {}
   labels: {}
   accessMode: "ReadWriteOnce"

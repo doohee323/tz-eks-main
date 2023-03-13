@@ -35,8 +35,6 @@ server:
   nodeSelector: |
     team: devops
     environment: consul
-  imagePullSecrets:
-    - name: "tz-registrykey"
   extraConfig: |
     {
       "enable_central_service_config": false,

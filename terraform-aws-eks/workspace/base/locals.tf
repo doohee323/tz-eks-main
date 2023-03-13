@@ -13,15 +13,9 @@ locals {
   VCP_BCLASS = var.VCP_BCLASS
   VPC_CIDR   = "${local.VCP_BCLASS}.0.0/16"
   instance_type = var.instance_type
-  DEVOPS_UTIL_CIDR = var.DEVOPS_UTIL_CIDR
-  EKS_EXTERNAL_IP = var.EKS_EXTERNAL_IP
-  JENKINS_IP = var.JENKINS_IP
 
   allowed_management_cidr_blocks = [
     local.VPC_CIDR,
-    local.DEVOPS_UTIL_CIDR,
-    local.JENKINS_IP,
-    local.EKS_EXTERNAL_IP
   ]
 
   aws_auth_roles = [

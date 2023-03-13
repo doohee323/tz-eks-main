@@ -17,7 +17,7 @@ eks_domain=$(prop 'project' 'domain')
 AWS_REGION=$(prop 'config' 'region')
 aws_access_key_id=$(prop 'credentials' 'aws_access_key_id')
 aws_secret_access_key=$(prop 'credentials' 'aws_secret_access_key')
-vault_kms_key=$(aws kms list-aliases | grep -w "${eks_project}-vault-kms-unseal1" -A 1 | tail -n 1 | awk -F\" '{print $4}')
+vault_kms_key=$(aws kms list-aliases | grep -w "${eks_project}-vault-kms-unseal_02" -A 1 | tail -n 1 | awk -F\" '{print $4}')
 vault_token=$(prop 'project' 'vault')
 NS=vault
 
@@ -46,7 +46,7 @@ bash /vagrant/tz-local/resource/vault/vault-injection/cert.sh vault
 cp -Rf values_cert.yaml values_cert.yaml_bak
 sed -i "s/eks_project/${eks_project}/g" values_cert.yaml_bak
 sed -i "s/AWS-REGION/${AWS_REGION}/g" values_cert.yaml_bak
-#sed -i "s/VAULT_KMS_KEY/${vault_kms_key}/g" values_cert.yaml_bak
+sed -i "s/VAULT_KMS_KEY/${vault_kms_key}/g" values_cert.yaml_bak
 helm upgrade --debug --install --reuse-values vault hashicorp/vault -n vault -f values_cert.yaml_bak --version 0.19.0
 #kubectl rollout restart statefulset.apps/vault -n vault
 
@@ -59,9 +59,6 @@ sed -i "s/eks_domain/${eks_domain}/g" values_config.yaml_bak
 sed -i "s/AWS-REGION/${AWS_REGION}/g" values_config.yaml_bak
 sed -i "s/VAULT_KMS_KEY/${vault_kms_key}/g" values_config.yaml_bak
 k apply -f values_config.yaml_bak -n vault
-#k patch statefulset/vault -p '{"spec": {"template": {"spec": {"nodeSelector": {"team": "devops"}}}}}' -n vault
-#k patch statefulset/vault -p '{"spec": {"template": {"spec": {"nodeSelector": {"environment": "consul"}}}}}' -n vault
-#k patch statefulset/vault -p '{"spec": {"template": {"spec": {"imagePullSecrets": [{"name": "tz-registrykey"}]}}}}' -n vault
 
 sleep 30
 # to NodePort
@@ -117,9 +114,6 @@ sed -i "s/eks_domain/${eks_domain}/g" values_config.yaml_bak
 sed -i "s/AWS_REGION/${AWS_REGION}/g" values_config.yaml_bak
 sed -i "s/VAULT_KMS_KEY/${vault_kms_key}/g" values_config.yaml_bak
 k apply -f values_config.yaml_bak -n vault
-#k patch statefulset/vault -p '{"spec": {"template": {"spec": {"nodeSelector": {"team": "devops"}}}}}' -n vault
-#k patch statefulset/vault -p '{"spec": {"template": {"spec": {"nodeSelector": {"environment": "consul"}}}}}' -n vault
-#k patch statefulset/vault -p '{"spec": {"template": {"spec": {"imagePullSecrets": [{"name": "tz-registrykey"}]}}}}' -n vault
 
 sleep 30
 # to NodePort
@@ -188,7 +182,6 @@ secrets
     api_key
 
 # backup and restore
-export CONSUL_HTTP_ADDR="consul.default.eks-main-p.tzcorp.com"
 export CONSUL_HTTP_ADDR="consul.default.${eks_project}.${eks_domain}"
 consul members
 
@@ -202,68 +195,3 @@ cat /vagrant/info
 
 exit 0
 
-
-
-
-cat <<EOF | sudo tee /etc/vault/config.hcl
-disable_cache = true
-disable_mlock = true
-ui = true
-api_addr         = "http://0.0.0.0:8200"
-listener "tcp" {
-   address          = "0.0.0.0:8200"
-   tls_disable      = 1
-}
-storage "file" {
-   path  = "/var/lib/vault/data"
-}
-max_lease_ttl         = "10h"
-default_lease_ttl    = "10h"
-cluster_name         = "vault"
-raw_storage_endpoint     = true
-disable_sealwrap     = true
-disable_printable_check = true
-EOF
-
-# production ex)
-cat <<EOF | sudo tee /etc/vault/config.hcl
-storage "consul" {
-    path = "vault"
-    address = "localhost:8500"
-}
-listener "tcp" {
-   address          = "0.0.0.0:8200"
-   cluster_address  = "0.0.0.0:8201"
-   tls_cert_file    = "/etc/certs/vault.crt"
-   tls_cert_key     = "/etc/certs/vault.key"
-}
-seal "awskms" {
-  region = "us-west-02"
-  kms_key_id = "aaaaaaa"
-}
-api_addr            = "http://0.0.0.0:8200"
-ui = true
-cluster_name        = "tz-vault"
-log_level           = "info"
-
-disable_cache = true
-disable_mlock = true
-max_lease_ttl       = "10h"
-default_lease_ttl   = "10h"
-raw_storage_endpoint = true
-disable_sealwrap     = true
-disable_printable_check = true
-EOF
-
-
-kubectl create secret generic vault-storage-config \
-    --from-file=/etc/vault/config.hcl
-
-
-# auto unseal
-# https://blogs.halodoc.io/vault-auto-unseal-via-aws-kms/
-
-
-k patch deployment/vault-agent-injector -p '{"spec": {"template": {"spec": {"nodeSelector": {"team": "devops"}}}}}' -n vault
-k patch deployment/vault-agent-injector -p '{"spec": {"template": {"spec": {"nodeSelector": {"environment": "consul"}}}}}' -n vault
-k patch deployment/vault-agent-injector -p '{"spec": {"template": {"spec": {"imagePullSecrets": [{"name": "tz-registrykey"}]}}}}' -n vault

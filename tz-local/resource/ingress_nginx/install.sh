@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 source /root/.bashrc
-#bash /vagrant/tz-local/resource/ingress_nginx/install.sh
 cd /vagrant/tz-local/resource/ingress_nginx
 
 NS=$1
@@ -23,9 +22,6 @@ echo $HOSTZONE_ID
 shopt -s expand_aliases
 alias k="kubectl -n ${NS} --kubeconfig ~/.kube/config"
 
-#kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.46.0/deploy/static/provider/aws/deploy.yaml
-#kubectl delete -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.46.0/deploy/static/provider/aws/deploy.yaml
-
 #kubectl delete ns ${NS}
 kubectl create ns ${NS}
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
@@ -35,7 +31,7 @@ APP_VERSION=4.0.13
 helm uninstall ingress-nginx -n ${NS}
 
 helm upgrade --debug --install --reuse-values ingress-nginx ingress-nginx/ingress-nginx \
-  -f values.yaml_bak --version ${APP_VERSION} -n ${NS}
+  -f values.yaml --version ${APP_VERSION} -n ${NS}
 
 kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission
 
@@ -68,7 +64,7 @@ k apply -f nginx-ingress.yaml_bak
 echo curl http://test.${NS}.${eks_project}.${eks_domain}
 sleep 30
 curl -v http://test.${NS}.${eks_project}.${eks_domain}
-k delete -f nginx-ingress.yaml_bak
+#k delete -f nginx-ingress.yaml_bak
 
 #### https ####
 helm repo add jetstack https://charts.jetstack.io
@@ -82,7 +78,6 @@ k delete namespace cert-manager
 k create namespace cert-manager
 # Install needed CRDs
 k apply --validate=false -f https://github.com/cert-manager/cert-manager/releases/download/v1.10.0/cert-manager.crds.yaml
-#kubectl delete -f https://github.com/jetstack/cert-manager/releases/download/v1.6.1/cert-manager.crds.yaml
 # --reuse-values
 helm upgrade --debug --install --reuse-values \
   cert-manager jetstack/cert-manager \
@@ -90,15 +85,6 @@ helm upgrade --debug --install --reuse-values \
   --create-namespace \
   --set installCRDs=false \
   --version v1.10.0
-
-kubectl patch deployment/cert-manager -p '{"spec": {"template": {"spec": {"nodeSelector": {"team": "devops", "environment": "prod"}}}}}' -n cert-manager
-kubectl patch deployment/cert-manager -p '{"spec": {"template": {"spec": {"imagePullSecrets": [{"name": "tz-registrykey"}]}}}}' -n cert-manager
-
-kubectl patch deployment/cert-manager-webhook -p '{"spec": {"template": {"spec": {"nodeSelector": {"team": "devops", "environment": "prod"}}}}}' -n cert-manager
-kubectl patch deployment/cert-manager-webhook -p '{"spec": {"template": {"spec": {"imagePullSecrets": [{"name": "tz-registrykey"}]}}}}' -n cert-manager
-
-kubectl patch deployment/cert-manager-cainjector -p '{"spec": {"template": {"spec": {"nodeSelector": {"team": "devops", "environment": "prod"}}}}}' -n cert-manager
-kubectl patch deployment/cert-manager-cainjector -p '{"spec": {"template": {"spec": {"imagePullSecrets": [{"name": "tz-registrykey"}]}}}}' -n cert-manager
 
 sleep 30
 

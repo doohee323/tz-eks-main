@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 
-#https://faun.pub/create-argo-cd-local-users-9e830db3763f
-#https://medium.com/finda-tech/eks-cluster%EC%97%90-argo-cd-%EB%B0%B0%ED%8F%AC-%EB%B0%8F-%EC%84%B8%ED%8C%85%ED%95%98%EB%8A%94-%EB%B2%95-eec3bef7b69b
-
 source /root/.bashrc
-#bash /vagrant/tz-local/resource/argocd/update.sh
 cd /vagrant/tz-local/resource/argocd
 
 #set -x
@@ -17,11 +13,6 @@ argocd_google_client_id=$(prop 'project' 'argocd_google_client_id')
 argocd_google_client_secret=$(prop 'project' 'argocd_google_client_secret')
 
 alias k='kubectl --kubeconfig ~/.kube/config'
-#alias k="kubectl --kubeconfig ~/.kube/kubeconfig_${eks_project}"
-
-#argocd login localhost:8080
-#argocd login argocd.${eks_domain}:443 --username admin --password ${admin_password} --insecure
-#argocd login argocd.default.${eks_project}.${eks_domain}:443 --username admin --password ${admin_password} --insecure
 argocd login `k get service -n argocd | grep argocd-server | awk '{print $4}' | head -n 1`:443 --username admin --password ${admin_password} --insecure
 
 cp argocd-cm.yaml argocd-cm.yaml_bak
@@ -51,8 +42,8 @@ for item in "${PROJECTS[@]}"; do
     if [[ "${item/*-dev/}" == "" ]]; then
       argocd proj create ${project} \
         -d https://kubernetes.default.svc,${project} \
-        -s https://github.com/tzkr/tz-argocd-repo.git \
-        -s https://tzkr.github.io/tz-argocd-repo/ \
+        -s https://github.com/doohee323/tz-argocd-repo.git \
+        -s https://doohee323.github.io/tz-argocd-repo/ \
         --source-namespaces ${project}
       echo "  accounts.${project}: apiKey, login" >> argocd-cm.yaml_bak
       echo "    p, role:${project}, applications, sync, ${project}/*, allow" >> argocd-rbac-cm.yaml_bak
@@ -62,8 +53,8 @@ for item in "${PROJECTS[@]}"; do
       argocd proj create ${project} \
         -d https://kubernetes.default.svc,${project} \
         -d https://kubernetes.default.svc,${item}-dev \
-        -s https://github.com/tzkr/tz-argocd-repo.git \
-        -s https://tzkr.github.io/tz-argocd-repo/ \
+        -s https://github.com/doohee323/tz-argocd-repo.git \
+        -s https://doohee323.github.io/tz-argocd-repo/ \
         --source-namespaces ${project}
       if [[ "${project}" == "datateam" ]]; then
         echo "  accounts.${project}-admin: apiKey, login" >> argocd-cm.yaml_bak

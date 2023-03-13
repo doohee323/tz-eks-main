@@ -1,8 +1,6 @@
 global:
   enabled: true
   tlsDisable: true
-  imagePullSecrets:
-    - name: tz-registrykey
   extraEnvironmentVars:
     VAULT_CACERT: /vault/userconfig/vault-tls/vault.ca
 
@@ -101,10 +99,10 @@ server:
       address = "consul-server.consul.svc.cluster.local:8500"
     }
     service_registration "kubernetes" {}
-#    seal "awskms" {
-#      region     = "AWS-REGION"
-#      kms_key_id = "VAULT_KMS_KEY"
-#    }
+    seal "awskms" {
+      region     = "AWS-REGION"
+      kms_key_id = "VAULT_KMS_KEY"
+    }
 
 ui:
   enabled: true

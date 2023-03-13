@@ -13,7 +13,7 @@ if [ "${eks_project}" == "" ]; then
   eks_project=eks-main-s
 fi
 if [ "${eks_domain}" == "" ]; then
-  eks_domain=tzcorp.com
+  eks_domain=new-nation.church
 fi
 if [ "${secret_name}" == "" ]; then
   secret_name=devops-utils

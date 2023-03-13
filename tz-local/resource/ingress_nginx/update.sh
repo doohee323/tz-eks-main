@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-#https://box0830.tistory.com/311
-#bash /vagrant/tz-local/resource/ingress_nginx/update.sh extension-dev eks-main-s tz.gg
-
 source /root/.bashrc
 cd /vagrant/tz-local/resource/ingress_nginx
 
@@ -33,7 +30,6 @@ if [[ "${DEVOPS_ELB}" == "" ]]; then
   echo "No elb! check nginx-ingress-controller with LoadBalancer type!"
   exit 1
 fi
-#sleep 20
 echo "DEVOPS_ELB: $DEVOPS_ELB"
 # Creates route 53 records based on DEVOPS_ELB
 CUR_ELB=$(aws route53 list-resource-record-sets --hosted-zone-id ${HOSTZONE_ID} --query "ResourceRecordSets[?Name == '\\052.${NS}.${eks_project}.${eks_domain}.']" | grep 'Value' | awk '{print $2}' | sed 's/"//g')
@@ -44,14 +40,6 @@ aws route53 change-resource-record-sets --hosted-zone-id ${HOSTZONE_ID} \
  --change-batch '{ "Comment": "'"${eks_project}"' utils", "Changes": [{"Action": "CREATE", "ResourceRecordSet": { "Name": "*.'"${NS}"'.'"${eks_project}"'.'"${eks_domain}"'", "Type": "CNAME", "TTL": 120, "ResourceRecords": [{"Value": "'"${DEVOPS_ELB}"'"}]}}]}'
 
 kubectl apply -f ingress-nginx-configmap.yaml -n ${NS}
-#kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission -n ${NS}
-
-#k delete deployment nginx
-#k create deployment nginx --image=nginx
-#k delete svc/nginx
-##k port-forward deployment/nginx 80
-##k expose deployment/nginx --port 80 --type LoadBalancer
-#k expose deployment/nginx --port 80
 
 cp -Rf nginx-ingress.yaml nginx-ingress.yaml_bak
 sed -i "s|NS|${NS}|g" nginx-ingress.yaml_bak
@@ -67,7 +55,6 @@ echo curl http://test.${NS}.${eks_project}.${eks_domain}
 k delete -f nginx-ingress.yaml_bak
 
 #### https ####
-
 cp -Rf nginx-ingress-https.yaml nginx-ingress-https.yaml_bak
 sed -i "s/NS/${NS}/g" nginx-ingress-https.yaml_bak
 sed -i "s/eks_project/${eks_project}/g" nginx-ingress-https.yaml_bak
@@ -79,10 +66,5 @@ kubectl get csr -o name | xargs kubectl certificate approve
 sleep 10
 curl -v http://test.${NS}.${eks_project}.${eks_domain}
 curl -v https://test.${NS}.${eks_project}.${eks_domain}
-echo curl http://test.${NS}.${eks_project}.${eks_domain}
-echo curl https://test.${NS}.${eks_project}.${eks_domain}
 
 exit 0
-
-https://test.extension-dev.eks-main-s.tz.gg/
-https://devops.extension.eks-main.tz.gg/

@@ -5,9 +5,6 @@ cd /vagrant/tz-local/docker
 
 echo "vault_token: ${vault_token}"
 
-#set -x
-shopt -s expand_aliases
-
 rm -Rf /vagrant/info
 
 export AWS_PROFILE=default

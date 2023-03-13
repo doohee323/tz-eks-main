@@ -23,9 +23,7 @@ source /root/.bashrc
 #bash /vagrant/tz-local/resource/vault/vault-injection/cert.sh default
 kubectl get csr -o name | xargs kubectl certificate approve
 
-#PROJECTS=($(kubectl get namespaces | awk '{print $1}' | tr '\n' ' '))
-#PROJECTS=(ssakdook ssakdook-dev)
-PROJECTS=(argocd consul common common-dev datateam datateam-dev default devops devops-dev extension extension-dev monitoring tgd tgd-dev twip twip-dev ssakdook ssakdook-dev vault)
+PROJECTS=(argocd consul default devops devops-dev monitoring vault)
 for item in "${PROJECTS[@]}"; do
   echo "====================="
   echo ${item}

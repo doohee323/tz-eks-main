@@ -8,25 +8,8 @@ metadata:
     kubernetes.io/ingress.class: "nginx"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/proxy-body-size: "10g"
-#    nginx.ingress.kubernetes.io/auth-type: basic
-#    nginx.ingress.kubernetes.io/auth-secret: basic-auth-consul
-#    nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - admin'
 spec:
   rules:
-#  - host: consul-server.eks_domain
-#    http:
-#      paths:
-#      - path: /
-#        backend:
-#          serviceName: consul-server
-#          servicePort: 8500
-#  - host: consul.eks_domain
-#    http:
-#      paths:
-#      - path: /
-#        backend:
-#          serviceName: consul-ui
-#          servicePort: 80
   - host: consul-server.default.eks_project.eks_domain
     http:
       paths:
@@ -47,18 +30,8 @@ spec:
             name: consul-ui
             port:
               number: 8500
-#  - host: consul.NS.eks_project.eks_domain
-#    http:
-#      paths:
-#      - path: /
-#        backend:
-#          serviceName: consul-ui
-#          servicePort: 8500
   tls:
     - hosts:
-#        - consul-server.eks_domain
-#        - consul.eks_domain
         - consul-server.default.eks_project.eks_domain
         - consul.default.eks_project.eks_domain
-#        - consul.NS.eks_project.eks_domain
       secretName: ingress-consul-tls

@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 
-PROJECT_BASE='/vagrant/terraform-aws-eks/workspace/base'
+export PROJECT_BASE='/vagrant/terraform-aws-eks/workspace/base'
 
 cd /vagrant
-#bash /vagrant/tz-local/docker/vault.sh get devops-prod ${tz_project} resources
-#tar xvfz resources.zip && rm -Rf resources.zip
 
 sudo mkdir -p /home/vagrant/.aws
 sudo cp -Rf /vagrant/resources/config /home/vagrant/.aws/config
@@ -28,7 +26,6 @@ cp -Rf /vagrant/resources/kubeconfig_${eks_project} ${PROJECT_BASE}
 
 cd ${PROJECT_BASE}
 if [ ! -d "${PROJECT_BASE}/.terraform" ]; then
-  # make aws credentials
   rm -Rf ${eks_project}*
   ssh-keygen -t rsa -C ${eks_project} -P "" -f ${eks_project} -q
   chmod -Rf 600 ${eks_project}*
@@ -42,7 +39,6 @@ if [ ! -d "${PROJECT_BASE}/.terraform" ]; then
 
   terraform init
   terraform plan -var-file=".auto.tfvars"
-#  terraform plan | sed 's/\x1b\[[0-9;]*m//g' > a.txt
   terraform apply -var-file=".auto.tfvars" -auto-approve
 
   export KUBECONFIG=`ls kubeconfig_${eks_project}*`
@@ -67,10 +63,10 @@ if [ ! -d "${PROJECT_BASE}/.terraform" ]; then
 
   echo "
   ##[ Summary ]##########################################################
-    - in VM
+    - in Docker
       export KUBECONFIG='/vagrant/config_${eks_project}'
 
-    - outside of VM
+    - outside of Docker
       export KUBECONFIG='terraform-aws-eks/workspace/base/kubeconfig_${eks_project}'
 
     - kubectl get nodes

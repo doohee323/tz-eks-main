@@ -1,8 +1,6 @@
 global:
   enabled: true
   tlsDisable: true
-  imagePullSecrets:
-    - name: tz-registrykey
 
 injector:
   enabled: true

@@ -17,15 +17,6 @@ variable "VCP_BCLASS" {
 variable "instance_type" {
   default = "t3.medium"
 }
-variable "DEVOPS_UTIL_CIDR" {
-  default = "10.10.0.0/16"
-}
-variable "EKS_EXTERNAL_IP" {
-  default = "3.37.171.13/32"
-}
-variable "JENKINS_IP" {
-  default = "3.35.170.100/32"
-}
 
 variable "INSTANCE_DEVICE_NAME" {
   default = "/dev/xvdh"     # nvme1n1  xvdh

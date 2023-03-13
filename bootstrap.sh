@@ -24,3 +24,5 @@ bash /vagrant/tz-local/docker/init2.sh
 docker exec -it `docker ps | grep devops-utils-1 | awk '{print $1}'` bash
 bash /vagrant/scripts/eks_remove_all.sh
 bash /vagrant/scripts/eks_remove_all.sh cleanTfFiles
+
+#docker container stop $(docker container ls -a -q) && docker system prune -a -f --volumes
