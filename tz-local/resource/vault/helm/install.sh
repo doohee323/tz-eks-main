@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-### https://lejewk.github.io/vault-get-started/
-### https://www.udemy.com/course/hashicorp-vault/learn/lecture/17017040#overview
-### https://github.com/btkrausen/hashicorp
-
 source /root/.bashrc
 #bash /vagrant/tz-local/resource/vault/helm/install.sh
 cd /vagrant/tz-local/resource/vault/helm
@@ -17,7 +13,7 @@ eks_domain=$(prop 'project' 'domain')
 AWS_REGION=$(prop 'config' 'region')
 aws_access_key_id=$(prop 'credentials' 'aws_access_key_id')
 aws_secret_access_key=$(prop 'credentials' 'aws_secret_access_key')
-vault_kms_key=$(aws kms list-aliases | grep -w "${eks_project}-vault-kms-unseal_02" -A 1 | tail -n 1 | awk -F\" '{print $4}')
+vault_kms_key=$(aws kms list-aliases | grep -w "${eks_project}-vault-kms-unseal_03" -A 1 | tail -n 1 | awk -F\" '{print $4}')
 vault_token=$(prop 'project' 'vault')
 NS=vault
 
@@ -126,7 +122,7 @@ VAULT_VERSION="1.3.1"
 curl -sO https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip
 unzip vault_${VAULT_VERSION}_linux_amd64.zip
 rm -Rf vault_${VAULT_VERSION}_linux_amd64.zip
-sudo mv vault /usr/local/bin/
+mv vault /usr/local/bin/
 vault --version
 
 #vault -autocomplete-install

@@ -91,10 +91,10 @@ module "eks" {
       ]
     }
     consul = {
-      min_size     = 1
+      min_size     = 2
       max_size     = 5
-      desired_size = 1
-      instance_types = [local.instance_type]
+      desired_size = 2
+      instance_types = ["t3.medium"]
       subnets = [element(module.vpc.private_subnets, 0)]
       disk_size = 100
       labels = {
@@ -146,14 +146,3 @@ module "disabled_eks_managed_node_group" {
   create = false
 }
 
-################################################################################
-# Supporting resources
-################################################################################
-
-data "aws_eks_cluster" "cluster" {
-  name = local.cluster_name
-}
-
-data "aws_eks_cluster_auth" "cluster" {
-  name = local.cluster_name
-}

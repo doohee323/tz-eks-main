@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# sh bootstrap.sh remove
 if [[ "$1" == "remove" ]]; then
   docker exec -it `docker ps | grep devops-utils-1 | awk '{print $1}'` \
       bash /vagrant/scripts/eks_remove_all.sh
@@ -12,6 +13,7 @@ if [[ "$1" == "remove" ]]; then
   exit 0
 fi
 
+# sh bootstrap.sh
 cd tz-local/docker
 bash install.sh
 
