@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
+cd tz-local/docker
+
 export eks_project=eks-main-t
 export eks_domain=t1zone.net
 export tz_project=devops-utils
-#export vault_token=xxxxx
 
 TAG=${docker_user}/${tz_project}:latest
 

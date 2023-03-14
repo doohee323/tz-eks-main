@@ -26,6 +26,7 @@
         root@8971909b818a:/vagrant/terraform-aws-eks/workspace/base# tplan
         
     -. remove all
+        export docker_user="doohee323"
         sh bootstrap.sh remove
         
         After it's done, check VPC and S3 again!
