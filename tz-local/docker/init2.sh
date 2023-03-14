@@ -45,7 +45,7 @@ if [ ! -d "${PROJECT_BASE}/.terraform" ]; then
     echo "############ failed provisioning! ############"
     terraform destroy -auto-approve
     bash /vagrant/scripts/eks_remove_all.sh
-    bash /vagrant/scripts/eks_remove_all.sh cleanTfFiles
+#    bash /vagrant/scripts/eks_remove_all.sh cleanTfFiles
     exit 1
   fi
 

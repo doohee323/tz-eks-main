@@ -79,6 +79,8 @@ aws iam delete-policy --policy-arn arn:aws:iam::${aws_account_id}:policy/AmazonE
 aws iam delete-policy --policy-arn arn:aws:iam::${aws_account_id}:policy/AWSLoadBalancerControllerIAMPolicy-${eks_project}
 aws iam delete-policy --policy-arn arn:aws:iam::${aws_account_id}:policy/${eks_project}-ecr-policy
 aws iam delete-policy --policy-arn arn:aws:iam::${aws_account_id}:policy/${eks_project}-es-s3-policy
+aws iam delete-policy --policy-arn arn:aws:iam::${aws_account_id}:policy/${eks_project}-k8sAdmin
+aws iam delete-policy --policy-arn arn:aws:iam::${aws_account_id}:policy/${eks_project}-k8sDev
 
 for role in $(aws iam list-roles --out=text | grep ${eks_project} | awk '{print $7}'); do
   for policy in $(aws iam list-role-policies --role-name ${role} --out=text | awk '{print $2}'); do
@@ -95,6 +97,8 @@ done
 for item in $(eksctl get nodegroup --cluster=${eks_project} | grep ${eks_project} | awk '{print $2}'); do
 	eksctl delete nodegroup --cluster=${eks_project} --name=${item} --disable-eviction
 done
+
+#aws kms delete-alias --alias-name alias/${eks_project}
 
 ECR_REPO=$(aws ecr describe-repositories --out=text | grep ${eks_project} | awk '{print $6}')
 S3_REPO=$(aws s3api list-buckets --query "Buckets[].Name" | grep ${eks_project})

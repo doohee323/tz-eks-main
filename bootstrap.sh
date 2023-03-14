@@ -30,7 +30,7 @@ exit 0
 export docker_user="doohee323"
 bash /vagrant/tz-local/docker/init2.sh
 
-# remove all resouces
+# remove all resources
 docker exec -it `docker ps | grep devops-utils-1 | awk '{print $1}'` bash
 bash /vagrant/scripts/eks_remove_all.sh
 bash /vagrant/scripts/eks_remove_all.sh cleanTfFiles
