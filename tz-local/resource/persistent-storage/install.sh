@@ -1,4 +1,4 @@
-#https://aws.amazon.com/ko/premiumsupport/knowledge-center/eks-persistent-storage/
+#!/usr/bin/env bash
 
 source /root/.bashrc
 #bash /vagrant/tz-local/resource/persistent-storage/install.sh
@@ -50,15 +50,3 @@ helm upgrade -install aws-ebs-csi-driver aws-ebs-csi-driver/aws-ebs-csi-driver \
   --set serviceAccount.controller.name=ebs-csi-controller-sa
 
 exit 0
-
-#### test ####
-kubectl apply -f specs/
-kubectl describe storageclass ebs-sc
-#kubectl get pods --watch
-sleep 30
-
-kubectl describe pv $(kubectl get pv | grep ebs-sc | awk '{print $1}')
-kubectl exec -it app -- cat /data/out.txt
-kubectl delete -f specs/
-
-

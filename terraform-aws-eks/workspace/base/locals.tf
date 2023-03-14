@@ -29,11 +29,11 @@ locals {
       username = "${local.cluster_name}-k8sAdmin"
       groups   = ["system:masters"]
     },
-    {
-      rolearn  = "arn:aws:iam::${var.account_id}:role/${local.cluster_name}-k8sDev"
-      username = "doogee323"
-      groups   = ["system:basic-user"]
-    },
+//    {
+//      rolearn  = "arn:aws:iam::${var.account_id}:role/${local.cluster_name}-k8sDev"
+//      username = "doogee323"
+//      groups   = ["system:basic-user"]
+//    },
   ]
 
   aws_auth_users = [

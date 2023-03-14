@@ -9,7 +9,6 @@ provider "kubernetes" {
   exec {
     api_version = "client.authentication.k8s.io/v1beta1"
     command     = "aws"
-    # This requires the awscli to be installed locally where Terraform is executed
     args = ["eks", "get-token", "--cluster-name", local.cluster_name]
   }
 }
@@ -36,7 +35,6 @@ module "eks" {
     }
   }
 
-  # Encryption key
   create_kms_key = true
   cluster_encryption_config = {
     "resources": [
@@ -50,7 +48,6 @@ module "eks" {
   subnet_ids               = module.vpc.private_subnets
   control_plane_subnet_ids = module.vpc.intra_subnets
 
-  # Extend cluster security group rules
   cluster_security_group_additional_rules = {
     egress_nodes_ephemeral_ports_tcp = {
       description                = "To node 1025-65535"
@@ -62,7 +59,6 @@ module "eks" {
     }
   }
 
-  # EKS Managed Node Group(s)
   eks_managed_node_group_defaults = {
     ami_type       = "AL2_x86_64"
     instance_types = [local.instance_type]
@@ -116,7 +112,6 @@ module "eks" {
     }
   }
 
-  # aws-auth configmap
   manage_aws_auth_configmap = true
 
   aws_auth_roles = local.aws_auth_roles
@@ -133,7 +128,6 @@ module "eks" {
 ################################################################################
 # Disabled creation
 ################################################################################
-
 module "disabled_eks" {
   source  = "terraform-aws-modules/eks/aws"
 
