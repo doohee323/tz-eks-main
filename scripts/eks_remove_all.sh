@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # sudo bash /vagrant/scripts/eks_remove_all.sh
+#export KUBE_CONFIG_PATH=/root/.kube/config
 
 PROJECT_BASE='/vagrant/terraform-aws-eks/workspace/base'
 cd ${PROJECT_BASE}
@@ -33,7 +34,7 @@ function propProject {
 	grep "${1}" "/home/vagrant/.aws/project" | head -n 1 | cut -d '=' -f2 | sed 's/ //g'
 }
 export eks_project=$(propProject 'project')
-export aws_account_id=$(propProject 'aws_account_id')
+export aws_account_id=$(aws sts get-caller-identity --query Account --output text)
 function propConfig {
   grep "${1}" "/home/vagrant/.aws/config" | head -n 1 | cut -d '=' -f2 | sed 's/ //g'
 }
@@ -75,6 +76,12 @@ for item in $(aws elb describe-load-balancers --output text | grep ${VPC_ID} | a
   fi
 done
 
+for role in $(aws iam list-roles --out=text | grep ${eks_project} | awk '{print $7}'); do
+  for policy in $(aws iam list-attached-role-policies --role-name ${role} --out=text | awk '{print $2}'); do
+    aws iam detach-role-policy --role-name ${role} --policy-arn ${policy}
+  done
+done
+
 aws iam delete-policy --policy-arn arn:aws:iam::${aws_account_id}:policy/AmazonEKS_EBS_CSI_Driver_Policy-${eks_project}
 aws iam delete-policy --policy-arn arn:aws:iam::${aws_account_id}:policy/AWSLoadBalancerControllerIAMPolicy-${eks_project}
 aws iam delete-policy --policy-arn arn:aws:iam::${aws_account_id}:policy/${eks_project}-ecr-policy
@@ -84,10 +91,21 @@ aws iam delete-policy --policy-arn arn:aws:iam::${aws_account_id}:policy/${eks_p
 
 for role in $(aws iam list-roles --out=text | grep ${eks_project} | awk '{print $7}'); do
   for policy in $(aws iam list-role-policies --role-name ${role} --out=text | awk '{print $2}'); do
+    aws iam detach-role-policy --role-name ${role} --policy-arn ${policy}
     aws iam delete-role-policy --role-name ${role} --policy-name ${policy}
   done
   aws iam delete-role --role-name ${role}
 done
+
+aws iam remove-user-from-group --user-name ${eks_project}-k8sAdmin --group-name ${eks_project}-k8sAdmin
+aws iam remove-user-from-group --user-name ${eks_project}-k8sDev --group-name ${eks_project}-k8sDev
+aws iam delete-user --user-name ${eks_project}-k8sAdmin
+aws iam delete-user --user-name ${eks_project}-k8sDev
+
+aws iam delete-group-policy --group-name ${eks_project}-k8sAdmin --policy-name ${eks_project}-k8sAdmin
+aws iam delete-group-policy --group-name ${eks_project}-k8sDev --policy-name ${eks_project}-k8sDev
+aws iam delete-group --group-name ${eks_project}-k8sAdmin
+aws iam delete-group --group-name ${eks_project}-k8sDev
 
 for allocation_id in $(aws ec2 describe-addresses --query 'Addresses[?AssociationId==null]' \
       | grep ${eks_project} -B 7 | grep AllocationId | awk '{print $2}' | sed "s/\"//g;s/,//g"); do
@@ -98,7 +116,13 @@ for item in $(eksctl get nodegroup --cluster=${eks_project} | grep ${eks_project
 	eksctl delete nodegroup --cluster=${eks_project} --name=${item} --disable-eviction
 done
 
-#aws kms delete-alias --alias-name alias/${eks_project}
+for item in $(aws kms list-keys --out=text | awk '{print $2}'); do
+  alias=$(aws kms list-aliases --key-id ${item} --out=text | grep ${eks_project})
+  if [[ "${alias}" != "" ]]; then
+    aws kms delete-alias --alias-name `echo ${alias} | awk '{print $3}'`
+    aws kms schedule-key-deletion --key-id ${item} --pending-window-in-days 7
+  fi
+done
 
 ECR_REPO=$(aws ecr describe-repositories --out=text | grep ${eks_project} | awk '{print $6}')
 S3_REPO=$(aws s3api list-buckets --query "Buckets[].Name" | grep ${eks_project})
