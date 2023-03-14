@@ -1,10 +1,5 @@
 #!/usr/bin/env bash
 
-#https://learn.hashicorp.com/tutorials/vault/agent-kubernetes?in=vault/kubernetes
-#https://www.hashicorp.com/blog/injecting-vault-secrets-into-kubernetes-pods-via-a-sidecar
-#https://www.vaultproject.io/docs/platform/k8
-# s/injector
-
 source /root/.bashrc
 #bash /vagrant/tz-local/resource/vault/vault-injection/update.sh
 cd /vagrant/tz-local/resource/vault/vault-injection
@@ -19,7 +14,6 @@ vault login ${VAULT_TOKEN}
 
 vault list auth/kubernetes/role
 
-source /root/.bashrc
 #bash /vagrant/tz-local/resource/vault/vault-injection/cert.sh default
 kubectl get csr -o name | xargs kubectl certificate approve
 
