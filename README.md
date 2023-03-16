@@ -1,14 +1,25 @@
 # tz-eks-main
 
-## Bootstrap)
-```
-    -. copy resources like this
+## Prep)
+``` 
+    sudo apt update && apt install docker.io docker-compose -y
+    sudo chown -Rf ubuntu:ubuntu /var/run/docker.sock
+
+    -. checkout codes
+       git clone https://github.com/doohee323/tz-eks-main.git
+       cd tz-eks-main && git checkout -b eks-main-t origin/eks-main-t
+       
+    -. copy resources like this,
         tz-ek-main/resources
-            .auto.tfvars
+            .auto.tfvars        # terraform variables file
             config              # aws config
             credentials         # aws credentials
             project             # change your project name, it'll be a eks cluster name.
-    
+
+```
+
+## Provisioning)
+```
     -. run.
         export docker_user="doohee323"
         bash bootstrap.sh

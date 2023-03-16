@@ -1,8 +1,5 @@
 #!/bin/bash
 
-#sudo apt install docker.io
-#sudo apt install docker-compose
-#sudo chown -Rf ubuntu:ubuntu /var/run/docker.sock
 bash tz-local/docker/install.sh
 export tz_project=eks-main-t
 
