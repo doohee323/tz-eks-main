@@ -20,9 +20,7 @@ if [[ "$1" == "remove" ]]; then
 fi
 
 # bash bootstrap.sh
-bash tz-local/docker/install.sh
-
-#docker exec -it `docker ps | grep devops-utils | awk '{print $1}'` sh
+#docker exec -it `docker ps | grep devops-utils | awk '{print $1}'` bash
 docker exec -it `docker ps | grep devops-utils | awk '{print $1}'` \
     bash /vagrant/tz-local/docker/init2.sh
 

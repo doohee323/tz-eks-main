@@ -23,6 +23,7 @@ git config --global --add safe.directory '*'
 cp -Rf /vagrant/resources/${eks_project} ${PROJECT_BASE}
 cp -Rf /vagrant/resources/${eks_project}.pub ${PROJECT_BASE}
 cp -Rf /vagrant/resources/kubeconfig_${eks_project} ${PROJECT_BASE}
+cp -Rf /vagrant/resources/.auto.tfvars ${PROJECT_BASE}
 
 cd ${PROJECT_BASE}
 if [ ! -d "${PROJECT_BASE}/.terraform" ]; then
