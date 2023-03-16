@@ -124,15 +124,19 @@ for item in $(aws kms list-keys --out=text | awk '{print $2}'); do
   fi
 done
 
-ECR_REPO=$(aws ecr describe-repositories --out=text | grep ${eks_project} | awk '{print $6}')
-S3_REPO=$(aws s3api list-buckets --query "Buckets[].Name" | grep ${eks_project})
+for item in $(aws dynamodb list-tables --out=text | grep ${eks_project} | awk '{print $2}'); do
+  aws dynamodb delete-table --table-name ${item}
+done
+
+for item in $(aws s3api list-buckets --query "Buckets[].Name" | grep ${eks_project} | sed -E 's/.*"([^"]+)".*/\1/'); do
+  aws s3 rm s3://${item} --recursive
+  aws s3 rb s3://${item}
+done
 
 aws logs delete-log-group --log-group-name /aws/eks/${eks_project}/cluster
-aws s3 rm s3://terraform-state-${eks_project}-01 --recursive
-aws s3 rb s3://terraform-state-${eks_project}-01
 aws ec2 delete-key-pair --key-name ${eks_project}
-aws iam delete-group --group-name ${eks_project}-k8sAdmin
-aws iam delete-group --group-name ${eks_project}-k8sDev
+
+ECR_REPO=$(aws ecr describe-repositories --out=text | grep ${eks_project} | awk '{print $6}')
 
 if [[ "$(aws eks describe-cluster --name ${eks_project} | grep ${eks_project})" != "" ]]; then
   terraform destroy -auto-approve
@@ -140,6 +144,35 @@ if [[ "$(aws eks describe-cluster --name ${eks_project} | grep ${eks_project})" 
     sleep 30
     VPC_ID=$(aws ec2 describe-vpcs --filters "Name=tag:Name,Values=${eks_project}-vpc" --out=text | awk '{print $8}')
     echo "terraform destroy failed, try to delete vpc ${VPC_ID} again."
+
+    NAT_GATEWAY=$(aws ec2 describe-nat-gateways --filter 'Name=vpc-id,Values='${VPC_ID} --out=text | awk '{print $4}' | head -n 1)
+    aws ec2 delete-nat-gateway --nat-gateway-id ${NAT_GATEWAY}
+    sleep 30
+    INT_GATEWAY=$(aws ec2 describe-internet-gateways --filters 'Name=attachment.vpc-id,Values='${VPC_ID} --out=text | awk '{print $2}' | head -n 1)
+    aws ec2 detach-internet-gateway --internet-gateway-id ${INT_GATEWAY} --vpc-id ${VPC_ID}
+    aws ec2 delete-internet-gateway --internet-gateway-id ${INT_GATEWAY}
+    ELASTIC_IP=$(aws ec2 describe-addresses --filters 'Name=tag:application,Values='${eks_project} --out=text | awk '{print $2}' | head -n 1)
+    aws ec2 release-address --allocation-id ${ELASTIC_IP}
+    for item in $(aws ec2 describe-security-groups --filters "Name=vpc-id,Values="${VPC_ID} --query "SecurityGroups[*].{Name:GroupName,Name:GroupName,ID:GroupId}" --out=text | grep -v default | awk '{print $1}'); do
+      aws ec2 delete-security-group --group-id ${item}
+    done
+
+    for item in $(aws ec2 describe-route-tables --filters "Name=vpc-id,Values="${VPC_ID} --out=text | grep ${VPC_ID} | awk '{print $3}'); do
+      aws ec2 delete-route-table --route-table-id ${item}
+    done
+
+    for item in $(aws ec2 describe-subnets --filters "Name=vpc-id,Values="${VPC_ID} --query 'Subnets[*].[VpcId,SubnetId,AvailabilityZone]' --out=text | grep ${VPC_ID} | awk '{print $2}'); do
+      echo aws ec2 delete-subnet --subnet-id ${item}
+      aws ec2 delete-subnet --subnet-id ${item}
+    done
+
+eks-main-t-vpc-private	rtb-007b8b7e377941c43	-
+eks-main-t-vpc-private-us-west-2a	subnet-0ff6f5a94307833ae	Available
+eks-main-t-vpc-private-us-west-2a	subnet-0f04e08fcb97ace4e	Available
+eks-main-t-vpc-private-us-west-2a	subnet-0722bf9156f29ea6e	Available
+
+
+
     aws ec2 delete-vpc --vpc-id ${VPC_ID}
     if [[ $? != 0 ]]; then
       VPC_ID=$(aws ec2 describe-vpcs --filters "Name=tag:Name,Values=${eks_project}-vpc" --out=text | awk '{print $8}')
@@ -158,7 +191,6 @@ echo "
 echo "You might need to delete these resources."
 echo "VPC: ${eks_project}-vpc"
 echo "ECR: ${ECR_REPO}"
-echo "S3 bucket: ${S3_REPO} jenkins-${eks_project}"
 #######################################################################
 " >> /vagrant/info
 cat /vagrant/info
