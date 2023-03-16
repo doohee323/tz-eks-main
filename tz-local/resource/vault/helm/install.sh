@@ -156,7 +156,7 @@ vault secrets enable aws
 vault write aws/config/root \
 access_key=AKIAW354R7YB6TQ7LZVA \
 secret_key=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 \
-region=us-west-2
+region=ap-southeast-1
 
 
 #vault secrets enable -path=kv kv

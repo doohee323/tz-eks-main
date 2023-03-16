@@ -11,7 +11,7 @@ terraform {
   }
 
 //  backend "s3" {
-//    region  = "us-west-2"
+//    region  = "ap-southeast-1"
 //    bucket  = "terraform-state-eks-main-t-01"
 //    key     = "terraform.tfstate"
 //    encrypt        = true
