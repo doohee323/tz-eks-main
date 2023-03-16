@@ -62,7 +62,7 @@ ui:
     type: 'ClusterIP'
 
 connectInject:
-  enabled: true
+  enabled: false
   default: false
   logLevel: debug
   metrics:
