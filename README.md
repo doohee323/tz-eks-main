@@ -38,7 +38,7 @@
         
     -. remove all
         export docker_user="doohee323"
-        sh bootstrap.sh remove
+        bash bootstrap.sh remove
         
         After it's done, check VPC and S3 again!
 ```

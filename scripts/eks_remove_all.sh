@@ -166,13 +166,6 @@ if [[ "$(aws eks describe-cluster --name ${eks_project} | grep ${eks_project})" 
       aws ec2 delete-subnet --subnet-id ${item}
     done
 
-eks-main-t-vpc-private	rtb-007b8b7e377941c43	-
-eks-main-t-vpc-private-ap-southeast-1a	subnet-0ff6f5a94307833ae	Available
-eks-main-t-vpc-private-ap-southeast-1a	subnet-0f04e08fcb97ace4e	Available
-eks-main-t-vpc-private-ap-southeast-1a	subnet-0722bf9156f29ea6e	Available
-
-
-
     aws ec2 delete-vpc --vpc-id ${VPC_ID}
     if [[ $? != 0 ]]; then
       VPC_ID=$(aws ec2 describe-vpcs --filters "Name=tag:Name,Values=${eks_project}-vpc" --out=text | awk '{print $8}')

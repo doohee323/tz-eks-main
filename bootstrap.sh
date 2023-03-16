@@ -1,7 +1,7 @@
 #!/bin/bash
 
-bash tz-local/docker/install.sh
 export tz_project=eks-main-t
+bash tz-local/docker/install.sh
 
 # bash bootstrap.sh remove
 if [[ "$1" == "remove" ]]; then

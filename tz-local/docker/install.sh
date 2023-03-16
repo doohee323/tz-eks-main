@@ -3,7 +3,7 @@
 cd tz-local/docker
 
 export eks_project=eks-main-t
-export eks_domain=t1zone.net
+export eks_domain=shoptoolstest.co.kr
 export tz_project=devops-utils
 
 TAG=${docker_user}/${tz_project}:latest
