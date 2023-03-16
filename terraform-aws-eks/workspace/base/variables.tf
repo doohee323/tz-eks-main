@@ -45,7 +45,7 @@ variable "map_accounts" {
   type        = list(string)
 
   default = [
-    "472304975363",
+    "576066064056",
   ]
 }
 
@@ -59,7 +59,7 @@ variable "map_roles" {
 
   default = [
     {
-      rolearn  = "arn:aws:iam::472304975363:role/eks-main-t20221104030123224500000002"
+      rolearn  = "arn:aws:iam::576066064056:role/eks-main-t20221104030123224500000002"
       username = "eks-main-t20221104030123224500000002"
       groups   = ["system:masters"]
     },
@@ -76,7 +76,7 @@ variable "map_users" {
 
   default = [
     {
-      userarn  = "arn:aws:iam::472304975363:user/devops"
+      userarn  = "arn:aws:iam::576066064056:user/devops"
       username = "devops"
       groups   = ["system:masters"]
     }
