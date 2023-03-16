@@ -21,7 +21,7 @@
             terraform-aws-eks/workspace/base/kubeconfig_eks-main-t
     
     -. into docker env.
-        docker exec -it `docker ps | grep devops-utils-1 | awk '{print $1}'` bash
+        docker exec -it `docker ps | grep devops-utils-1 | awk '{print $1}'` sh
         root@8971909b818a:/# base
         root@8971909b818a:/vagrant/terraform-aws-eks/workspace/base# tplan
         

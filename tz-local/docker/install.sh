@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cd tz-local/docker
+#cd tz-local/docker
 
 export eks_project=eks-main-t
 export eks_domain=t1zone.net
