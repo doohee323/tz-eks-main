@@ -11,7 +11,7 @@
     
     -. run.
         export docker_user="doohee323"
-        sh bootstrap.sh
+        bash bootstrap.sh
         
     -. output
         ssh-key)
@@ -21,7 +21,7 @@
             terraform-aws-eks/workspace/base/kubeconfig_eks-main-t
     
     -. into docker env.
-        docker exec -it `docker ps | grep devops-utils-1 | awk '{print $1}'` sh
+        docker exec -it `docker ps | grep devops-utils-1 | awk '{print $1}'` bash
         root@8971909b818a:/# base
         root@8971909b818a:/vagrant/terraform-aws-eks/workspace/base# tplan
         
