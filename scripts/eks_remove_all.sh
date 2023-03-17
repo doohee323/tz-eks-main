@@ -97,6 +97,9 @@ for role in $(aws iam list-roles --out=text | grep ${eks_project} | awk '{print 
   aws iam delete-role --role-name ${role}
 done
 
+aws iam delete-policy --policy-arn arn:aws:iam::${aws_account_id}:policy/${eks_project}-alb-management
+aws iam delete-role --role-name ${eks_project}-aws-load-balancer-controller
+
 aws iam remove-user-from-group --user-name ${eks_project}-k8sAdmin --group-name ${eks_project}-k8sAdmin
 aws iam remove-user-from-group --user-name ${eks_project}-k8sDev --group-name ${eks_project}-k8sDev
 aws iam delete-user --user-name ${eks_project}-k8sAdmin
