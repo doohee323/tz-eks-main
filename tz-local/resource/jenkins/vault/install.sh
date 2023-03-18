@@ -11,7 +11,7 @@ vault_token=$(prop 'project' 'vault')
 #set -x
 vault -autocomplete-install
 complete -C /usr/local/bin/vault vault
-vault -h
+#vault -h
 
 export VAULT_ADDR=http://vault.default.${eks_project}.${eks_domain}
 vault login ${vault_token}
@@ -32,15 +32,18 @@ vault write auth/approle/role/jenkins \
      policies="jenkins"
 
 # Get RoleID and SecretID
-vault read auth/approle/role/jenkins/role-id
-#Key        Value
-#---        -----
-#role_id    06e1f9bf-xxx
+role_id=$(vault read auth/approle/role/jenkins/role-id)
+role_id=$(echo $role_id | awk '{print $6}')
+awk '!/jenkins_vault_role_id=/' /vagrant/resources/project > tmpfile && mv tmpfile /vagrant/resources/project
+echo "jenkins_vault_role_id=${role_id}" >> /vagrant/resources/project
 
-vault write -f auth/approle/role/jenkins/secret-id
+secret_id=$(vault write -f auth/approle/role/jenkins/secret-id)
+secret_id=$(echo $secret_id | awk '{print $6}')
 #Key                   Value
 #---                   -----
 #secret_id             4b59eaa2-xxx
+awk '!/jenkins_vault_secret_id=/' /vagrant/resources/project > tmpfile && mv tmpfile /vagrant/resources/project
+echo "jenkins_vault_secret_id=${secret_id}" >> /vagrant/resources/project
 
 # Create dbinfo secret with 3 keys to read in jenkins pipeline
 tee dbinfo.json <<"EOF"
