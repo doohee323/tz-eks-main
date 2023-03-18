@@ -611,12 +611,12 @@ resource "null_resource" "supply_target_group_arns" {
 resource "aws_kms_key" "eks-main-vault-kms" {
   description             = "Vault unseal key"
   tags = {
-    Name = "${local.cluster_name}-vault-kms-unseal_03"
+    Name = "${local.cluster_name}-vault-kms-unseal_04"
   }
 }
 
 resource "aws_kms_alias" "eks-main-vault-kms" {
-  name          = "alias/${local.cluster_name}-vault-kms-unseal_03"
+  name          = "alias/${local.cluster_name}-vault-kms-unseal_04"
   target_key_id = aws_kms_key.eks-main-vault-kms.key_id
 }
 

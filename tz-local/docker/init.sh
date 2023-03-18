@@ -40,10 +40,11 @@ export PATH=\"/root/.krew/bin:$PATH\"
 
 cat >> /root/.bashrc <<EOF
 function prop {
-  if [[ "\${3}" == "" ]]; then
-    grep "\${2}" "/root/.aws/\${1}" | head -n 1 | cut -d '=' -f2 | sed 's/ //g'
+  key="${2}="
+  if [[ "${3}" == "" ]]; then
+    grep "${key}" "/root/.aws/${1}" | head -n 1 | cut -d '=' -f2 | sed 's/ //g'
   else
-    grep "\${3}" "/root/.aws/\${1}" -A 10 | grep "\${2}" | head -n 1 | tail -n 1 | cut -d '=' -f2 | sed 's/ //g'
+    grep "${3}" "/root/.aws/${1}" -A 10 | grep "${key}" | head -n 1 | tail -n 1 | cut -d '=' -f2 | sed 's/ //g'
   fi
 }
 EOF

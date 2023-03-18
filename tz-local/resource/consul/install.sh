@@ -30,6 +30,18 @@ sed -i "s|NS|${NS}|g" consul-ingress.yaml_bak
 k delete -f consul-ingress.yaml_bak -n consul
 k apply -f consul-ingress.yaml_bak -n consul
 
+#kubectl get certificate -n consul
+#kubectl describe certificate ingress-consul-tls -n consul
+
+#kubectl -n consul apply -f mesh/upgrade.yaml
+
+#k delete -f /vagrant/tz-local/resource/consul/consul.yaml -n consul
+#k apply -f /vagrant/tz-local/resource/consul/consul.yaml -n consul
+#k get pod/tz-consul-deployment-78597cd9c5-vsbg4 -o yaml > a.yaml
+
+#k create -f /vagrant/tz-local/resource/consul/counting.yaml -n consul
+#k create -f /vagrant/tz-local/resource/consul/dashboard.yaml -n consul
+
 sleep 60
 
 export CONSUL_HTTP_ADDR="consul.default.${eks_project}.${eks_domain}"

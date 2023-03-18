@@ -26,15 +26,25 @@ vault auth enable kubernetes
 cp -Rf vault-auth-service-account.yaml vault-auth-service-account.yaml_bak
 sed -i "s/namespace: vault/namespace: vault/g" vault-auth-service-account.yaml_bak
 kubectl -n vault delete -f vault-auth-service-account.yaml_bak
-kubectl -n vault create -f vault-auth-service-account.yaml_bak
-kubectl -n vault create -f vault-auth-service-account2.yaml
+kubectl -n vault apply -f vault-auth-service-account.yaml_bak
+kubectl -n vault apply -f vault-auth-service-account2.yaml
 # Prepare kube api server data
-export VAULT_SA_NAME=$(kubectl -n vault get sa vault-auth -o jsonpath="{.secrets[*]['name']}")
-export SA_JWT_TOKEN=$(kubectl -n vault get secret $VAULT_SA_NAME -o jsonpath="{.data.token}" | base64 --decode; echo)
+cat <<EOF | kubectl -n vault apply -f -
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vault-auth
+  annotations:
+    kubernetes.io/service-account.name: "vault-auth"
+type: kubernetes.io/service-account-token
+EOF
+export SECRET_NAME="vault-auth"
+export SA_JWT_TOKEN=$(kubectl -n vault get secret $SECRET_NAME -o jsonpath="{.data.token}" | base64 --decode; echo)
 export K8S_HOST="$(kubectl config view --raw --minify --flatten --output='jsonpath={.clusters[].cluster.server}')"
 export SA_CA_CRT="$(kubectl config view --raw --minify --flatten --output='jsonpath={.clusters[].cluster.certificate-authority-data}' | base64 --decode)"
 
-echo "VAULT_SA_NAME: ${VAULT_SA_NAME}"
+echo "SECRET_NAME: ${SECRET_NAME}"
 echo "SA_JWT_TOKEN: ${SA_JWT_TOKEN}"
 echo "K8S_HOST: ${K8S_HOST}"
 echo "SA_CA_CRT: ${SA_CA_CRT}"
@@ -61,6 +71,8 @@ vault login -method=userpass username=doogee323 password=1111111
 #    token_reviewer_jwt="$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)"
 #    kubernetes_ca_cert=@/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
 
+vault login ${VAULT_TOKEN}
+
 vault read auth/kubernetes/config
 
 vault write auth/kubernetes/role/devops-prod \
@@ -73,3 +85,5 @@ vault list auth/kubernetes/role
 vault read auth/kubernetes/role/devops-prod
 
 exit 0
+
+vault kv put secret/devops-prod/tz-demo-app OPENAI_API_KEY='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'

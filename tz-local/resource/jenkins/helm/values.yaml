@@ -439,7 +439,9 @@ controller:
   # Node labels and tolerations for pod assignment
   # ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
   # ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#taints-and-tolerations-beta-feature
-  nodeSelector: {}
+  nodeSelector:
+    team: devops
+    environment: consul
 
   terminationGracePeriodSeconds:
 
@@ -743,7 +745,9 @@ agent:
   #   optional: false # default: false
   #   secretKey: MY-K8S-PATH
   #   secretName: my-k8s-secret
-  nodeSelector: {}
+  nodeSelector:
+    team: devops
+    environment: consul
   # Key Value selectors. Ex:
   # jenkins-agent: v1
 

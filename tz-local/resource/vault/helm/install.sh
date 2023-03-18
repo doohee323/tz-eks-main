@@ -13,7 +13,7 @@ eks_domain=$(prop 'project' 'domain')
 AWS_REGION=$(prop 'config' 'region')
 aws_access_key_id=$(prop 'credentials' 'aws_access_key_id')
 aws_secret_access_key=$(prop 'credentials' 'aws_secret_access_key')
-vault_kms_key=$(aws kms list-aliases | grep -w "${eks_project}-vault-kms-unseal_03" -A 1 | tail -n 1 | awk -F\" '{print $4}')
+vault_kms_key=$(aws kms list-aliases | grep -w "${eks_project}-vault-kms-unseal_04" -A 1 | tail -n 1 | awk -F\" '{print $4}')
 vault_token=$(prop 'project' 'vault')
 NS=vault
 

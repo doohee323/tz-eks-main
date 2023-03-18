@@ -24,13 +24,13 @@ k apply -f jenkins.yaml
 
 cp -Rf values.yaml values.yaml_bak
 sed -i "s/jenkins_aws_access_key/${aws_access_key_id}/g" values.yaml_bak
-sed -i "s/jenkins_aws_secret_key/${aws_secret_access_key}/g" values.yaml_bak
+sed -i "s|jenkins_aws_secret_key|${aws_secret_access_key}|g" values.yaml_bak
 sed -i "s/aws_region/${AWS_REGION}/g" values.yaml_bak
 sed -i "s/eks_project/${eks_project}/g" values.yaml_bak
 
 helm delete jenkins -n jenkins
 #--reuse-values
-helm upgrade --debug --install jenkins jenkins/jenkins  -f values.yaml_bak -n jenkins
+helm upgrade --debug --install --reuse-values jenkins jenkins/jenkins  -f values.yaml_bak -n jenkins
 #k patch svc jenkins --type='json' -p '[{"op":"replace","path":"/spec/type","value":"NodePort"},{"op":"replace","path":"/spec/ports/0/nodePort","value":31000}]' -n jenkins
 #k patch svc jenkins -p '{"spec": {"ports": [{"port": 8080,"targetPort": 8080, "name": "http"}], "type": "ClusterIP"}}' -n jenkins --force
 
