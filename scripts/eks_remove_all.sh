@@ -144,7 +144,8 @@ ECR_REPO=$(aws ecr describe-repositories --out=text | grep ${eks_project} | awk 
 if [[ "$(aws eks describe-cluster --name ${eks_project} | grep ${eks_project})" != "" ]]; then
   terraform destroy -auto-approve
   if [[ $? != 0 ]]; then
-    sleep 30
+    aws eks delete-cluster --name ${eks_project}
+    sleep 60
     VPC_ID=$(aws ec2 describe-vpcs --filters "Name=tag:Name,Values=${eks_project}-vpc" --out=text | awk '{print $8}')
     echo "terraform destroy failed, try to delete vpc ${VPC_ID} again."
 
