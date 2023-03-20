@@ -40,12 +40,22 @@ export PATH=\"/root/.krew/bin:$PATH\"
 
 cat >> /root/.bashrc <<EOF
 function prop {
-  key="${2}="
-  if [[ "${3}" == "" ]]; then
-    grep "${key}" "/root/.aws/${1}" | head -n 1 | cut -d '=' -f2 | sed 's/ //g'
+  key="\${2}="
+  rslt=""
+  if [[ "\${3}" == "" ]]; then
+    rslt=\$(grep "\${key}" "/root/.aws/\${1}" | head -n 1 | cut -d '=' -f2 | sed 's/ //g')
+    if [[ "\${rslt}" == "" ]]; then
+      key="\${2} = "
+      rslt=\$(grep "\${key}" "/root/.aws/\${1}" | head -n 1 | cut -d '=' -f2 | sed 's/ //g')
+    fi
   else
-    grep "${3}" "/root/.aws/${1}" -A 10 | grep "${key}" | head -n 1 | tail -n 1 | cut -d '=' -f2 | sed 's/ //g'
+    rslt=\$(grep "\${3}" "/root/.aws/\${1}" -A 10 | grep "\${key}" | head -n 1 | tail -n 1 | cut -d '=' -f2 | sed 's/ //g')
+    if [[ "\${rslt}" == "" ]]; then
+      key="\${2} = "
+      rslt=\$(grep "\${3}" "/root/.aws/\${1}" -A 10 | grep "\${key}" | head -n 1 | tail -n 1 | cut -d '=' -f2 | sed 's/ //g')
+    fi
   fi
+  echo \${rslt}
 }
 EOF
 

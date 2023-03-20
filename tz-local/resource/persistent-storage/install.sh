@@ -30,6 +30,7 @@ aws cloudformation describe-stacks \
     --query='Stacks[].Outputs[?OutputKey==`Role1`].OutputValue' \
     --output text
 
+kubectl -n kube-system delete secret aws-secret
 kubectl create secret generic aws-secret \
     --namespace kube-system \
     --from-literal "key_id=${AWS_ACCESS_KEY_ID}" \

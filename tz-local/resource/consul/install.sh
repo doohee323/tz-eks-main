@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 source /root/.bashrc
+#bash /vagrant/tz-local/resource/consul/install.sh
 cd /vagrant/tz-local/resource/consul
 
 #set -x
@@ -21,7 +22,8 @@ kubectl delete namespace consul
 
 k create namespace consul
 cp values.yaml values.yaml_bak
-helm upgrade --debug --install --reuse-values consul hashicorp/consul -f /vagrant/tz-local/resource/consul/values.yaml_bak -n consul --version 1.0.2
+#--reuse-values
+helm upgrade --debug --install consul hashicorp/consul -f /vagrant/tz-local/resource/consul/values.yaml_bak -n consul --version 1.0.2
 
 cp -Rf consul-ingress.yaml consul-ingress.yaml_bak
 sed -i "s/eks_project/${eks_project}/g" consul-ingress.yaml_bak
