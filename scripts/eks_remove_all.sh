@@ -84,6 +84,7 @@ done
 
 aws iam delete-policy --policy-arn arn:aws:iam::${aws_account_id}:policy/AmazonEKS_EBS_CSI_Driver_Policy-${eks_project}
 aws iam delete-policy --policy-arn arn:aws:iam::${aws_account_id}:policy/AWSLoadBalancerControllerIAMPolicy-${eks_project}
+aws iam delete-policy --policy-arn arn:aws:iam::${aws_account_id}:policy/${eks_project}-alb-management
 aws iam delete-policy --policy-arn arn:aws:iam::${aws_account_id}:policy/${eks_project}-ecr-policy
 aws iam delete-policy --policy-arn arn:aws:iam::${aws_account_id}:policy/${eks_project}-es-s3-policy
 aws iam delete-policy --policy-arn arn:aws:iam::${aws_account_id}:policy/${eks_project}-k8sAdmin
