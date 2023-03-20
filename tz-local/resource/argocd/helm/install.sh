@@ -94,7 +94,7 @@ bash /vagrant/tz-local/resource/argocd/update.sh
 #################################################################################
 # 2) integrate with vault
 #################################################################################
-export VAULT_ADDR="https://vault.default.${eks_project}.${eks_domain}"
+export VAULT_ADDR="http://vault.default.${eks_project}.${eks_domain}"
 echo "VAULT_ADDR: ${VAULT_ADDR}"
 vault login ${vault_token}
 vault auth enable kubernetes

@@ -9,11 +9,11 @@ eks_domain=$(prop 'project' 'domain')
 VAULT_TOKEN=$(prop 'project' 'vault')
 AWS_REGION=$(prop 'config' 'region')
 
-export VAULT_ADDR="https://vault.default.${eks_project}.${eks_domain}"
+export VAULT_ADDR="http://vault.default.${eks_project}.${eks_domain}"
 vault login ${VAULT_TOKEN}
 
 curl -s ${VAULT_ADDR}/v1/sys/seal-status | jq
-EXTERNAL_VAULT_ADDR="https://vault.default.${eks_project}.${eks_domain}"
+EXTERNAL_VAULT_ADDR="http://vault.default.${eks_project}.${eks_domain}"
 echo $EXTERNAL_VAULT_ADDR
 
 bash /vagrant/tz-local/resource/vault/vault-injection/cert.sh
@@ -58,7 +58,7 @@ vault write auth/kubernetes/config \
         issuer="https://kubernetes.default.svc.cluster.local"
 #        disable_iss_validation=true
 
-export VAULT_ADDR="https://vault.default.${eks_project}.${eks_domain}"
+export VAULT_ADDR="http://vault.default.${eks_project}.${eks_domain}"
 #export VAULT_ADDR=http://vault.vault.svc.cluster.local:8200
 vault write auth/userpass/users/doogee323 password=1111111 policies=tz-vault-devops
 vault login -method=userpass username=doogee323 password=1111111

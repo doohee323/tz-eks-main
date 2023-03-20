@@ -20,7 +20,7 @@ bash /vagrant/tz-local/resource/vault/data/vault_user.sh
 bash /vagrant/tz-local/resource/vault/vault-injection/install.sh
 bash /vagrant/tz-local/resource/vault/vault-injection/update.sh
 
-bash /vagrant/tz-local/resource/argocd/install.sh
+bash /vagrant/tz-local/resource/argocd/helm/install.sh
 bash /vagrant/tz-local/resource/jenkins/helm/install.sh
 
 exit 0

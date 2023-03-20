@@ -10,7 +10,7 @@ eks_project=$(prop 'project' 'project')
 eks_domain=$(prop 'project' 'domain')
 vault_token=$(prop 'project' 'vault')
 
-export VAULT_ADDR=https://vault.default.${eks_project}.${eks_domain}
+export VAULT_ADDR=http://vault.default.${eks_project}.${eks_domain}
 echo ${VAULT_ADDR}
 vault login ${vault_token}
 

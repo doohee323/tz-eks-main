@@ -9,7 +9,7 @@ eks_domain=$(prop 'project' 'domain')
 VAULT_TOKEN=$(prop 'project' 'vault')
 AWS_REGION=$(prop 'config' 'region')
 
-export VAULT_ADDR="https://vault.default.${eks_project}.${eks_domain}"
+export VAULT_ADDR="http://vault.default.${eks_project}.${eks_domain}"
 vault login ${VAULT_TOKEN}
 
 vault list auth/kubernetes/role

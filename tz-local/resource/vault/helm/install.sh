@@ -76,7 +76,7 @@ sleep 30
 # vault operator init
 # vault operator init -key-shares=3 -key-threshold=2
 #export VAULT_ADDR='http://127.0.0.1:8200'
-export VAULT_ADDR="https://vault.default.${eks_project}.${eks_domain}"
+export VAULT_ADDR="http://vault.default.${eks_project}.${eks_domain}"
 echo $VAULT_ADDR
 
 k -n vault exec -ti vault-0 -- vault operator init -key-shares=3 -key-threshold=2 | sed 's/\x1b\[[0-9;]*m//g' > /vagrant/resources/unseal.txt
@@ -132,7 +132,7 @@ vault --version
 
 echo "
 ##[ Vault ]##########################################################
-export VAULT_ADDR=https://vault.default.${eks_project}.${eks_domain}
+export VAULT_ADDR=http://vault.default.${eks_project}.${eks_domain}
 vault login ${vault_token_new}
 
 vault secrets list -detailed
@@ -164,7 +164,7 @@ region=ap-southeast-1
 # macos
 brew tap hashicorp/tap
 brew install hashicorp/tap/vault
-export VAULT_ADDR=https://vault.default.${eks_project}.${eks_domain}
+export VAULT_ADDR=http://vault.default.${eks_project}.${eks_domain}
 vault login s.qBPblA0U9Bzmhgr8eRnukSqR
 vault secrets list -detailed
 
