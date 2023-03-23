@@ -78,6 +78,14 @@ sed -i "s/AWS_REGION/${AWS_REGION}/g" ingress-argocd.yaml_bak
 k delete -f ingress-argocd.yaml_bak -n argocd
 k apply -f ingress-argocd.yaml_bak -n argocd
 
+k patch deploy/argocd-server -p '{"spec": {"template": {"spec": {"nodeSelector": {"team": "devops", "environment": "prod"}}}}}' -n argocd
+k patch deploy/argocd-applicationset-controller -p '{"spec": {"template": {"spec": {"nodeSelector": {"team": "devops", "environment": "prod"}}}}}' -n argocd
+k patch deploy/argocd-redis -p '{"spec": {"template": {"spec": {"nodeSelector": {"team": "devops", "environment": "prod"}}}}}' -n argocd
+k patch deploy/argocd-notifications-controller -p '{"spec": {"template": {"spec": {"nodeSelector": {"team": "devops", "environment": "prod"}}}}}' -n argocd
+k patch deploy/argocd-repo-server -p '{"spec": {"template": {"spec": {"nodeSelector": {"team": "devops", "environment": "prod"}}}}}' -n argocd
+k patch deploy/argocd-dex-server -p '{"spec": {"template": {"spec": {"nodeSelector": {"team": "devops", "environment": "prod"}}}}}' -n argocd
+k patch deploy/argocd-redis -p '{"spec": {"template": {"spec": {"imagePullSecrets": [{"name": "tz-registrykey"}]}}}}' -n argocd
+
 argocd login `k get service -n argocd | grep argocd-server | awk '{print $4}' | head -n 1` --username admin --password ${admin_password} --insecure
 argocd repo add https://github.com/doohee323/tz-argocd-repo \
   --username doohee323 --password ${github_token}
@@ -144,16 +152,16 @@ vault write auth/kubernetes/config \
 
 vault read auth/kubernetes/config
 
-vault policy write k8s - <<EOF
+vault policy write argocd - <<EOF
 path "secret/*" {
   capabilities = ["list", "read"]
 }
 EOF
 
-vault write auth/kubernetes/role/k8s \
+vault write auth/kubernetes/role/argocd \
   bound_service_account_names=argocd-repo-server,devops-prod-svcaccount \
   bound_service_account_namespaces=* \
-  policies=default,k8s ttl=15m
+  policies=default,argocd ttl=15m
 
 #################################################################################
 # 3) verify access to vault from argocd-repo-server
@@ -163,7 +171,7 @@ kubectl -n vault port-forward svc/vault 8200:8200 &
 curl -v localhost:8200
 
 curl --request POST \
- --data '{"jwt": "'${TR_ACCOUNT_TOKEN}'", "role": "k8s"}' \
+ --data '{"jwt": "'${TR_ACCOUNT_TOKEN}'", "role": "argocd"}' \
    http://localhost:8200/v1/auth/kubernetes/login
 
 #################################################################################
@@ -174,7 +182,7 @@ argocd app delete devops-tz-demo-app
 argocd app create devops-tz-demo-app \
   --project devops \
   --repo https://github.com/doohee323/tz-argocd-repo.git \
-  --path devops-tz-demo-app \
+  --path devops-tz-demo-app/prod \
   --dest-namespace devops \
   --dest-server https://kubernetes.default.svc --directory-recurse --upsert --grpc-web
 
