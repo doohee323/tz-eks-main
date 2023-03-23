@@ -50,8 +50,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: devops-tz-demo-app-configmap
-            - secretRef:
-                name: devops-tz-demo-app-secret
+#            - secretRef:
+#                name: devops-tz-demo-app-secret
 ---
 apiVersion: v1
 kind: ConfigMap

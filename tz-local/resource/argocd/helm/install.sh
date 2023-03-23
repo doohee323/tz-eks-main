@@ -188,6 +188,9 @@ kubectl apply -f demo/svcaccount.yaml
 #kubectl delete -f demo/demo-application-dev.yaml
 #kubectl apply -f demo/demo-application-dev.yaml
 
+#kubectl -n devops apply -f demo/dev/secret.yaml
+#kubectl -n devops apply -f demo/dev/deployment.yaml
+
 argocd app sync devops-tz-demo-app
 
 #################################################################################

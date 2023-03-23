@@ -56,17 +56,10 @@ for item in "${PROJECTS[@]}"; do
         -s https://github.com/doohee323/tz-argocd-repo.git \
         -s https://doohee323.github.io/tz-argocd-repo/ \
         --source-namespaces ${project}
-      if [[ "${project}" == "datateam" ]]; then
-        echo "  accounts.${project}-admin: apiKey, login" >> argocd-cm.yaml_bak
-        echo "    p, role:${project}-admin, *, *, *, allow" >> argocd-rbac-cm.yaml_bak
-        echo "    g, ${project}-admin, role:${project}-admin" >> argocd-rbac-cm.yaml_bak
-        argocd account update-password --account ${project}-admin --current-password ${admin_password} --new-password 'imsi!323'
-      else
-        echo "  accounts.${project}-admin: apiKey, login" >> argocd-cm.yaml_bak
-        echo "    p, role:${project}-admin, *, *, ${project}/*, allow" >> argocd-rbac-cm.yaml_bak
-        echo "    g, ${project}-admin, role:${project}-admin" >> argocd-rbac-cm.yaml_bak
-        argocd account update-password --account ${project}-admin --current-password ${admin_password} --new-password 'imsi!323'
-      fi
+      echo "  accounts.${project}-admin: apiKey, login" >> argocd-cm.yaml_bak
+      echo "    p, role:${project}-admin, *, *, ${project}/*, allow" >> argocd-rbac-cm.yaml_bak
+      echo "    g, ${project}-admin, role:${project}-admin" >> argocd-rbac-cm.yaml_bak
+      argocd account update-password --account ${project}-admin --current-password ${admin_password} --new-password 'imsi!323'
     fi
   fi
 done
