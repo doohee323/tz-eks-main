@@ -41,7 +41,7 @@ bash /vagrant/tz-local/resource/vault/vault-injection/cert.sh vault
 
 cp -Rf values_cert.yaml values_cert.yaml_bak
 sed -i "s/eks_project/${eks_project}/g" values_cert.yaml_bak
-sed -i "s/AWS-REGION/${AWS_REGION}/g" values_cert.yaml_bak
+sed -i "s/AWS_REGION/${AWS_REGION}/g" values_cert.yaml_bak
 sed -i "s/VAULT_KMS_KEY/${vault_kms_key}/g" values_cert.yaml_bak
 helm upgrade --debug --install --reuse-values vault hashicorp/vault -n vault -f values_cert.yaml_bak --version 0.19.0
 #kubectl rollout restart statefulset.apps/vault -n vault
@@ -52,7 +52,7 @@ k get all -n vault
 cp -Rf values_config.yaml values_config.yaml_bak
 sed -i "s/eks_project/${eks_project}/g" values_config.yaml_bak
 sed -i "s/eks_domain/${eks_domain}/g" values_config.yaml_bak
-sed -i "s/AWS-REGION/${AWS_REGION}/g" values_config.yaml_bak
+sed -i "s/AWS_REGION/${AWS_REGION}/g" values_config.yaml_bak
 sed -i "s/VAULT_KMS_KEY/${vault_kms_key}/g" values_config.yaml_bak
 k apply -f values_config.yaml_bak -n vault
 

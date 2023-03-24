@@ -112,4 +112,7 @@ argocd app create devops-tz-demo-app \
   --repo https://github.com/doohee323/tz-argocd-repo.git \
   --path devops-tz-demo-app/prod \
   --dest-namespace devops \
-  --dest-server https://kubernetes.default.svc --directory-recurse --upsert --grpc-web
+  --dest-server https://kubernetes.default.svc --directory-recurse --upsert --grpc-web \
+  --sync-policy automated \
+  --sync-retry-limit 3 \
+  --revision main

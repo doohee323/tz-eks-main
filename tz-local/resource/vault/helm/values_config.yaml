@@ -21,7 +21,7 @@ data:
     }
     service_registration "kubernetes" {}
     seal "awskms" {
-      region     = "AWS-REGION"
+      region     = "AWS_REGION"
       kms_key_id = "VAULT_KMS_KEY"
     }
 
