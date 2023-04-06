@@ -9,22 +9,27 @@ eks_domain=$(prop 'project' 'domain')
 eks_project=$(prop 'project' 'project')
 vault_token=$(prop 'project' 'vault')
 aws_account_id=$(aws sts get-caller-identity --query Account --output text)
-NS=default
+NS=external-secrets
 
 helm repo add external-secrets https://charts.external-secrets.io
 helm repo update
-helm upgrade --debug --install --reuse-values external-secrets \
+helm uninstall external-secrets -n ${NS}
+#--reuse-values
+helm upgrade --debug --install external-secrets \
    external-secrets/external-secrets \
-    -n external-secrets \
+    -n ${NS} \
     --create-namespace \
     --set installCRDs=true
 
-aws_access_key_id=$(prop 'credentials' 'aws_access_key_id' ${eks_project})
-aws_secret_access_key=$(prop 'credentials' 'aws_secret_access_key' ${eks_project})
+#aws_access_key_id=$(prop 'credentials' 'aws_access_key_id' ${eks_project})
+#aws_secret_access_key=$(prop 'credentials' 'aws_secret_access_key' ${eks_project})
+aws_access_key_id=$(prop 'credentials' 'aws_access_key_id')
+aws_secret_access_key=$(prop 'credentials' 'aws_secret_access_key')
 
 echo -n ${aws_access_key_id} > ./access-key
 echo -n ${aws_secret_access_key} > ./secret-access-key
-kubectl -n external-secrets create secret generic awssm-secret --from-file=./access-key  --from-file=./secret-access-key
+kubectl -n ${NS} delete secret awssm-secret
+kubectl -n ${NS} create secret generic awssm-secret --from-file=./access-key  --from-file=./secret-access-key
 
 rm -Rf ./access-key ./secret-access-key
 

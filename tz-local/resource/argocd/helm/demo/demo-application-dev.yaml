@@ -1,21 +1,17 @@
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: devops-dev-svcaccount
-  namespace: devops-dev
----
-
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: devops-tz-demo-app
-  namespace: argocd
+  namespace: devops
 spec:
   destination:
     namespace: devops-dev
     server: https://kubernetes.default.svc
   project: devops-dev
   source:
+    directory:
+      jsonnet: {}
+      recurse: true
     path: devops-tz-demo-app/dev
     repoURL: https://github.com/doohee323/tz-argocd-repo.git
     targetRevision: main

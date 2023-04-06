@@ -49,7 +49,8 @@ for item in "${PROJECTS[@]}"; do
         -d https://kubernetes.default.svc,${project} \
         -d https://kubernetes.default.svc,argocd \
         -s https://github.com/doohee323/tz-argocd-repo.git \
-        -s https://doohee323.github.io/tz-argocd-repo/
+        -s https://doohee323.github.io/tz-argocd-repo/ \
+        --upsert
       echo "  accounts.${project}: apiKey, login" >> argocd-cm.yaml_bak
       echo "    p, role:${project}, applications, sync, ${project}/*, allow" >> argocd-rbac-cm.yaml_bak
       echo "    g, ${project}, role:${project}" >> argocd-rbac-cm.yaml_bak
@@ -60,7 +61,8 @@ for item in "${PROJECTS[@]}"; do
         -d https://kubernetes.default.svc,${item}-dev \
         -d https://kubernetes.default.svc,argocd \
         -s https://github.com/doohee323/tz-argocd-repo.git \
-        -s https://doohee323.github.io/tz-argocd-repo/
+        -s https://doohee323.github.io/tz-argocd-repo/ \
+        --upsert
       echo "  accounts.${project}-admin: apiKey, login" >> argocd-cm.yaml_bak
       echo "    p, role:${project}-admin, *, *, ${project}/*, allow" >> argocd-rbac-cm.yaml_bak
       echo "    g, ${project}-admin, role:${project}-admin" >> argocd-rbac-cm.yaml_bak
@@ -74,7 +76,8 @@ k apply -f argocd-cmd-params-cm.yaml -n argocd
 
 exit 0
 
-argocd login argocd.${eks_domain}:443 --username devops-dev --password imsi\!323 --insecure
+argocd login argocd.default.${eks_project}.${eks_domain}:443 --username admin --password ${admin_password} --insecure
+#argocd login argocd.${eks_domain}:443 --username devops-dev --password imsi\!323 --insecure
 argocd account can-i create projects '*'
 argocd account can-i get projects '*'
 
@@ -88,31 +91,75 @@ argocd proj list
 PROJ=devops
 ROLE=devops-admin
 APP=devops-tz-demo-app
+#APP=devops-tz-gpt3
+STAGE=prod
+#STAGE=dev
+BRANCH=main
+#BRANCH=k8s
 
-argocd proj delete $PROJ
+argocd proj delete ${PROJ}
 
-argocd proj create $PROJ \
-        -d https://kubernetes.default.svc,$PROJ \
-        -d https://kubernetes.default.svc,$PROJ-dev \
-        -d https://kubernetes.default.svc,argocd \
+argocd proj create ${PROJ} \
+        -d https://kubernetes.default.svc,${PROJ} \
+        -d https://kubernetes.default.svc,${PROJ}-dev \
         -s https://github.com/doohee323/tz-argocd-repo.git \
         -s https://doohee323.github.io/tz-argocd-repo/
+#        -d https://kubernetes.default.svc,argocd \
 
-argocd proj role create $PROJ $ROLE
-argocd proj role create $PROJ argocd-admin
-argocd proj role list $PROJ
-argocd proj role get $PROJ $ROLE
+argocd proj role delete ${PROJ} $ROLE
+argocd proj role create ${PROJ} $ROLE
+argocd proj role create ${PROJ} argocd-admin
+argocd proj role list ${PROJ}
+argocd proj role get ${PROJ} $ROLE
 
-argocd proj role add-policy $PROJ $ROLE --action get --permission allow --object $APP
+argocd proj get ${PROJ}
+
+argocd proj role remove-policy ${PROJ} $ROLE --action get --permission allow --object ${APP} --grpc-web
+argocd proj role add-policy ${PROJ} $ROLE --action get --permission allow --object ${APP} --grpc-web
+
+argocd proj role remove-policy ${PROJ} $ROLE -a get -o ${APP}
+argocd proj role remove-policy ${PROJ} $ROLE -a '*' --permission allow -o '*'
+argocd proj role add-policy ${PROJ} $ROLE -a '*' --permission allow -o '*'
+
+argocd proj role add-policy ${PROJ} $ROLE \
+  --action get \
+  --action sync \
+  --action create \
+  --action update \
+  --action delete \
+  --permission allow --object ${APP} --grpc-web
+
+NS=devops
+k="kubectl -n ${NS} --kubeconfig ~/.kube/config"
 
 argocd app list
-argocd app delete devops-tz-demo-app
-argocd app create devops-tz-demo-app \
-  --project devops \
-  --repo https://github.com/doohee323/tz-argocd-repo.git \
-  --path devops-tz-demo-app/prod \
-  --dest-namespace devops \
-  --dest-server https://kubernetes.default.svc --directory-recurse --upsert --grpc-web \
-  --sync-policy automated \
-  --sync-retry-limit 3 \
-  --revision main
+argocd app delete ${APP} --cascade -y
+argocd app delete ${APP} -y
+
+if [[ "${STAGE}" == "prod" ]]; then
+  argocd app create ${APP} \
+    --project devops \
+    --repo https://github.com/doohee323/tz-argocd-repo.git \
+    --path ${APP}/${STAGE} \
+    --dest-namespace ${PROJ} \
+    --dest-server https://kubernetes.default.svc \
+    --directory-recurse --upsert --grpc-web \
+    --revision main
+
+#    argocd app sync ${APP}
+else
+  argocd app create ${APP}-${BRANCH} \
+    --project devops \
+    --repo https://github.com/doohee323/tz-argocd-repo.git \
+    --path ${APP}/${BRANCH} \
+    --dest-namespace ${PROJ}-${STAGE} \
+    --dest-server https://kubernetes.default.svc \
+    --directory-recurse --upsert --grpc-web \
+    --revision main
+
+#    argocd app sync ${APP}-${BRANCH}
+fi
+
+
+#  --sync-policy automated \
+

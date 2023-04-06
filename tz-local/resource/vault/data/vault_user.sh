@@ -55,7 +55,7 @@ for item in "${PROJECTS[@]}"; do
       echo svcaccount: ${item}-svcaccount
       vault policy write tz-vault-${project} /vagrant/tz-local/resource/vault/data/${project}.hcl
       vault write auth/kubernetes/role/${project} \
-              bound_service_account_names=${project}-svcaccount \
+              bound_service_account_names=argocd-repo-server,${project}-svcaccount \
               bound_service_account_namespaces=${item} \
               policies=tz-vault-${project} \
               ttl=24h
@@ -67,7 +67,7 @@ for item in "${PROJECTS[@]}"; do
         echo vault policy write tz-vault-${project_qa} /vagrant/tz-local/resource/vault/data/${project_qa}.hcl
         vault policy write tz-vault-${project_qa} /vagrant/tz-local/resource/vault/data/${project_qa}.hcl
         vault write auth/kubernetes/role/${project_qa} \
-                bound_service_account_names=${project_qa}-svcaccount \
+                bound_service_account_names=argocd-repo-server,${project_qa}-svcaccount \
                 bound_service_account_namespaces=${item} \
                 policies=tz-vault-${project_qa} \
                 ttl=24h
