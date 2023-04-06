@@ -1,0 +1,50 @@
+pipeline {
+  agent any
+
+   environment {
+        GIT_BRANCH = "eks-main"
+        CLUSTER_NAME = "eks-main"
+        AWS_REGION = "ap-northeast-2"
+        GIT_CREDENTIAL = 'Github'
+        GIT_URL = 'https://github.com/tzkr/tz-eks-main.git'
+   }
+
+  tools {
+    terraform 'terraform-tz'
+  }
+  stages {
+    stage('git checkout') {
+        steps {
+          cleanWs()
+          git credentialsId: GIT_CREDENTIAL,
+          url: GIT_URL,
+          branch: GIT_BRANCH
+        }
+    }
+    stage('Preparation') {
+        steps {
+          dir("${workspace}/terraform-aws-eks/workspace/base"){
+              script{
+                sh 'export AWS_PROFILE=eks-main'
+                sh "echo aws s3 cp s3://jenkins-devops-utils/" + "${GIT_BRANCH}" + " ."
+                sh "aws s3 cp s3://jenkins-devops-utils/" + "${GIT_BRANCH}" + " ."
+                sh "aws s3 cp s3://jenkins-devops-utils/" + "${GIT_BRANCH}" + ".pub ."
+                sh "aws s3 cp s3://jenkins-devops-utils/kubeconfig_" + "${GIT_BRANCH}" + " ."
+              }
+          }
+        }
+    }
+
+    stage ('terraform') {
+        steps {
+          dir("${workspace}/terraform-aws-eks/workspace/base"){
+              script{
+                  sh "bash /var/lib/jenkins/terraform.sh init"
+                  sh "bash /var/lib/jenkins/terraform.sh plan"
+                  sh "bash /var/lib/jenkins/terraform.sh apply"
+              }
+          }
+        }
+    }
+  }
+}

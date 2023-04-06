@@ -14,7 +14,6 @@ terraform-aws-eks/workspace/base/eks-*
 aws-iam-authenticator
 s3_bucket_id
 *_bak
-/scripts/
 /terraform-aws-eks/workspace/base/kubeconfig_eks-data
 /terraform-aws-eks/workspace/base/eks-data.pub
 /terraform-aws-eks/workspace/base/eks-data
