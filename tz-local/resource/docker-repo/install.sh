@@ -12,10 +12,6 @@ eks_domain=$(prop 'project' 'domain')
 dockerhub_id=$(prop 'project' 'dockerhub_id')
 dockerhub_password=$(prop 'project' 'dockerhub_password')
 
-dockerhub_id=doohee323
-dockerhub_password=hdh971097
-
-
 apt-get update -y
 apt-get -y install docker.io jq
 usermod -G docker vagrant
