@@ -24,6 +24,7 @@ module "eks" {
   cluster_version                 = "1.24"
   cluster_endpoint_private_access = true
   cluster_endpoint_public_access  = true
+  cluster_endpoint_public_access_cidrs = ["118.33.104.1/32", "183.96.137.87/32", "98.42.152.117/32"]
 
   cluster_addons = {
     coredns = {
@@ -70,7 +71,7 @@ module "eks" {
   eks_managed_node_groups = {
     devops = {
       min_size     = 1
-      max_size     = 4
+      max_size     = 3
       desired_size = 1
       instance_types = [local.instance_type]
       subnets = [element(module.vpc.private_subnets, 0)]
@@ -87,8 +88,8 @@ module "eks" {
       ]
     }
     consul = {
-      min_size     = 1
-      max_size     = 5
+      min_size     = 0
+      max_size     = 2
       desired_size = 1
       instance_types = ["t3.medium"]
       subnets = [element(module.vpc.private_subnets, 0)]

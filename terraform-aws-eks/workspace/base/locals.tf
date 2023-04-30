@@ -48,6 +48,11 @@ locals {
       groups   = ["system:masters"]
     },
     {
+      userarn  = "arn:aws:iam::${var.account_id}:user/adminuser"
+      username = "junee178"
+      groups   = ["system:masters"]
+    },
+    {
       userarn  = "arn:aws:iam::${var.account_id}:user/${local.cluster_name}-k8sAdmin"
       username = "${local.cluster_name}-k8sAdmin"
       groups   = ["system:masters"]

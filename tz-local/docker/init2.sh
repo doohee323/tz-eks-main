@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 export PROJECT_BASE='/vagrant/terraform-aws-eks/workspace/base'
+export KUBE_CONFIG_PATH=/root/.kube/config
 
 cd /vagrant
 
@@ -51,7 +52,11 @@ if [ ! -d "${PROJECT_BASE}/.terraform" ]; then
   fi
 
   export KUBECONFIG=`ls kubeconfig_${eks_project}*`
+#  export KUBE_CONFIG_PATH=/root/.kube/config
   cp -Rf ${KUBECONFIG} /vagrant/resources/config_${eks_project}
+#  echo "      env:" >> /vagrant/resources/config_${eks_project}
+#  echo "        - name: AWS_PROFILE" >> /vagrant/resources/config_${eks_project}
+#  echo '          value: '"${eks_project}"'' >> /vagrant/resources/config_${eks_project}
 
   sudo mkdir -p /root/.kube
   sudo cp -Rf ${KUBECONFIG} /root/.kube/config

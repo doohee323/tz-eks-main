@@ -2,6 +2,7 @@
 
 # bash /init.sh
 cd /vagrant/tz-local/docker
+export KUBE_CONFIG_PATH=/root/.kube/config
 
 echo "vault_token: ${vault_token}"
 
@@ -149,3 +150,54 @@ exit 0
 #helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 #helm repo update
 #helm install prometheus-operator prometheus-community/kube-prometheus-stack
+
+##############################################################################################################
+# **** For: FROM nexus.seerslab.com:5000/devops-utils:latest
+##############################################################################################################
+cd /vagrant/tz-local/docker
+
+aws_account_id=$(aws sts get-caller-identity --query Account --output text)
+SNAPSHOT_IMG=devops-utils
+TAG=latest
+aws_region=ap-northeast-2
+
+aws ecr create-repository \
+    --repository-name $SNAPSHOT_IMG \
+    --image-tag-mutability IMMUTABLE
+
+aws ecr get-login-password --region ${aws_region} \
+      | docker login --username AWS --password-stdin ${aws_account_id}.dkr.ecr.${aws_region}.amazonaws.com
+DOCKER_ID=${aws_account_id}.dkr.ecr.${aws_region}.amazonaws.com
+#DOCKER_ID=746446553436.dkr.ecr.ap-northeast-2.amazonaws.com
+
+#docker login --username AWS -p $(aws ecr get-login-password --region ${aws_region}) ${aws_account_id}.dkr.ecr.${aws_region}.amazonaws.com/
+#  DOCKER_ID=${aws_account_id}.dkr.ecr.${aws_region}.amazonaws.com
+
+#docker container stop $(docker container ls -a -q) && docker system prune -a -f --volumes
+docker image build -t ${SNAPSHOT_IMG} . -f BaseDockerfile --no-cache
+docker tag ${SNAPSHOT_IMG}:latest ${DOCKER_ID}/${SNAPSHOT_IMG}:${TAG}
+docker push ${DOCKER_ID}/${SNAPSHOT_IMG}:${TAG}
+
+docker tag ${DOCKER_ID}/${SNAPSHOT_IMG}:${TAG} ${DOCKER_ID}/devops-utils2:latest
+docker push ${DOCKER_ID}/devops-utils2:latest
+
+
+docker tag 336363860990.dkr.ecr.ap-northeast-2.amazonaws.com/devops-utils2 doohee323/devops-utils2:latest
+docker push doohee323/devops-utils2:latest
+
+
+#cp -Rf docker-compose.yml docker-compose.yml_bak
+#TAG=nexus.seerslab.com:5000/devops-utils:latest
+#sed -ie "s|ejn-main|${TAG}|g" docker-compose.yml_bak
+#sed -ie "s|ejn_main|devops-utils|g" docker-compose.yml_bak
+#docker-compose -f docker-compose.yml_bak build
+##docker-compose -f docker-compose.yml_bak build --no-cache
+#docker image ls
+#docker-compose -f docker-compose.yml_bak up -d
+##docker exec -it `docker ps | grep docker-devops-utils | awk '{print $1}'` bash
+#RMI=`docker images -a | grep -w "nexus.seerslab.com:5000/devops-utils" | grep latest | awk '{print $3}'`
+#echo docker tag ${RMI} ${TAG}
+#docker tag ${RMI} ${TAG}
+#docker push ${TAG}
+##############################################################################################################
+

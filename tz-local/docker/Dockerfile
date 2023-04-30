@@ -1,4 +1,4 @@
-FROM doohee323/devops-utils:latest
+FROM doohee323/devops-utils2:latest
 
 ARG eks_project=xxxxx
 ENV eks_project=${eks_project}
