@@ -16,7 +16,7 @@ resource "aws_iam_group_policy" "k8sAdmin_policy" {
           "sts:AssumeRole",
         ]
         Effect   = "Allow"
-        Resource = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${local.cluster_name}-k8sAdmin"
+        Resource = "${aws_iam_role.k8sAdmin.arn}"
       },
     ]
   })
@@ -29,7 +29,7 @@ resource "aws_iam_policy" "k8sAdmin" {
       {
         Effect   = "Allow",
         Action   = "sts:AssumeRole",
-        Resource = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${local.cluster_name}-k8sAdmin"
+        Resource = "${aws_iam_role.k8sAdmin.arn}"
     }]
   })
 }
@@ -68,7 +68,7 @@ resource "aws_iam_group_policy" "k8sDev_policy" {
           "sts:AssumeRole",
         ]
         Effect   = "Allow"
-        Resource = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${local.cluster_name}-k8sDev"
+        Resource = "${aws_iam_role.k8sDev.arn}"
       },
     ]
   })
@@ -81,7 +81,7 @@ resource "aws_iam_policy" "k8sDev" {
       {
         Effect   = "Allow",
         Action   = "sts:AssumeRole",
-        Resource = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${local.cluster_name}-k8sDev"
+        Resource = "${aws_iam_role.k8sDev.arn}"
     }]
   })
 }
@@ -102,10 +102,10 @@ resource "aws_iam_role" "k8sDev" {
 resource "aws_iam_user" "k8sDev" {
   name = "${local.cluster_name}-k8sDev"
 }
-//resource "aws_iam_user_policy_attachment" "doohee-hong" {
-//  user       = "doohee323"
-//  policy_arn = aws_iam_policy.k8sAdmin.arn
-//}
+resource "aws_iam_user_policy_attachment" "doohee-hong" {
+  user       = "doohee323"
+  policy_arn = aws_iam_policy.k8sAdmin.arn
+}
 //resource "aws_iam_user_policy_attachment" "doogee-hong" {
 //  user       = "doogee323"
 //  policy_arn = aws_iam_policy.k8sDev.arn
@@ -155,3 +155,56 @@ resource "aws_iam_role_policy_attachment" "eks-main-ecr-policy" {
   role       = module.eks.cluster_iam_role_name
   depends_on = [module.iam_ecr_policy]
 }
+
+#########################################
+# cert-manager dns-01
+#########################################
+module "cert_manager_irsa" {
+  source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
+  create_role = true
+  role_name = "cert_manager-${local.cluster_name}"
+  tags = {Role = "cert_manager-${local.cluster_name}-with-oidc"}
+  provider_url  = replace(module.eks.cluster_oidc_issuer_url, "https://", "")
+  role_policy_arns = [aws_iam_policy.cert_manager_policy.arn]
+  oidc_fully_qualified_subjects = [
+    "system:serviceaccount:${local.k8s_service_account_namespace}:${local.k8s_service_account_name}"
+  ]
+}
+
+resource "aws_iam_policy" "cert_manager_policy" {
+  name        = "${local.cluster_name}-cert-manager-policy"
+  path        = "/"
+  description = "Policy, which allows CertManager to create Route53 records"
+
+  policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Effect" : "Allow",
+        "Action" : "route53:GetChange",
+        "Resource" : "arn:aws:route53:::change/*"
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "route53:ChangeResourceRecordSets",
+          "route53:ListResourceRecordSets"
+        ],
+        "Resource": "arn:aws:route53:::hostedzone/*"
+      },
+      {
+        "Effect": "Allow",
+        "Action": "route53:ListHostedZonesByName",
+        "Resource": "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "eks-main-cert_manager_policy" {
+  policy_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/${local.cluster_name}-cert-manager-policy"
+  role       = module.eks.cluster_iam_role_name
+  depends_on = [aws_iam_policy.cert_manager_policy]
+}
+
+

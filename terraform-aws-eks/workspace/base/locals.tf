@@ -21,19 +21,14 @@ locals {
   aws_auth_roles = [
     {
       rolearn  = "arn:aws:iam::${var.account_id}:role/${local.cluster_name}-k8sAdmin"
-      username = "devops"
-      groups   = ["system:masters"]
+      username = "${local.cluster_name}-k8sAdmin"
+      groups   = ["eks-main-t-k8sAdmin"]
     },
     {
-      rolearn  = "arn:aws:iam::${var.account_id}:role/${local.cluster_name}-k8sAdmin"
-      username = "${local.cluster_name}-k8sAdmin"
-      groups   = ["system:masters"]
+      rolearn  = "arn:aws:iam::${var.account_id}:role/${local.cluster_name}-k8sDev"
+      username = "${local.cluster_name}-k8sDev"
+      groups   = ["eks-main-t-k8sDev"]
     },
-//    {
-//      rolearn  = "arn:aws:iam::${var.account_id}:role/${local.cluster_name}-k8sDev"
-//      username = "doogee323"
-//      groups   = ["system:basic-user"]
-//    },
   ]
 
   aws_auth_users = [
@@ -52,10 +47,20 @@ locals {
       username = "junee178"
       groups   = ["system:masters"]
     },
+//    {
+//      userarn  = "arn:aws:iam::${var.account_id}:user/${local.cluster_name}-k8sAdmin"
+//      username = "${local.cluster_name}-k8sAdmin"
+//      groups   = ["system:masters","system:nodes"]
+//    },
+//    {
+//      userarn  = "arn:aws:iam::${var.account_id}:user/${local.cluster_name}-k8sDev"
+//      username = "${local.cluster_name}-k8sDev"
+//      groups   = ["system:masters","system:nodes"]
+//    },
     {
       userarn  = "arn:aws:iam::${var.account_id}:user/${local.cluster_name}-k8sAdmin"
       username = "${local.cluster_name}-k8sAdmin"
-      groups   = ["system:masters"]
+      groups   = ["system:masters","system:nodes"]
     }
   ]
 

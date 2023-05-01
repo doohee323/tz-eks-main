@@ -3,7 +3,7 @@ variable "account_id" {
 variable "cluster_name" {
 }
 variable "region" {
-  default = "ap-southeast-1"
+  default = "ap-northeast-2"
 }
 variable "environment" {
   default = "prod"

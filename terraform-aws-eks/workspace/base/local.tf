@@ -1,6 +1,6 @@
 locals {
 
-  kubeconfig_name = var.kubeconfig_name == "" ? "eks_${var.cluster_name}" : var.kubeconfig_name
+  kubeconfig_name = var.kubeconfig_name == "" ? var.cluster_name : var.kubeconfig_name
 
   kubeconfig = var.create ? templatefile("${path.module}/templates/kubeconfig.tpl", {
     kubeconfig_name                   = local.kubeconfig_name
