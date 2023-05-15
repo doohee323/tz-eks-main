@@ -5,7 +5,7 @@ cd /vagrant/tz-local/resource/ingress_nginx
 
 NS=$1
 if [[ "${NS}" == "" ]]; then
-  NS=default
+  NS=devops
 fi
 eks_project=$2
 if [[ "${eks_project}" == "" ]]; then
@@ -101,8 +101,8 @@ cp -Rf nginx-ingress-https.yaml nginx-ingress-https.yaml_bak
 sed -i "s/NS/${NS}/g" nginx-ingress-https.yaml_bak
 sed -i "s/eks_project/${eks_project}/g" nginx-ingress-https.yaml_bak
 sed -i "s/eks_domain/${eks_domain}/g" nginx-ingress-https.yaml_bak
-k delete -f nginx-ingress-https.yaml_bak -n ${NS}
-k delete ingress nginx-test-tls -n ${NS}
+#k delete -f nginx-ingress-https.yaml_bak -n ${NS}
+#k delete ingress nginx-test-tls -n ${NS}
 k apply -f nginx-ingress-https.yaml_bak -n ${NS}
 kubectl get csr -o name | xargs kubectl certificate approve
 echo curl http://test.${NS}.${eks_project}.${eks_domain}
