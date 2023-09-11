@@ -115,7 +115,7 @@ route:
   # path: docker.apps.ocp01.cluster.local
 
 nexusProxy:
-  enabled: true
+  enabled: false
   # svcName: proxy-svc
   imageName: quay.io/travelaudience/docker-nexus-proxy
   imageTag: 2.6.0
