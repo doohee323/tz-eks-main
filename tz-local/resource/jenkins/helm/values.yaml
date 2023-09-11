@@ -438,9 +438,9 @@ controller:
   # Node labels and tolerations for pod assignment
   # ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
   # ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#taints-and-tolerations-beta-feature
-  nodeSelector:
-    team: devops
-    environment: consul
+#  nodeSelector:
+#    team: devops
+#    environment: consul
 
   terminationGracePeriodSeconds:
 
