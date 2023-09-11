@@ -56,11 +56,12 @@ aws ecr get-login-password --region ${AWS_REGION}
 #aws ecr get-login-password --region ${AWS_REGION} \
 #      | docker login --username AWS --password-stdin ${aws_account_id}.dkr.ecr.${AWS_REGION}.amazonaws.com
 
-ECR_REGISTRY="${aws_account_id}.dkr.ecr.${AWS_REGION}.amazonaws.com"
 mkdir -p /root/.docker
-echo "{\"credHelpers\":{\"$ECR_REGISTRY\":\"ecr-login\"}}" > /root/.docker/config2.json
+#ECR_REGISTRY="${aws_account_id}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+#echo "{\"credHelpers\":{\"$ECR_REGISTRY\":\"ecr-login\"}}" > /root/.docker/config2.json
 kubectl -n jenkins delete configmap docker-config
-kubectl -n jenkins create configmap docker-config --from-file=/root/.docker/config2.json
+#kubectl -n jenkins create configmap docker-config --from-file=/root/.docker/config2.json
+kubectl -n jenkins create configmap docker-config --from-file=/root/.docker/config.json
 
 kubectl -n jenkins delete secret aws-secret
 kubectl -n jenkins create secret generic aws-secret \

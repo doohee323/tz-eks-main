@@ -175,6 +175,7 @@ DOCKER_ID=${aws_account_id}.dkr.ecr.${aws_region}.amazonaws.com
 
 #docker container stop $(docker container ls -a -q) && docker system prune -a -f --volumes
 TAG=t9
+DOCKER_ID=doohee323
 # --no-cache
 docker image build -t ${SNAPSHOT_IMG} . -f BaseDockerfile
 docker tag ${SNAPSHOT_IMG}:latest ${DOCKER_ID}/${SNAPSHOT_IMG}:${TAG}
@@ -210,8 +211,8 @@ aws ecr create-repository \
     --image-tag-mutability IMMUTABLE
 
 aws ecr get-login-password --region ${aws_region} \
-      | docker login --username AWS --password-stdin ${aws_account_id}.dkr.ecr.${aws_region}.amazonaws.com
-DOCKER_ID=${aws_account_id}.dkr.ecr.${aws_region}.amazonaws.com
+      | docker login --username AWS --password-stdin doohee323
+DOCKER_ID=doohee323
 
 # --no-cache
 TAG=t7
