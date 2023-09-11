@@ -157,7 +157,7 @@ exit 0
 cd /vagrant/tz-local/docker
 
 aws_account_id=$(aws sts get-caller-identity --query Account --output text)
-SNAPSHOT_IMG=devops-utils
+SNAPSHOT_IMG=devops-utils2
 TAG=latest
 aws_region=ap-northeast-2
 
@@ -174,7 +174,9 @@ DOCKER_ID=${aws_account_id}.dkr.ecr.${aws_region}.amazonaws.com
 #  DOCKER_ID=${aws_account_id}.dkr.ecr.${aws_region}.amazonaws.com
 
 #docker container stop $(docker container ls -a -q) && docker system prune -a -f --volumes
-docker image build -t ${SNAPSHOT_IMG} . -f BaseDockerfile --no-cache
+TAG=t9
+# --no-cache
+docker image build -t ${SNAPSHOT_IMG} . -f BaseDockerfile
 docker tag ${SNAPSHOT_IMG}:latest ${DOCKER_ID}/${SNAPSHOT_IMG}:${TAG}
 docker push ${DOCKER_ID}/${SNAPSHOT_IMG}:${TAG}
 
@@ -182,14 +184,10 @@ docker tag ${DOCKER_ID}/${SNAPSHOT_IMG}:${TAG} ${DOCKER_ID}/devops-utils2:latest
 docker push ${DOCKER_ID}/devops-utils2:latest
 
 
-docker tag 336363860990.dkr.ecr.ap-northeast-2.amazonaws.com/devops-utils2 doohee323/devops-utils2:latest
-docker push doohee323/devops-utils2:latest
-
-
 #cp -Rf docker-compose.yml docker-compose.yml_bak
 #TAG=nexus.seerslab.com:5000/devops-utils:latest
-#sed -ie "s|ejn-main|${TAG}|g" docker-compose.yml_bak
-#sed -ie "s|ejn_main|devops-utils|g" docker-compose.yml_bak
+#sed -ie "s|tz-main|${TAG}|g" docker-compose.yml_bak
+#sed -ie "s|tz_main|devops-utils|g" docker-compose.yml_bak
 #docker-compose -f docker-compose.yml_bak build
 ##docker-compose -f docker-compose.yml_bak build --no-cache
 #docker image ls
@@ -200,4 +198,24 @@ docker push doohee323/devops-utils2:latest
 #docker tag ${RMI} ${TAG}
 #docker push ${TAG}
 ##############################################################################################################
+
+
+
+aws_account_id=$(aws sts get-caller-identity --query Account --output text)
+SNAPSHOT_IMG=sonarqube
+aws_region=ap-northeast-2
+
+aws ecr create-repository \
+    --repository-name $SNAPSHOT_IMG \
+    --image-tag-mutability IMMUTABLE
+
+aws ecr get-login-password --region ${aws_region} \
+      | docker login --username AWS --password-stdin ${aws_account_id}.dkr.ecr.${aws_region}.amazonaws.com
+DOCKER_ID=${aws_account_id}.dkr.ecr.${aws_region}.amazonaws.com
+
+# --no-cache
+TAG=t7
+docker image build -t ${SNAPSHOT_IMG} . -f SonarDockerfile
+docker tag ${SNAPSHOT_IMG}:latest ${DOCKER_ID}/${SNAPSHOT_IMG}:${TAG}
+docker push ${DOCKER_ID}/${SNAPSHOT_IMG}:${TAG}
 

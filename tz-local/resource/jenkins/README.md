@@ -6,15 +6,15 @@
 ```
 
  - get jenkins url
-   => http://jenkins.eks-main.shoptoolstest.co.kr
+   => http://jenkins.default.hyper-k8s.shoptoolstest.co.kr
 
  - setting kubernetes plugin
-    http://jenkins.eks-main.shoptoolstest.co.kr/configureClouds/
+    http://jenkins.default.hyper-k8s.shoptoolstest.co.kr/configureClouds/
    - Name: k8s-aws  
    - Kubernetes URL: https://kubernetes.default
    - Kubernetes Namespace: jenkins
     * click Test Connection
-   - Jenkins URL: http://jenkins:8080
+   - Jenkins URL: http://jenkins.jenkins.svc.cluster.local
    - Jenkins tunnel: jenkins-agent:50000
 
    - Add Pod Template
@@ -26,33 +26,33 @@
     - github
       1. get github's personal access token: ex) d465eaa43af65cececde0a63e310c2bxxxxxxxx
         https://github.com/settings/tokens
-      2. http://jenkins.eks-main.shoptoolstest.co.kr/credentials/store/system/domain/_/newCredentials
+      2. http://jenkins.default.hyper-k8s.shoptoolstest.co.kr/credentials/store/system/domain/_/newCredentials
         Kind: Username with password
         Username: ex) doohee323@shoptoolstest.co.kr
         Password: ex) d465eaa43af65cececde0a63e310c2bxxxxxxxx
         ID: Github
 
     - aws
-        http://jenkins.eks-main.shoptoolstest.co.kr/credentials/store/system/domain/_/newCredentials
+        http://jenkins.default.hyper-k8s.shoptoolstest.co.kr/credentials/store/system/domain/_/newCredentials
         Kind: Secret text
         Secret: ex) AKIATEMCRY56PRC5xxxxx
         ID: jenkins-aws-secret-key-id
 
-        http://jenkins.eks-main.shoptoolstest.co.kr/credentials/store/system/domain/_/newCredentials
+        http://jenkins.default.hyper-k8s.shoptoolstest.co.kr/credentials/store/system/domain/_/newCredentials
         Kind: Secret text
         Secret: ex) Kotgln3kkPevmfKxxxxxxxxxxxxxxxxxxx
         ID: jenkins-aws-secret-access-key
 
     - jenkins-aws-secret
       1. get aws access key: ex) 	AKIATEMCRY56PRC5xxxxx
-      2. http://jenkins.eks-main.shoptoolstest.co.kr/credentials/store/system/domain/_/newCredentials
+      2. http://jenkins.default.hyper-k8s.shoptoolstest.co.kr/credentials/store/system/domain/_/newCredentials
         Kind: AWS Credentials
         ID: jenkins-aws-secret
         Access Key ID: ex) AKIATEMCRY56PRC5xxxxx
         Secret Access Key: ex) Kotgln3kkPevmfKxxxxxxxxxxxxxxxxxxx
 
     - set a sample project (devops-crawler)
-        http://jenkins.eks-main.shoptoolstest.co.kr/ 
+        http://jenkins.default.hyper-k8s.shoptoolstest.co.kr/ 
         - Github
             - Credentials: ex) doohee323@shoptoolstest.co.kr
 

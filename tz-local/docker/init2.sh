@@ -52,11 +52,11 @@ if [ ! -d "${PROJECT_BASE}/.terraform" ]; then
   fi
 
   export KUBECONFIG=`ls kubeconfig_${eks_project}*`
-#  export KUBE_CONFIG_PATH=/root/.kube/config
+  export KUBE_CONFIG_PATH=/root/.kube/config
   cp -Rf ${KUBECONFIG} /vagrant/resources/config_${eks_project}
-#  echo "      env:" >> /vagrant/resources/config_${eks_project}
-#  echo "        - name: AWS_PROFILE" >> /vagrant/resources/config_${eks_project}
-#  echo '          value: '"${eks_project}"'' >> /vagrant/resources/config_${eks_project}
+  echo "      env:" >> /vagrant/resources/config_${eks_project}
+  echo "        - name: AWS_PROFILE" >> /vagrant/resources/config_${eks_project}
+  echo '          value: '"${eks_project}"'' >> /vagrant/resources/config_${eks_project}
 
   sudo mkdir -p /root/.kube
   sudo cp -Rf ${KUBECONFIG} /root/.kube/config
@@ -87,8 +87,7 @@ if [ ! -d "${PROJECT_BASE}/.terraform" ]; then
     - S3 bucket: ${s3_bucket_id}
   #######################################################################
   " > /vagrant/info
+  cat /vagrant/info
 fi
-
-cat /vagrant/info
 
 exit 0

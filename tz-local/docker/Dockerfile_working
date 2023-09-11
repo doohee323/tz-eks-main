@@ -1,0 +1,27 @@
+FROM ubuntu:20.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+#cd /vagrant
+WORKDIR /vagrant
+
+COPY . /vagrant
+
+RUN apt-get update && apt-get install python-dev libmysqlclient-dev gcc -y
+
+RUN bash docker/Anaconda3-2022.10-Linux-x86_64.sh -b -p /home/ubuntu/anaconda3
+
+RUN ln -s /home/ubuntu/anaconda3/bin/conda /usr/local/bin/conda && \
+  eval "$(/home/ubuntu/anaconda3/bin/conda shell.bash hook)"
+
+RUN conda init && \
+  conda create -n avatar_studio_api_server python=3.8 -y && \
+  conda activate avatar_studio_api_server
+
+RUN pip install -r requirements.txt
+RUN pip install fastapi "uvicorn[standard]" "pydantic[email]" "passlib[bcrypt]"
+
+EXPOSE 8080
+
+CMD uvicorn main:app --reload
+
