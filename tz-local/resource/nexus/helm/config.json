@@ -1,0 +1,8 @@
+{
+  "auths": {
+      "http://docker.eks-main-t.shoptoolstest.co.kr/v1/": {
+          "auth": "admin",
+          "email": "doohee323@gmail.com"
+      }
+  }
+}

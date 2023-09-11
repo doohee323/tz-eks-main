@@ -37,7 +37,7 @@ alias tplan='terraform plan -var-file=".auto.tfvars"'
 alias tapply='terraform apply -var-file=".auto.tfvars" -auto-approve'
 alias ll='ls -al'
 export PATH=\"/root/.krew/bin:$PATH\"
-" > /root/.bashrc
+" >> /root/.bashrc
 
 cat >> /root/.bashrc <<EOF
 function prop {
@@ -60,8 +60,8 @@ function prop {
 }
 EOF
 
-chown -Rf vagrant:vagrant /root/.bashrc
-cp -Rf /root/.bashrc /root/.bashrc
+cp -Rf /root/.bashrc /home/vagrant/.bashrc
+chown -Rf vagrant:vagrant /home/vagrant/.bashrc
 
 echo "###############"
 if [[ "${INSTALL_INIT}" == 'true' || ! -f "/root/.aws/config" ]]; then

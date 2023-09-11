@@ -63,6 +63,9 @@ echo "############################################"
 argocd login `k get service -n argocd | grep -w "argocd-server " | awk '{print $4}'` --username admin --password ${TMP_PASSWORD} --insecure
 argocd account update-password --account admin --current-password ${TMP_PASSWORD} --new-password ${admin_password}
 
+#TMP_PASSWORD='T1zone!323'
+#argocd login argocd.default.hyper-k8s.shoptoolstest.co.kr:14444 --username admin --password ${TMP_PASSWORD} --insecure
+
 # basic auth
 #https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/
 #https://kubernetes.github.io/ingress-nginx/examples/auth/basic/
