@@ -15,7 +15,7 @@ global:
 server:
   replicas: 1
   bootstrapExpect: 1
-  storageClass: gp2
+  storageClass: local-path
   storage: 50Gi
 #  securityContext:
 #    runAsNonRoot: false

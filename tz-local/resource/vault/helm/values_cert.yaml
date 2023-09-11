@@ -61,12 +61,12 @@ server:
 
   auditStorage:
     enabled: true
-    storageClass: gp2
+    storageClass: local-path
     size: 1Gi
 
   dataStorage:
     enabled: true
-    storageClass: gp2
+    storageClass: local-path
     size: 1Gi
 
   standalone:
