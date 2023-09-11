@@ -3,8 +3,8 @@
 #https://kubesphere.io/docs/devops-user-guide/how-to-integrate/harbor/
 
 source /root/.bashrc
-#bash /vagrant/sl-local/resource/harbor/install.sh
-cd /vagrant/sl-local/resource/harbor
+#bash /vagrant/tz-local/resource/harbor/install.sh
+cd /vagrant/tz-local/resource/harbor
 
 #set -x
 shopt -s expand_aliases

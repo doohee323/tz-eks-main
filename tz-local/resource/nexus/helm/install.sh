@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 source /root/.bashrc
-#bash /vagrant/sl-local/resource/nexus/helm/install.sh
-cd /vagrant/sl-local/resource/nexus/helm
+#bash /vagrant/tz-local/resource/nexus/helm/install.sh
+cd /vagrant/tz-local/resource/nexus/helm
 
 eks_domain=$(prop 'project' 'domain')
 eks_project=$(prop 'project' 'project')
