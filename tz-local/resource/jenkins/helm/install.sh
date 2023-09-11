@@ -18,7 +18,7 @@ helm repo add jenkins https://charts.jenkins.io
 helm search repo jenkins
 
 helm list --all-namespaces -a
-k delete namespace jenkins
+#k delete namespace jenkins
 k create namespace jenkins
 k apply -f jenkins.yaml
 

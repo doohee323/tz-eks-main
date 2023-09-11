@@ -95,7 +95,8 @@ http://nexus.default.${eks_project}.${eks_domain}/#admin/security/sslcertificate
   load certificate from server
   docker.default.eks-main-t.shoptoolstest.co.kr
 
-docker login -u admin -p 'xxxx' ${DOCKER_ELB}:443
+DOCKER_ELB=nexus.default.eks-main-t.shoptoolstest.co.kr
+docker login -u admin -p 'T1zone!323' ${DOCKER_ELB}:14444
 docker pull busybox
 RMI=`docker images -a | grep busybox | awk '{print $3}' | head -n 1`
 docker tag $RMI docker.default.${eks_project}.${eks_domain}/busybox:v20201225

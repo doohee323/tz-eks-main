@@ -23,8 +23,8 @@ After=network.target
 [Service]
 Type=forking
 LimitNOFILE=65536
-User=root
-Group=root
+User=nexus
+Group=nexus
 ExecStart=/opt/nexus/bin/nexus start
 ExecStop=/opt/nexus/bin/nexus stop
 Restart=on-abort
@@ -42,8 +42,7 @@ sudo systemctl start nexus
 echo '
 {
         "insecure-registries" : [
-          "192.168.0.232:5000",
-          "192.168.2.2:5000"
+          "nexus.shoptoolstest.co.kr:5000"
         ]
 }
 ' > /etc/docker/daemon.json
@@ -52,17 +51,17 @@ sudo service docker restart
 
 echo '
 ##[ Nexus ]##########################################################
-- url: http://192.168.0.232:8081
+- url: http://nexus.shoptoolstest.co.kr:8081
 - id: admin
 - passwd: cat /opt/sonatype-work/nexus3/admin.password
 
-http://192.168.0.232:8081/#admin/repository/blobstores
+http://nexus.shoptoolstest.co.kr:8081/#admin/repository/blobstores
 
 Create blob store
   docker-hosted
   docker-hub
 
-http://192.168.0.232:8081/#admin/repository/repositories
+http://nexus.shoptoolstest.co.kr:8081/#admin/repository/repositories
   Repositories > Select Recipe > Create repository: docker (hosted)
   name: docker-hosted
   http: 5000
@@ -76,17 +75,17 @@ Repositories > Select Recipe > Create repository: docker (proxy)
   select Use Docker Hub
   Blob store: docker-hub
 
-http://192.168.0.232:8081/#admin/security/realms
+http://nexus.shoptoolstest.co.kr:8081/#admin/security/realms
   add "Docker Bearer Token Realm" Active
 
-docker login 192.168.0.232:5000
+docker login nexus.shoptoolstest.co.kr:5000
 
 docker pull busybox
 RMI=`docker images -a | grep busybox | awk '{print $3}'`
-docker tag $RMI 192.168.0.232:5000/busybox:v20201225
-docker push 192.168.0.232:5000/busybox:v20201225
+docker tag $RMI nexus.shoptoolstest.co.kr:5000/busybox:v20201225
+docker push nexus.shoptoolstest.co.kr:5000/busybox:v20201225
 
-http://192.168.0.232:8081/#browse/browse:docker-hosted
+http://nexus.shoptoolstest.co.kr:8081/#browse/browse:docker-hosted
 
 #######################################################################
 ' >> /vagrant/info

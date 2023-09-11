@@ -744,9 +744,9 @@ agent:
   #   optional: false # default: false
   #   secretKey: MY-K8S-PATH
   #   secretName: my-k8s-secret
-  nodeSelector:
-    team: devops
-    environment: consul
+#  nodeSelector:
+#    team: devops
+#    environment: consul
   # Key Value selectors. Ex:
   # jenkins-agent: v1
 
