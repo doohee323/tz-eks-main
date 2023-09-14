@@ -95,8 +95,9 @@ http://nexus.default.${eks_project}.${eks_domain}/#admin/security/sslcertificate
   load certificate from server
   docker.default.eks-main-t.shoptoolstest.co.kr
 
-DOCKER_ELB=nexus.default.eks-main-t.shoptoolstest.co.kr
-docker login -u admin -p 'T1zone!323' ${DOCKER_ELB}:14444
+
+DOCKER_ELB=nexus.topzone.co.kr:5433
+docker login -u admin -p 'T1zone!323' ${DOCKER_ELB}
 docker pull busybox
 RMI=`docker images -a | grep busybox | awk '{print $3}' | head -n 1`
 docker tag $RMI docker.default.${eks_project}.${eks_domain}/busybox:v20201225
@@ -110,9 +111,9 @@ exit 0
 docker login -u admin https://docker.default.eks-main-t.shoptoolstest.co.kr --password-stdin admin123
 
 
-https://nexus.default.eks-main-t.shoptoolstest.co.kr/#admin/security/privileges
+https://nexus.topzone.co.kr/#admin/security/privileges
 
-docker login nexus.default.eks-main-t.shoptoolstest.co.kr:443
+docker login nexus.topzone.co.kr:5433
 
 Get "https://xxx/v2/": dial tcp: lookup xxx on 127.0.0.53:53: no such host
 

@@ -8,6 +8,9 @@ AWS_REGION=$(prop 'config' 'region')
 eks_project=$(prop 'project' 'project')
 eks_domain=$(prop 'project' 'domain')
 VAULT_TOKEN=$(prop 'project' 'vault')
+dockerhub_id=$(prop 'project' 'dockerhub_id')
+dockerhub_password=$(prop 'project' 'dockerhub_password')
+docker_url=$(prop 'project' 'docker_url')
 
 aws_account_id=$(aws sts get-caller-identity --query Account --output text)
 NS=devops-dev
@@ -23,7 +26,8 @@ aws ecr create-repository \
     --repository-name $SNAPSHOT_IMG \
     --image-tag-mutability IMMUTABLE
 
-docker login --username AWS -p $(aws ecr get-login-password --region ${AWS_REGION}) ${aws_account_id}.dkr.ecr.${AWS_REGION}.amazonaws.com/
+#docker login --username AWS -p $(aws ecr get-login-password --region ${AWS_REGION}) ${aws_account_id}.dkr.ecr.${AWS_REGION}.amazonaws.com/
+echo $dockerhub_password | docker login -u $dockerhub_id --password-stdin ${docker_url}
 DOCKER_ID=${aws_account_id}.dkr.ecr.${AWS_REGION}.amazonaws.com
 
 docker image build -t ${SNAPSHOT_IMG} .

@@ -156,33 +156,44 @@ exit 0
 ##############################################################################################################
 cd /vagrant/tz-local/docker
 
-aws_account_id=$(aws sts get-caller-identity --query Account --output text)
+dockerhub_id=$(prop 'project' 'dockerhub_id')
+dockerhub_password=$(prop 'project' 'dockerhub_password')
+docker_url=$(prop 'project' 'docker_url')
+
+#aws_account_id=$(aws sts get-caller-identity --query Account --output text)
+#aws_region=ap-northeast-2
 SNAPSHOT_IMG=devops-utils2
 TAG=latest
-aws_region=ap-northeast-2
 
-aws ecr create-repository \
-    --repository-name $SNAPSHOT_IMG \
-    --image-tag-mutability IMMUTABLE
+#aws ecr create-repository \
+#    --repository-name $SNAPSHOT_IMG \
+#    --image-tag-mutability IMMUTABLE
 
-aws ecr get-login-password --region ${aws_region} \
-      | docker login --username AWS --password-stdin ${aws_account_id}.dkr.ecr.${aws_region}.amazonaws.com
-DOCKER_ID=${aws_account_id}.dkr.ecr.${aws_region}.amazonaws.com
+#aws ecr get-login-password --region ${aws_region} \
+#      | docker login --username AWS --password-stdin ${aws_account_id}.dkr.ecr.${aws_region}.amazonaws.com
+#DOCKER_ID=${aws_account_id}.dkr.ecr.${aws_region}.amazonaws.com
 #DOCKER_ID=746446553436.dkr.ecr.ap-northeast-2.amazonaws.com
 
 #docker login --username AWS -p $(aws ecr get-login-password --region ${aws_region}) ${aws_account_id}.dkr.ecr.${aws_region}.amazonaws.com/
 #  DOCKER_ID=${aws_account_id}.dkr.ecr.${aws_region}.amazonaws.com
 
+DOCKER_ID=nexus.topzone.co.kr:5443
+dockerhub_password='devops!323'
+echo $dockerhub_password | docker login -u devops --password-stdin ${DOCKER_ID}
+
 #docker container stop $(docker container ls -a -q) && docker system prune -a -f --volumes
-TAG=t9
-DOCKER_ID=doohee323
+TAG=t1
 # --no-cache
 docker image build -t ${SNAPSHOT_IMG} . -f BaseDockerfile
 docker tag ${SNAPSHOT_IMG}:latest ${DOCKER_ID}/${SNAPSHOT_IMG}:${TAG}
 docker push ${DOCKER_ID}/${SNAPSHOT_IMG}:${TAG}
 
-docker tag ${DOCKER_ID}/${SNAPSHOT_IMG}:${TAG} ${DOCKER_ID}/devops-utils2:latest
-docker push ${DOCKER_ID}/devops-utils2:latest
+#docker tag ${DOCKER_ID}/${SNAPSHOT_IMG}:${TAG} ${DOCKER_ID}/devops-utils2:latest
+#docker push ${DOCKER_ID}/devops-utils2:latest
+
+docker pull nexus.topzone.co.kr:5443/devops-utils2:latest
+
+nexus.topzone.co.kr:5443/devops-utils2:latest
 
 
 #cp -Rf docker-compose.yml docker-compose.yml_bak
@@ -199,24 +210,4 @@ docker push ${DOCKER_ID}/devops-utils2:latest
 #docker tag ${RMI} ${TAG}
 #docker push ${TAG}
 ##############################################################################################################
-
-
-
-aws_account_id=$(aws sts get-caller-identity --query Account --output text)
-SNAPSHOT_IMG=sonarqube
-aws_region=ap-northeast-2
-
-aws ecr create-repository \
-    --repository-name $SNAPSHOT_IMG \
-    --image-tag-mutability IMMUTABLE
-
-aws ecr get-login-password --region ${aws_region} \
-      | docker login --username AWS --password-stdin doohee323
-DOCKER_ID=doohee323
-
-# --no-cache
-TAG=t7
-docker image build -t ${SNAPSHOT_IMG} . -f SonarDockerfile
-docker tag ${SNAPSHOT_IMG}:latest ${DOCKER_ID}/${SNAPSHOT_IMG}:${TAG}
-docker push ${DOCKER_ID}/${SNAPSHOT_IMG}:${TAG}
 
