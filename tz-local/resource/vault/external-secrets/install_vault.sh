@@ -49,19 +49,12 @@ for item in "${PROJECTS[@]}"; do
       namespace=${project}
     else
       project=${item}-prod
-      project_qa=${item}-qa
+      project_qa=${item}-stg
       STAGING="prod"
       namespace=${item}
     fi
     echo "=====================STAGING: ${STAGING}"
 echo '
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: PROJECT-svcaccount
-  namespace: "NAMESPACE"
----
-
 apiVersion: external-secrets.io/v1beta1
 kind: SecretStore
 metadata:
@@ -77,7 +70,6 @@ spec:
         tokenSecretRef:
           name: "vault-token"
           key: "token"
-
 ---
 apiVersion: v1
 kind: Secret
@@ -98,19 +90,45 @@ data:
 
     kubectl apply -f secret.yaml_bak
 
+echo '
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: PROJECT-svcaccount
+  namespace: NAMESPACE
+' > account.yaml
+
     if [ "${STAGING}" == "prod" ]; then
+      cp account.yaml account.yaml_bak
+      sed -i "s|PROJECT|${item}|g" account.yaml_bak
+      sed -i "s|NAMESPACE|${namespace}|g" account.yaml_bak
+      kubectl apply -f account.yaml_bak
+
       cp secret.yaml secret.yaml_bak
-      sed -i "s|PROJECT|${project_qa}|g" secret.yaml_bak
+      sed -i "s|PROJECT|${project_stg}|g" secret.yaml_bak
       sed -i "s|NAMESPACE|${namespace}|g" secret.yaml_bak
       sed -i "s|VAULT_TOKEN|${vault_token}|g" secret.yaml_bak
       sed -i "s|eks_project|${eks_project}|g" secret.yaml_bak
       sed -i "s|eks_domain|${eks_domain}|g" secret.yaml_bak
       kubectl apply -f secret.yaml_bak
+
+      cp account.yaml account.yaml_bak
+      sed -i "s|PROJECT|${project_stg}|g" account.yaml_bak
+      sed -i "s|NAMESPACE|${namespace}|g" account.yaml_bak
+      kubectl apply -f account.yaml_bak
+    else
+      cp account.yaml account.yaml_bak
+      sed -i "s|PROJECT|${project}|g" account.yaml_bak
+      sed -i "s|NAMESPACE|${namespace}|g" account.yaml_bak
+      kubectl apply -f account.yaml_bak
     fi
   fi
 done
 
-rm -Rf secret.yaml secret.yaml_bak
+#kubectl create serviceaccount mtown-prod-svcaccount -n mtown
+#kubectl create serviceaccount mtown-dev-svcaccount -n mtown-dev
+
+rm -Rf secret.yaml secret.yaml_bak account.yaml account.yaml_bak
 
 kubectl apply -f test.yaml
 kubectl -n devops describe externalsecret devops-externalsecret
@@ -121,7 +139,7 @@ exit 0
 NAMESPACE=devops
 STAGING=prod
 
-PROJECTS=(kubeconfig_eks-main-p kubeconfig_eks-main-t kubeconfig_eks-main-s kubeconfig_eks-main-u kubeconfig_eks-main-c devops.pub devops.pem devops credentials config auth.env ssh_config)
+PROJECTS=(kubeconfig_eks-main-p kubeconfig_eks-main-t kubeconfig_eks-main-s kubeconfig_eks-main-t kubeconfig_eks-main-c devops.pub devops.pem devops credentials config auth.env ssh_config)
 for item in "${PROJECTS[@]}"; do
   if [[ "${item}" != "NAME" ]]; then
     bash vault.sh fput ${NAMESPACE}-${STAGING} ${item} ${item}
