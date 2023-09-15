@@ -5,7 +5,7 @@ cd /vagrant/tz-local/resource/ingress_nginx
 
 NS=$1
 if [[ "${NS}" == "" ]]; then
-  NS=devops
+  NS=ingress-nginx
 fi
 eks_project=$2
 if [[ "${eks_project}" == "" ]]; then

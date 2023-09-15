@@ -64,7 +64,7 @@ argocd login `k get service -n argocd | grep -w "argocd-server " | awk '{print $
 argocd account update-password --account admin --current-password ${TMP_PASSWORD} --new-password ${admin_password}
 
 #TMP_PASSWORD='T1zone!323'
-#argocd login argocd.default.hyper-k8s.topzone.co.kr:14444 --username admin --password ${TMP_PASSWORD} --insecure
+#argocd login argocd.default.hyper-k8s.shoptoolstest.co.kr:14444 --username admin --password ${TMP_PASSWORD} --insecure
 
 # basic auth
 #https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/
@@ -215,7 +215,7 @@ kubectl get secret devops-tz-demo-app-secret -o yaml -n devops
 echo 'MTIz' | base64 -d
 kubectl rollout restart deployment devops-demo-argo-vault -n devops
 
-curl https://argo-vault.devops.eks-main-t.topzone.co.kr/index
+curl https://argo-vault.devops.eks-main-t.shoptoolstest.co.kr/index
 
 exit 0
 

@@ -22,7 +22,7 @@ spec:
       allowEmpty: true
 
 
-#argocd login argocd.default.eks-main-t.topzone.co.kr:443 --username admin --password T1zone\!323 --insecure
+#argocd login argocd.default.eks-main-t.shoptoolstest.co.kr:443 --username admin --password T1zone\!323 --insecure
 #
 #argocd app create devops-tz-gpt3 \
 #  --project devops \

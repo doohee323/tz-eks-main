@@ -19,7 +19,7 @@ export EMAIL=doohee323@gmail.com
 kubectl delete secret registry-creds -n kube-system
 kubectl create secret docker-registry registry-creds \
   --namespace kube-system \
-  --docker-server=https://nexus.topzone.co.kr:5443/v2/ \
+  --docker-server=https://nexus.shoptoolstest.co.kr:5443/v2/ \
   --docker-username=$DOCKER_USERNAME \
   --docker-password=$PW \
   --docker-email=$EMAIL
@@ -27,12 +27,12 @@ kubectl create secret docker-registry registry-creds \
 #kubectl delete secret registry-creds -n jenkins
 #kubectl create secret docker-registry registry-creds \
 #  --namespace jenkins \
-#  --docker-server=https://nexus.topzone.co.kr:5000/v2/ \
+#  --docker-server=https://nexus.shoptoolstest.co.kr:5000/v2/ \
 #  --docker-username=$DOCKER_USERNAME \
 #  --docker-password=$PW \
 #  --docker-email=$EMAIL
 
-#  --docker-server=https://nexus.topzone.co.kr:5000/v2/ \
+#  --docker-server=https://nexus.shoptoolstest.co.kr:5000/v2/ \
 #kubectl get secret registry-creds --output=yaml
 
 kubectl delete -f clusterPullSecret.yaml
