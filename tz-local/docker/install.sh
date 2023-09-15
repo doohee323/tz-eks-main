@@ -9,7 +9,7 @@ export eks_domain=shoptoolstest.co.kr
 export tz_project=devops-utils
 dockerhub_id=devops
 dockerhub_password=
-docker_url=nexus.shoptoolstest.co.kr:5443
+docker_url=nexus.topzone.co.kr:5443
 
 #DOCKER_ID=${docker_user}.dkr.ecr.${aws_region}.amazonaws.com
 doDOCKER_ID=$cker_url

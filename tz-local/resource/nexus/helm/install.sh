@@ -96,7 +96,7 @@ http://nexus.default.${eks_project}.${eks_domain}/#admin/security/sslcertificate
   docker.default.eks-main-t.shoptoolstest.co.kr
 
 
-DOCKER_ELB=nexus.shoptoolstest.co.kr:5433
+DOCKER_ELB=nexus.topzone.co.kr:5433
 docker login -u admin -p 'T1zone!323' ${DOCKER_ELB}
 docker pull busybox
 RMI=`docker images -a | grep busybox | awk '{print $3}' | head -n 1`
@@ -111,9 +111,9 @@ exit 0
 docker login -u admin https://docker.default.eks-main-t.shoptoolstest.co.kr --password-stdin admin123
 
 
-https://nexus.shoptoolstest.co.kr/#admin/security/privileges
+https://nexus.topzone.co.kr/#admin/security/privileges
 
-docker login nexus.shoptoolstest.co.kr:5433
+docker login nexus.topzone.co.kr:5433
 
 Get "https://xxx/v2/": dial tcp: lookup xxx on 127.0.0.53:53: no such host
 

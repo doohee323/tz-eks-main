@@ -177,12 +177,12 @@ TAG=latest
 #docker login --username AWS -p $(aws ecr get-login-password --region ${aws_region}) ${aws_account_id}.dkr.ecr.${aws_region}.amazonaws.com/
 #  DOCKER_ID=${aws_account_id}.dkr.ecr.${aws_region}.amazonaws.com
 
-DOCKER_ID=nexus.shoptoolstest.co.kr:5443
+DOCKER_ID=nexus.topzone.co.kr:5443
 dockerhub_password='devops!323'
 echo $dockerhub_password | docker login -u devops --password-stdin ${DOCKER_ID}
 
 #docker container stop $(docker container ls -a -q) && docker system prune -a -f --volumes
-TAG=t1
+TAG=t2
 # --no-cache
 docker image build -t ${SNAPSHOT_IMG} . -f BaseDockerfile
 docker tag ${SNAPSHOT_IMG}:latest ${DOCKER_ID}/${SNAPSHOT_IMG}:${TAG}
@@ -191,9 +191,9 @@ docker push ${DOCKER_ID}/${SNAPSHOT_IMG}:${TAG}
 #docker tag ${DOCKER_ID}/${SNAPSHOT_IMG}:${TAG} ${DOCKER_ID}/devops-utils2:latest
 #docker push ${DOCKER_ID}/devops-utils2:latest
 
-docker pull nexus.shoptoolstest.co.kr:5443/devops-utils2:latest
+docker pull nexus.topzone.co.kr:5443/devops-utils2:latest
 
-nexus.shoptoolstest.co.kr:5443/devops-utils2:latest
+nexus.topzone.co.kr:5443/devops-utils2:latest
 
 
 #cp -Rf docker-compose.yml docker-compose.yml_bak

@@ -24,7 +24,7 @@ docker login -u="${dockerhub_id}" -p="${dockerhub_password}" ${docker_url}
 sleep 2
 
 cat ~/.docker/config.json
-#{"auths":{"https://nexus.shoptoolstest.co.kr:5443/v2/":{"username":"devops","password":"devops!323","email":"doohee323@gmail.com","auth":"ZGV2b3BzOmRldm9wcyEzMjM="}}}
+#{"auths":{"https://nexus.topzone.co.kr:5443/v2/":{"username":"devops","password":"devops!323","email":"doohee323@gmail.com","auth":"ZGV2b3BzOmRldm9wcyEzMjM="}}}
 mkdir -p /home/ubuntu/.docker
 cp -Rf ~/.docker/config.json /home/ubuntu/.docker/config.json
 chown -Rf ubuntu:ubuntu /home/ubuntu/.docker
@@ -34,7 +34,7 @@ kubectl create secret generic registry-creds -n kube-system \
     --from-file=.dockerconfigjson=/home/ubuntu/.docker/config.json \
     --type=kubernetes.io/dockerconfigjson
 
-#  --docker-server=https://nexus.shoptoolstest.co.kr:5000/v2/ \
+#  --docker-server=https://nexus.topzone.co.kr:5000/v2/ \
 #kubectl get secret registry-creds --output=yaml
 
 kubectl delete -f clusterPullSecret.yaml
@@ -88,5 +88,5 @@ spec:
   imagePullSecrets:
     - name: registry-creds
 
-docker login nexus.shoptoolstest.co.kr:5443
-docker pull nexus.shoptoolstest.co.kr:5443/devops-utils2:latest
+docker login nexus.topzone.co.kr:5443
+docker pull nexus.topzone.co.kr:5443/devops-utils2:latest
