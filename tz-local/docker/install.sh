@@ -5,7 +5,7 @@ cd tz-local/docker
 export docker_user=746446553436
 export aws_region=ap-northeast-2
 export eks_project=eks-main-t
-export eks_domain=shoptoolstest.co.kr
+export eks_domain=topzone.co.kr
 export tz_project=devops-utils
 dockerhub_id=devops
 dockerhub_password=

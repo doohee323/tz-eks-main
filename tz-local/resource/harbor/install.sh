@@ -50,10 +50,10 @@ echo admin / Harbor12345
 
 #vi /etc/docker/daemon.json
 #{
-#  "insecure-registries":["harbor.devops.eks-main-t.shoptoolstest.co.kr"]
+#  "insecure-registries":["harbor.devops.eks-main-t.topzone.co.kr"]
 #}
 #systemctl restart docker
 #
-#docker login harbor.devops.eks-main-t.shoptoolstest.co.kr
+#docker login harbor.devops.eks-main-t.topzone.co.kr
 #admin / ${admin_password}
 

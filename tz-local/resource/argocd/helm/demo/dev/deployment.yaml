@@ -86,7 +86,7 @@ metadata:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
   rules:
-    - host: main.devops.eks-main-t.shoptoolstest.co.kr
+    - host: main.devops.eks-main-t.topzone.co.kr
       http:
         paths:
           - path: /
@@ -98,5 +98,5 @@ spec:
                   number: 80
   tls:
     - hosts:
-        - main.devops.eks-main-t.shoptoolstest.co.kr
+        - main.devops.eks-main-t.topzone.co.kr
       secretName: devops-tz-demo-app-ssl

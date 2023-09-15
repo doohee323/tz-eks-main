@@ -60,7 +60,7 @@ if [[ "${ACTION}" == "prop" ]]; then
 fi
 
 if [[ "${ACTION}" == "vault" ]]; then
-  export VAULT_ADDR=https://vault.default.eks-main-t.shoptoolstest.co.kr
+  export VAULT_ADDR=https://vault.default.eks-main-t.topzone.co.kr
   login_out=$(vault login ${vault_token})
   vault_secret_key=$2
   fields=($(echo "$3" | tr ',' '\n'))
@@ -72,7 +72,7 @@ if [[ "${ACTION}" == "vault" ]]; then
 fi
 
 if [[ "${ACTION}" == "vault_config" ]]; then
-  export VAULT_ADDR=https://vault.default.eks-main-t.shoptoolstest.co.kr
+  export VAULT_ADDR=https://vault.default.eks-main-t.topzone.co.kr
   login_out=$(vault login ${vault_token})
   vault_secret_key=$2
   vault_secret_key2=$3
@@ -523,8 +523,8 @@ elif [[ "${ACTION}" == "internal" ]]; then
       aws ec2 authorize-security-group-ingress --group-id ${SQG} --protocol tcp --port 443 --cidr 98.51.38.177/32
       aws ec2 authorize-security-group-ingress --group-id ${SQG} --protocol tcp --port 80 --cidr 218.153.127.33/32
       aws ec2 authorize-security-group-ingress --group-id ${SQG} --protocol tcp --port 443 --cidr 218.153.127.33/32
-      aws ec2 authorize-security-group-ingress --group-id ${SQG} --protocol tcp --port 80 --cidr jenkins.default.eks-main-t.shoptoolstest.co.kr/32
-      aws ec2 authorize-security-group-ingress --group-id ${SQG} --protocol tcp --port 443 --cidr jenkins.default.eks-main-t.shoptoolstest.co.kr/32
+      aws ec2 authorize-security-group-ingress --group-id ${SQG} --protocol tcp --port 80 --cidr jenkins.default.eks-main-t.topzone.co.kr/32
+      aws ec2 authorize-security-group-ingress --group-id ${SQG} --protocol tcp --port 443 --cidr jenkins.default.eks-main-t.topzone.co.kr/32
     fi
     trace_off
 #    if [[ "${ELB_NM}" != "" ]]; then
@@ -618,7 +618,7 @@ exit 0
 export VAULT_ADDR=https://vault.vault.svc.cluster.local:8200
 
 CLUSTER_NAME=eks-main-t
-eks_domain=default.eks-main-t.shoptoolstest.co.kr
+eks_domain=default.eks-main-t.topzone.co.kr
 export VAULT_ADDR=http://vault.default.${CLUSTER_NAME}.${eks_domain}
 login_out=$(vault login ${vault_token})
 
