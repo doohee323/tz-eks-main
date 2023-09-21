@@ -126,6 +126,9 @@ EXPOSE 22
 COPY k8s.sh /k8s.sh
 RUN chmod +x /k8s.sh
 
+COPY vault.sh /vault.sh
+RUN chmod +x /vault.sh
+
 RUN mkdir -p /root/.aws
 COPY config /root/.aws/config
 COPY credentials /root/.aws/credentials

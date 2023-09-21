@@ -182,7 +182,7 @@ dockerhub_password='devops!323'
 echo $dockerhub_password | docker login -u devops --password-stdin ${DOCKER_ID}
 
 #docker container stop $(docker container ls -a -q) && docker system prune -a -f --volumes
-TAG=t2
+TAG=t8
 # --no-cache
 docker image build -t ${SNAPSHOT_IMG} . -f BaseDockerfile
 docker tag ${SNAPSHOT_IMG}:latest ${DOCKER_ID}/${SNAPSHOT_IMG}:${TAG}
