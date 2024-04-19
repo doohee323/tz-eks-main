@@ -41,7 +41,7 @@ spec:
       serviceAccountName: devops-prod-svcaccount
       containers:
         - name: devops-tz-demo-app
-          image: 746446553436.dkr.ecr.ap-northeast-2.amazonaws.com/devops-tz-demo-app:v0.0.1
+          image: xxxxxx.dkr.ecr.ap-northeast-2.amazonaws.com/devops-tz-demo-app:v0.0.1
           imagePullPolicy: Always
           readinessProbe:
             httpGet:

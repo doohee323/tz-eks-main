@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-tz-demo-app-eks-main-t
+spec:
+  selector:
+    matchLabels:
+      app: devops-tz-demo-app-eks-main-t
+  template:
+    metadata:
+      annotations:
+        instrumentation.opentelemetry.io/inject-nodejs: "true"
+      labels:
+        org: topzone
+        team: devops
+        project: mc20
+        environment: dev
+        app: devops-tz-demo-app-eks-main-t
+    spec:
+      containers:
+        - name: devops-tz-demo-app-eks-main-t
+          image: xxxxx.dkr.ecr.ap-northeast-2.amazonaws.com/devops-tz-demo-app:eks-main-t-3
+          imagePullPolicy: Always
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: devops-tz-demo-app-eks-main-t-sv
+spec:
+  type: NodePort
+  selector:
+    app: devops-tz-demo-app-eks-main-t
+  ports:
+    - port: 80
+      name: http-80
+      targetPort: 8080
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: devops-tz-demo-app-eks-main-t-ing
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/stz-redirect: "false"
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  rules:
+    - host: eks-main-t-demo.devops.topzone.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: devops-tz-demo-app-eks-main-t-sv
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - eks-main-t-demo.devops.topzone.io
+      secretName: devops-tz-demo-app-eks-main-t-ssl

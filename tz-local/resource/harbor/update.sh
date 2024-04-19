@@ -16,7 +16,7 @@ DOCKER_NAME="tgd-web"
 DOCKER_NAME_NGINX="tgd-nginx"
 
 AWS_REGION="ap-northeast-2"
-ACCOUNT_ID="215559030652"
+ACCOUNT_ID="xxxxx"
 CLUSTER_NAME="eks-main"
 STAGING="dev"
 #REPO_HOST="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
